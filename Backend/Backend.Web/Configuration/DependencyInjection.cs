@@ -1,0 +1,31 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Backend.Application;
+using Backend.Common.Web;
+using Backend.Database;
+using Microsoft.AspNetCore.Http.Json;
+
+namespace Backend.Web.Configuration;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddWebApi(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
+        services.Configure<JsonOptions>(options =>
+        {
+            options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        });
+
+        services.AddApplication();
+        services.AddDatabase(configuration);
+        services.AddOpenApi();
+        services.AddAuthorization();
+        services.AddEndpointDefinitions(typeof(Program).Assembly);
+
+        return services;
+    }
+}
