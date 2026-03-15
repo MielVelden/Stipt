@@ -1,21 +1,24 @@
-# React Router + shadcn/ui
+## iO Event Connect – Backoffice (Frontend)
 
-This is a template for a new React Router project with React, TypeScript, and shadcn/ui.
+### Packages
+- React
+- React Router
+- shadcn/ui
 
-## Adding components
-
-To add components to your app, run the following command:
-
-```bash
-npx shadcn@latest add button
+### Projectstructuur
+```
+├── public/         # Alle source bestanden
+├── app/            # In veel talen de src-folder
+    ├── components/             # Components die voor de hele app gebruikt worden
+        ├── ui/                     # Componenten uit shadcn/ui, hoef je waarschijnlijk niet te wijzigen
+    ├── modules/
+        ├── [module]/           # Bijvoorbeeld: events
+            ├── components/                 # Component enkel gebruikt door deze module
+            ├── [module].[pagina].tsx       # Bestand per pagina
+    ├── routes.ts     # Route configuratie
+    
 ```
 
-This will place the ui components in the `components` directory.
-
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
-```
+### Editor setup
+Dit project maakt gebruik van Eslint en Prettier. In de meeste editors is deze configuratie al ingesteld.
+> Tip: zet bij "actions on save": "run prettier" en "run eslint --fix" aan
