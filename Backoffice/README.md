@@ -11,7 +11,7 @@
 ├── app/            # In veel talen de src-folder
     ├── components/             # Components die voor de hele app gebruikt worden
         ├── ui/                     # Componenten uit shadcn/ui, hoef je waarschijnlijk niet te wijzigen
-    ├── modules/
+    ├── routes/
         ├── [module]/           # Bijvoorbeeld: events
             ├── components/                 # Component enkel gebruikt door deze module
             ├── [module].[pagina].tsx       # Bestand per pagina

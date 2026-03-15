@@ -7,11 +7,15 @@ import {
 } from "@react-router/dev/routes"
 
 export default [
-  index("routes/home.tsx"),
+  index("routes/home/home.tsx"),
 
-  layout("dashboard/dashboard.layout.tsx", prefix("app", [
-    ...prefix("events", [
-      route("events", "dashboard/events/events.overview.tsx")
-    ]),
-  ])),
+  layout(
+    "layouts/dashboard.layout.tsx",
+    prefix("app", [
+      ...prefix("events", [
+        route("", "routes/events/events.overview.tsx"),
+        route(":id", "routes/events/events.details.tsx"),
+      ]),
+    ])
+  ),
 ] satisfies RouteConfig

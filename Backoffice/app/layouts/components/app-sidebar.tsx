@@ -1,6 +1,6 @@
 import * as React from "react"
-import { NavMain } from "~/dashboard/components/nav-main"
-import { NavUser } from "~/dashboard/components/nav-user"
+import { NavMain } from "~/layouts/components/nav-main"
+import { NavUser } from "~/layouts/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
