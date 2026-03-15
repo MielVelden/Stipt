@@ -1,31 +1,21 @@
-# Backoffice
+# React Router + shadcn/ui
 
-React Router front-end scaffold for a REST API driven backoffice.
+This is a template for a new React Router project with React, TypeScript, and shadcn/ui.
 
-## Structure
+## Adding components
 
-```text
-app/
-  components/   shared UI building blocks
-  config/       app-level constants and environment defaults
-  layouts/      reusable route shells
-  lib/          low-level helpers such as the API client
-  routes/       route modules
-  services/     feature-facing data access and mock scaffolding
-  types/        shared TypeScript models
-```
-
-## Development
+To add components to your app, run the following command:
 
 ```bash
-cp .env.example .env
-npm run dev
+npx shadcn@latest add button
 ```
 
-Set `VITE_API_BASE_URL` in `.env` to set the API url
+This will place the ui components in the `components` directory.
 
-## Notes
+## Using components
 
-- `app/lib/api-client.ts` is the fetch wrapper for REST calls.
-- `app/services/` is where feature modules should call the API client.
-- `app/routes/` should stay focused on rendering, loaders, and actions.
+To use the components in your app, import them as follows:
+
+```tsx
+import { Button } from "@/components/ui/button";
+```
