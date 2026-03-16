@@ -1,4 +1,11 @@
-import { flexRender, type ColumnDef } from "@tanstack/react-table"
+import React from "react"
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
 
 import {
   Table,
@@ -8,53 +15,38 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table"
-import { Input } from "~/components/ui/input"
+import { Button } from "~/components/ui/button"
 
-import { DataTablePagination } from "./data-table/data-table-pagination"
-import { useDataTable } from "./data-table/use-data-table"
-
-type DataTableProps<TData> = {
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  columns: ColumnDef<TData, unknown>[]
-  filterColumnId?: string
-  filterPlaceholder?: string
-  getRowId?: (row: TData, index: number) => string
 }
 
-export function DataTable<TData>({
-  data,
+export function DataTable<TData, TValue>({
   columns,
-  filterColumnId,
-  filterPlaceholder = "Filter...",
-  getRowId,
-}: DataTableProps<TData>) {
-  const { table } = useDataTable({ data, columns, getRowId })
-  const rows = table.getRowModel().rows
-  const filterColumn = filterColumnId
-    ? table.getColumn(filterColumnId)
-    : undefined
-  const filterValue = (filterColumn?.getFilterValue() as string) ?? ""
+  data,
+}: DataTableProps<TData, TValue>) {
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+    },
+  })
 
   return (
-    <div className="flex flex-col gap-4">
-      {filterColumn && (
-        <div className="w-full max-w-sm">
-          <Input
-            placeholder={filterPlaceholder}
-            value={filterValue}
-            onChange={(event) =>
-              filterColumn.setFilterValue(event.target.value)
-            }
-          />
-        </div>
-      )}
-      <div className="overflow-hidden rounded-lg border">
+    <div>
+      <div className="rounded-md border">
         <Table>
-          <TableHeader className="bg-muted">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} colSpan={header.colSpan}>
+                  <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -67,8 +59,8 @@ export function DataTable<TData>({
             ))}
           </TableHeader>
           <TableBody>
-            {rows.length > 0 ? (
-              rows.map((row) => (
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -86,14 +78,36 @@ export function DataTable<TData>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Geen resultaten gevonden.
+                  Geen resultaten.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          Pagina {table.getState().pagination.pageIndex + 1} van{" "}
+          {table.getPageCount()}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Vorige
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Volgende
+        </Button>
+      </div>
     </div>
   )
 }

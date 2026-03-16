@@ -4,48 +4,31 @@ import { PageContainer } from "~/layouts/components/page-container"
 import { Link } from "react-router"
 import { Button } from "~/components/ui/button"
 import { DataTable } from "~/components/data-table"
-import { renderSortableHeader } from "~/components/data-table-columns"
 
 {
   /* TODO: remove this --- START */
 }
-type DashboardTableRow = {
+
+type Event = {
+  id: number
   name: string
-  description: string
-  date: string
 }
 
-const dashboardData: DashboardTableRow[] = [
+const columns: ColumnDef<Event>[] = [
+  { accessorKey: "id", header: "ID" },
+  { accessorKey: "name", header: "Full Name" },
   {
-    name: "Dashboard",
-    description: "belangrijke statistieken",
-    date: "2024-07-01",
-  },
-  {
-    name: "Evenementen",
-    description: "overzicht van alle evenementen",
-    date: "2024-06-01",
-  },
-  {
-    name: "Gebruikers",
-    description: "overzicht van alle gebruikers",
-    date: "2024-05-01",
-  },
-]
-
-const dashboardColumns: ColumnDef<DashboardTableRow>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => renderSortableHeader({ label: "Naam", column }),
-  },
-  {
-    accessorKey: "description",
-    header: ({ column }) =>
-      renderSortableHeader({ label: "Beschrijving", column }),
-  },
-  {
-    accessorKey: "date",
-    header: ({ column }) => renderSortableHeader({ label: "Datum", column }),
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      return (
+        <Button className="mt-2" asChild>
+          <Link to={`/app/evenementen/${row.getValue("id")}`}>
+            Bekijk evenement
+          </Link>
+        </Button>
+      )
+    },
   },
 ]
 {
@@ -53,6 +36,20 @@ const dashboardColumns: ColumnDef<DashboardTableRow>[] = [
 }
 
 export default function Page() {
+  const events: Event[] = [
+    { id: 1, name: "Event 1" },
+    { id: 2, name: "Event 2" },
+    { id: 3, name: "Event 3" },
+    { id: 4, name: "Event 4" },
+    { id: 5, name: "Event 5" },
+    { id: 6, name: "Event 6" },
+    { id: 7, name: "Event 7" },
+    { id: 8, name: "Event 8" },
+    { id: 9, name: "Event 9" },
+    { id: 10, name: "Event 10" },
+    { id: 11, name: "Event 11" },
+  ]
+
   return (
     <>
       <PageHeader title="Dashboard" />
@@ -64,13 +61,7 @@ export default function Page() {
 
         {/* TODO: remove this --- START */}
         <div className="mt-6">
-          <DataTable
-            data={dashboardData}
-            columns={dashboardColumns}
-            filterColumnId="date"
-            filterPlaceholder="Filter op datum..."
-            getRowId={(row) => row.name}
-          />
+          <DataTable data={events} columns={columns} />
         </div>
         {/* TODO: remove this --- END */}
       </PageContainer>
