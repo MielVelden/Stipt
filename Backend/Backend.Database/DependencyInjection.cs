@@ -1,4 +1,5 @@
 using Backend.Application.Features.Todos.Repositories;
+using Backend.Application.Features.Rooms.Repositories;
 using Backend.Database.Persistence;
 using Backend.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ public static class DependencyInjection
                 npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<ITodoRepository, TodoRepository>();
+        services.AddScoped<IRoomRepository, RoomRepository>();
 
         return services;
     }
