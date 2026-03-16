@@ -1,30 +1,39 @@
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
-import { TicketIcon } from "lucide-react"
+import { LayoutDashboardIcon } from "lucide-react"
+import { Link } from "react-router"
 
 const items = [
   {
-    title: "Evenementen",
-    url: "#",
-    icon: <TicketIcon />,
+    title: "Dashboard",
+    url: "/app",
+    icon: <LayoutDashboardIcon />,
   },
 ]
 
 export function NavMain() {
   return (
     <SidebarGroup>
+      <SidebarGroupLabel>Menu</SidebarGroupLabel>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
-                {item.icon}
-                <span>{item.title}</span>
+              <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                isActive={window.location.pathname === item.url}
+              >
+                <Link to={item.url} className="flex items-center gap-2">
+                  {item.icon}
+                  <span>{item.title}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

@@ -1,17 +1,17 @@
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import { Link } from "react-router"
+import { Button } from "~/components/ui/button"
 
 export default function Page() {
   return (
     <>
-      <PageHeader title="Evenementen" />
+      <PageHeader title="Dashboard" />
       <PageContainer>
-        <h2>Evenementen</h2>
-
-        <Link to="/app/evenementen/1" className="text-blue-500 underline">
-          Naar details van Event 1
-        </Link>
+        <p>Welkom in de Event Connect app!</p>
+        <Button className="mt-2" asChild>
+          <Link to="/app/evenementen">Bekijk de evenementen</Link>
+        </Button>
       </PageContainer>
     </>
   )

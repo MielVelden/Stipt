@@ -10,11 +10,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
-import { CommandIcon } from "lucide-react"
+import { Link } from "react-router"
+import logo from "~/assets/images/iO-logo.svg"
+import { NavEventSelect } from "./nav-event-select"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -22,19 +24,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <a href="#">
-                <CommandIcon className="size-5!" />
-                <span className="text-base font-semibold">
-                  iO Event Connect
-                </span>
-              </a>
+              <Link to="/app">
+                <img src={logo} alt="iO Logo" className="size-8!" />
+                <span className="text-base font-semibold">Event Connect</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
+        <NavEventSelect />
         <NavMain />
       </SidebarContent>
+
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>

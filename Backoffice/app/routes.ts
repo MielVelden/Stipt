@@ -12,7 +12,9 @@ export default [
   layout(
     "layouts/dashboard.layout.tsx",
     prefix("app", [
-      ...prefix("events", [
+      route("", "routes/dashboard/dashboard.overview.tsx"),
+
+      ...prefix("evenementen", [
         route("", "routes/events/events.overview.tsx"),
         route(":id", "routes/events/events.details.tsx"),
       ]),

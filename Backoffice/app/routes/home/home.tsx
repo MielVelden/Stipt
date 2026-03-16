@@ -6,7 +6,7 @@ export default function Home() {
     <div className="p-12 text-center">
       <h1 className="font-medium">iO Event Connect!</h1>
       <Button className="mt-2" asChild>
-        <Link to="/app/events">Naar Events</Link>
+        <Link to="/app">Naar de applicatie</Link>
       </Button>
     </div>
   )
