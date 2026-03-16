@@ -4,8 +4,8 @@ import { Link } from "react-router"
 import { Button } from "~/components/ui/button"
 import { DataTable } from "~/components/data-table"
 import type { ColumnDef } from "@tanstack/react-table"
-import createActionsDropdown from "~/components/dropdown-menu"
-import { EyeIcon, TrashIcon } from "lucide-react"
+import { TrashIcon } from "lucide-react"
+import { ActionsDropdown } from "~/components/actions-dropdown"
 
 type Event = {
   id: number
@@ -18,11 +18,10 @@ const columns: ColumnDef<Event>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      return createActionsDropdown({
+      return ActionsDropdown({
         actions: [
           {
             label: "Bekijk",
-            icon: <EyeIcon />,
             linkTo: `/app/evenementen/${row.getValue("id")}`,
           },
           {

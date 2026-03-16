@@ -17,11 +17,7 @@ type actionDropdown = {
   linkTo?: string
 }
 
-export default function createActionsDropdown({
-  actions,
-}: {
-  actions: actionDropdown[]
-}) {
+export function ActionsDropdown({ actions }: { actions: actionDropdown[] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
