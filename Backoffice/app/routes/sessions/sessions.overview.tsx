@@ -4,14 +4,33 @@ import {
   useLoaderData,
   isRouteErrorResponse,
   useRouteError,
+  useFetcher,
 } from "react-router"
+import type { ColumnDef } from "@tanstack/react-table"
+
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
+import { DataTable } from "~/components/data-table"
+import { ActionsDropdown } from "~/components/actions-dropdown"
+import FetchError from "~/components/fetch-error"
+
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "~/components/ui/input-group"
+import { Button } from "~/components/ui/button"
+import { Badge } from "~/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog"
 import {
   EditIcon,
   EyeIcon,
@@ -19,16 +38,11 @@ import {
   SearchIcon,
   TrashIcon,
 } from "lucide-react"
-import { Button } from "~/components/ui/button"
-import { DataTable } from "~/components/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
-import type { Session } from "~/routes/sessions/types"
-import { Badge } from "~/components/ui/badge"
-import { ActionsDropdown } from "~/components/actions-dropdown"
-import apiClient from "~/lib/api-client"
-import FetchError from "~/components/fetch-error"
 
-const columns: ColumnDef<Session>[] = [
+import apiClient from "~/lib/api-client"
+import type { Session } from "~/routes/sessions/types"
+
+const getColumns = (setDelete: (s: Session) => void): ColumnDef<Session>[] => [
   {
     accessorKey: "title",
     header: "Titel",
@@ -100,7 +114,7 @@ const columns: ColumnDef<Session>[] = [
             icon: <TrashIcon />,
             separatorBefore: true,
             variant: "destructive",
-            linkTo: `/app/sessies/${row.original.id}/bewerken`,
+            onClick: () => setDelete(row.original),
           },
         ],
       })
@@ -140,13 +154,31 @@ export async function clientLoader() {
   }
 }
 
+export async function clientAction({ request }: { request: Request }) {
+  const formData = await request.formData()
+  const id = formData.get("id")
+  const intent = formData.get("intent")
+
+  if (intent === "delete" && id) {
+    try {
+      await apiClient.delete(`/sessions/${id}`)
+      return { success: true }
+    } catch (error) {
+      return { error: "Verwijderen mislukt." }
+    }
+  }
+  return null
+}
+
 export default function Page() {
+  const fetcher = useFetcher()
   const sessions = (useLoaderData() as Session[]) || []
 
+  // Search function
   const [searchQuery, setSearchQuery] = useState("")
   const filteredSessions = useMemo(() => {
     const query = searchQuery.toLowerCase().trim()
-    if (!searchQuery) return sessions
+    if (!query) return sessions
 
     return sessions.filter((session) => {
       return (
@@ -155,6 +187,19 @@ export default function Page() {
       )
     })
   }, [sessions, searchQuery])
+
+  // Delete dialog
+  const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null)
+
+  const confirmDelete = () => {
+    if (sessionToDelete) {
+      fetcher.submit(
+        { id: sessionToDelete.id, intent: "delete" },
+        { method: "post" }
+      )
+      setSessionToDelete(null)
+    }
+  }
 
   return (
     <>
@@ -181,8 +226,37 @@ export default function Page() {
           </Button>
         </div>
 
-        <DataTable columns={columns} data={filteredSessions} />
+        <DataTable
+          columns={getColumns(setSessionToDelete)}
+          data={filteredSessions}
+        />
       </PageContainer>
+
+      <AlertDialog
+        open={!!sessionToDelete}
+        onOpenChange={() => setSessionToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Weet je het zeker?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Je staat op het punt om de sessie{" "}
+              <strong>{sessionToDelete?.title}</strong> te verwijderen. Dit kan
+              niet ongedaan worden gemaakt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              variant={"destructive"}
+              disabled={fetcher.state !== "idle"}
+            >
+              {fetcher.state !== "idle" ? "Bezig..." : "Verwijderen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
