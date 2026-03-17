@@ -6,6 +6,8 @@ import {
   Form,
   type ActionFunctionArgs,
   redirect,
+  isRouteErrorResponse,
+  useRouteError,
 } from "react-router"
 import type { Route } from "./+types/sessions.details"
 import { PageHeader } from "~/layouts/components/page-header"
@@ -50,31 +52,10 @@ import {
 import { XIcon } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
+import FetchError from "~/components/fetch-error"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
-    //TODO: remove this line and uncomment the code below when API is ready
-    return {
-      session: {
-        id: 2,
-        title: "Clean Architecture in .NET",
-        description:
-          "Hoe je een schaalbare en onderhoudbare .NET-applicatie opbouwt met Clean Architecture. Lorem2026-04-10 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-        speaker: "Lisa Bakker",
-        room: { name: "Zaal B" },
-        date: "2026-04-10",
-        startedAt: "10:30",
-        endedAt: "11:30",
-        capacity: 40,
-        labels: [".NET", "Backend", "Architectuur"],
-      },
-      rooms: [
-        { name: "Zaal A", capacity: 250 },
-        { name: "Zaal B" },
-        { name: "Zaal C", capacity: 30 },
-      ],
-    }
-
     const session = await apiClient.get("/sessions/" + (params.id as string))
     const rooms = await apiClient.get("/rooms")
 
@@ -365,4 +346,9 @@ export default function Page() {
       </AlertDialog>
     </>
   )
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError()
+  return <FetchError isRouteError={isRouteErrorResponse(error)} />
 }
