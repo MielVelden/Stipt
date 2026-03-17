@@ -6,7 +6,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
-import { LayoutDashboardIcon } from "lucide-react"
+import { LayoutDashboardIcon, SplitIcon } from "lucide-react"
 import { Link } from "react-router"
 
 const items = [
@@ -14,6 +14,11 @@ const items = [
     title: "Dashboard",
     url: "/app",
     icon: <LayoutDashboardIcon />,
+  },
+  {
+    title: "Sessies",
+    url: "/app/sessies",
+    icon: <SplitIcon />,
   },
 ]
 
