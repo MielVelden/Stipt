@@ -170,6 +170,7 @@ export default function Page() {
                 type="text"
                 placeholder="Titel van de sessie"
                 defaultValue={session.title}
+                required
               />
             </Field>
             <Field>
@@ -180,6 +181,7 @@ export default function Page() {
                 placeholder="Beschrijving van de sessie"
                 rows={4}
                 defaultValue={session.description}
+                required
               />
             </Field>
             <Field>
@@ -234,6 +236,7 @@ export default function Page() {
                   type="date"
                   defaultValue={session.date}
                   name="date"
+                  required
                 />
               </Field>
 
@@ -244,6 +247,7 @@ export default function Page() {
                   type="time"
                   defaultValue={session.startedAt}
                   name="startedAt"
+                  required
                 />
               </Field>
               <Field>
@@ -253,6 +257,7 @@ export default function Page() {
                   type="time"
                   defaultValue={session.endedAt}
                   name="endedAt"
+                  required
                 />
               </Field>
             </FieldGroup>
