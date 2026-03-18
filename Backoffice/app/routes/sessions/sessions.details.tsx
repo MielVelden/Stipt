@@ -57,12 +57,12 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <FieldGroup className="flex flex-row gap-12">
             <Field className="w-fit">
               <FieldLabel>Ruimte</FieldLabel>
-              <FieldContent>{session.room?.name ?? "-"}</FieldContent>
+              <FieldContent>{session.room.name}</FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Capaciteit</FieldLabel>
               <FieldContent>
-                {session.capacity ?? session.room?.capacity ?? "-"}
+                {session.capacity ?? session.room.capacity ?? "-"}
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -87,7 +87,8 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <Field>
             <FieldLabel>Labels</FieldLabel>
             <FieldContent className="flex flex-row flex-wrap gap-2">
-              {session.labels?.map((label, index) => (
+              {session.labels.length === 0 && <span>-</span>}
+              {session.labels.map((label, index) => (
                 <Badge key={index} variant={"secondary"}>
                   {label}
                 </Badge>

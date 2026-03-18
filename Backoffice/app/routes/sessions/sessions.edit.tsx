@@ -2,7 +2,6 @@ import { useState } from "react"
 import {
   useFetcher,
   Link,
-  useLoaderData,
   Form,
   type ActionFunctionArgs,
   redirect,
@@ -94,7 +93,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     title: formData.get("title"),
     description: formData.get("description"),
     speaker: formData.get("speaker"),
-    room: { name: formData.get("room") },
+    room: { name: formData.get("room") }, // TODO implement correct room handling when rooms are implemented
     capacity: capacity,
     date: formData.get("date"),
     startedAt: formData.get("startedAt"),
@@ -117,9 +116,6 @@ export default function Page({
 }: Route.ComponentProps) {
   const fetcher = useFetcher()
   const isSubmitting = fetcher.state !== "idle"
-  const actionData = fetcher.data as
-    | { error?: string; success?: boolean; session?: Session }
-    | undefined
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
@@ -195,14 +191,14 @@ export default function Page({
             <FieldGroup className="flex flex-row">
               <Field>
                 <FieldLabel>Ruimte</FieldLabel>
-                <Select defaultValue={session.room?.name} name="room">
+                <Select defaultValue={String(session.room.id)} name="room">
                   <SelectTrigger>
                     <SelectValue placeholder="Selecteer een ruimte" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
                       {rooms.map((room) => (
-                        <SelectItem value={room.name} key={room.name}>
+                        <SelectItem value={String(room.id)} key={room.id}>
                           {room.name}
                         </SelectItem>
                       ))}

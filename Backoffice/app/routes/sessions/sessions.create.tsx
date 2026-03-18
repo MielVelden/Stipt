@@ -46,7 +46,7 @@ import FetchError from "~/components/fetch-error"
 
 export async function clientLoader() {
   try {
-    return null
+    return null // TODO remove when rooms are implemented
     const response = await apiClient.get<Room[]>("/rooms")
     return response.data
   } catch (error) {
@@ -67,7 +67,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     title: formData.get("title"),
     description: formData.get("description"),
     speaker: formData.get("speaker"),
-    room: { name: formData.get("room") },
+    room: { name: formData.get("room") }, // TODO implement correct room handling when rooms are implemented
     capacity: capacity,
     date: formData.get("date"),
     startedAt: formData.get("startedAt"),

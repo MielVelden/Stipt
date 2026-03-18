@@ -55,7 +55,7 @@ function formatDateTime(date: string, startedAt: string, endedAt: string) {
 
 export async function clientLoader() {
   try {
-    return [] as Session[] //TODO: remove this line and uncomment the code below when API is ready
+    // return [] as Session[] //TODO: remove this line and uncomment the code below when API is ready
 
     const response = await apiClient.get<Session[]>("/sessions")
     const rawSessions = response.data
@@ -67,7 +67,7 @@ export async function clientLoader() {
         session.startedAt,
         session.endedAt
       ),
-      "capacity-display": session.capacity ?? session.room?.capacity ?? "-",
+      "capacity-display": session.capacity ?? session.room.capacity ?? "-",
     }))
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
