@@ -11,27 +11,22 @@ import {
 } from "~/components/ui/field"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import {
-  isRouteErrorResponse,
-  Link,
-  useLoaderData,
-  useRouteError,
-} from "react-router"
+import { isRouteErrorResponse, Link, useRouteError } from "react-router"
 import apiClient from "~/lib/api-client"
 import FetchError from "~/components/fetch-error"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
-    const session = await apiClient.get("/sessions/" + (params.id as string))
-    return session
+    const response = await apiClient.get<Session>(
+      "/sessions/" + (params.id as string)
+    )
+    return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
 }
 
-export default function Page({ params }: Route.LoaderArgs) {
-  const session = useLoaderData() as Session
-
+export default function Page({ loaderData: session }: Route.ComponentProps) {
   return (
     <>
       <PageHeader title="Sessie details" />

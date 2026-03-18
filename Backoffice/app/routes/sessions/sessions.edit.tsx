@@ -9,10 +9,10 @@ import {
   isRouteErrorResponse,
   useRouteError,
 } from "react-router"
-import type { Route } from "./+types/sessions.details"
+import type { Route } from "./+types/sessions.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
-import type { Session } from "./types"
+import type { Room, Session } from "./types"
 import {
   Field,
   FieldContent,
@@ -56,10 +56,12 @@ import FetchError from "~/components/fetch-error"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
-    const session = await apiClient.get("/sessions/" + (params.id as string))
-    const rooms = await apiClient.get("/rooms")
+    const sessionResponse = await apiClient.get<Session>(
+      "/sessions/" + (params.id as string)
+    )
+    const roomsResponse = await apiClient.get<Room[]>("/rooms")
 
-    return { session, rooms }
+    return { session: sessionResponse.data, rooms: roomsResponse.data }
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
@@ -110,14 +112,9 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 }
 
-export default function Page() {
-  const data = (useLoaderData() as { session: Session; rooms: any[] }) || {
-    session: null,
-    rooms: [],
-  }
-  const session: Session = data.session
-  const rooms = data.rooms
-
+export default function Page({
+  loaderData: { session, rooms },
+}: Route.ComponentProps) {
   const fetcher = useFetcher()
   const isSubmitting = fetcher.state !== "idle"
   const actionData = fetcher.data as

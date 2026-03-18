@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react"
 import {
   Link,
-  useLoaderData,
   isRouteErrorResponse,
   useRouteError,
   useFetcher,
@@ -41,86 +40,7 @@ import {
 
 import apiClient from "~/lib/api-client"
 import type { Session } from "~/routes/sessions/types"
-
-const getColumns = (setDelete: (s: Session) => void): ColumnDef<Session>[] => [
-  {
-    accessorKey: "title",
-    header: "Titel",
-    cell: ({ row }) => {
-      return (
-        <Link
-          to={`/app/sessies/${row.original.id}`}
-          className="hover:underline"
-        >
-          {row.getValue("title")}
-        </Link>
-      )
-    },
-  },
-  {
-    accessorKey: "speaker",
-    header: "Spreker",
-  },
-  {
-    accessorKey: "room.name",
-    header: "Ruimte",
-  },
-  {
-    accessorKey: "date-time",
-    header: "Datum & tijd",
-  },
-  {
-    accessorKey: "capacity-display",
-    header: "Capaciteit",
-  },
-  {
-    accessorKey: "labels",
-    header: "Labels",
-    cell: ({ getValue }) => {
-      const labels = getValue() as string[]
-      return (
-        <div className="flex flex-wrap gap-1">
-          {(labels && labels.length > 3 ? labels.slice(0, 2) : labels).map(
-            (label, index) => (
-              <Badge key={index} variant={"secondary"}>
-                {label}
-              </Badge>
-            )
-          )}
-          {labels && labels.length > 3 && (
-            <Badge variant={"secondary"}>+{labels.length - 2}</Badge>
-          )}
-        </div>
-      )
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      return ActionsDropdown({
-        actions: [
-          {
-            label: "Bekijk",
-            icon: <EyeIcon />,
-            linkTo: `/app/sessies/${row.original.id}`,
-          },
-          {
-            label: "Bewerk",
-            icon: <EditIcon />,
-            linkTo: `/app/sessies/${row.original.id}/bewerken`,
-          },
-          {
-            label: "Verwijder",
-            icon: <TrashIcon />,
-            separatorBefore: true,
-            variant: "destructive",
-            onClick: () => setDelete(row.original),
-          },
-        ],
-      })
-    },
-  },
-]
+import type { Route } from "./+types/sessions.overview"
 
 function formatDateTime(date: string, startedAt: string, endedAt: string) {
   const dateObj = new Date(`${date}T${startedAt}`)
@@ -137,8 +57,8 @@ export async function clientLoader() {
   try {
     return [] as Session[] //TODO: remove this line and uncomment the code below when API is ready
 
-    const response = await apiClient.get("/sessions")
-    const rawSessions = response.data as Session[]
+    const response = await apiClient.get<Session[]>("/sessions")
+    const rawSessions = response.data
 
     return rawSessions.map((session) => ({
       ...session,
@@ -170,9 +90,89 @@ export async function clientAction({ request }: { request: Request }) {
   return null
 }
 
-export default function Page() {
+export default function Page({ loaderData: sessions }: Route.ComponentProps) {
+  const columns: ColumnDef<Session>[] = [
+    {
+      accessorKey: "title",
+      header: "Titel",
+      cell: ({ row }) => {
+        return (
+          <Link
+            to={`/app/sessies/${row.original.id}`}
+            className="hover:underline"
+          >
+            {row.getValue("title")}
+          </Link>
+        )
+      },
+    },
+    {
+      accessorKey: "speaker",
+      header: "Spreker",
+    },
+    {
+      accessorKey: "room.name",
+      header: "Ruimte",
+    },
+    {
+      accessorKey: "date-time",
+      header: "Datum & tijd",
+    },
+    {
+      accessorKey: "capacity-display",
+      header: "Capaciteit",
+    },
+    {
+      accessorKey: "labels",
+      header: "Labels",
+      cell: ({ row }) => {
+        const labels = row.original.labels
+        if (!labels || labels.length === 0) return null
+        return (
+          <div className="flex flex-wrap gap-1">
+            {(labels && labels.length > 3 ? labels.slice(0, 2) : labels).map(
+              (label, index) => (
+                <Badge key={index} variant={"secondary"}>
+                  {label}
+                </Badge>
+              )
+            )}
+            {labels && labels.length > 3 && (
+              <Badge variant={"secondary"}>+{labels.length - 2}</Badge>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        return ActionsDropdown({
+          actions: [
+            {
+              label: "Bekijk",
+              icon: <EyeIcon />,
+              linkTo: `/app/sessies/${row.original.id}`,
+            },
+            {
+              label: "Bewerk",
+              icon: <EditIcon />,
+              linkTo: `/app/sessies/${row.original.id}/bewerken`,
+            },
+            {
+              label: "Verwijder",
+              icon: <TrashIcon />,
+              separatorBefore: true,
+              variant: "destructive",
+              onClick: () => setSessionToDelete(row.original),
+            },
+          ],
+        })
+      },
+    },
+  ]
+
   const fetcher = useFetcher()
-  const sessions = (useLoaderData() as Session[]) || []
 
   // Search function
   const [searchQuery, setSearchQuery] = useState("")
@@ -226,10 +226,7 @@ export default function Page() {
           </Button>
         </div>
 
-        <DataTable
-          columns={getColumns(setSessionToDelete)}
-          data={filteredSessions}
-        />
+        <DataTable columns={columns} data={filteredSessions} />
       </PageContainer>
 
       <AlertDialog

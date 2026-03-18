@@ -6,6 +6,8 @@ import {
   Form,
   type ActionFunctionArgs,
   redirect,
+  useRouteError,
+  isRouteErrorResponse,
 } from "react-router"
 import type { Route } from "./+types/sessions.create" // Pas aan naar je eigen types pad
 import { PageHeader } from "~/layouts/components/page-header"
@@ -39,19 +41,16 @@ import { Button } from "~/components/ui/button"
 import { XIcon } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
+import type { Room } from "./types"
+import FetchError from "~/components/fetch-error"
 
 export async function clientLoader() {
   try {
-    const rooms = [
-      { name: "Zaal A", capacity: 250 },
-      { name: "Zaal B" },
-      { name: "Zaal C", capacity: 30 },
-    ]
-
-    // const rooms = await apiClient.get("/rooms")
-    return { rooms }
+    return null
+    const response = await apiClient.get<Room[]>("/rooms")
+    return response.data
   } catch (error) {
-    return { rooms: [], error: "Kon ruimtes niet laden" }
+    throw new Response("Kon data niet laden", { status: 500 })
   }
 }
 
@@ -86,8 +85,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 }
 
-export default function Page() {
-  const { rooms } = useLoaderData() as { rooms: any[] }
+export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   const fetcher = useFetcher()
   const isSubmitting = fetcher.state !== "idle"
 
@@ -160,11 +158,12 @@ export default function Page() {
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
-                      {rooms.map((room) => (
-                        <SelectItem value={room.name} key={room.name}>
-                          {room.name}
-                        </SelectItem>
-                      ))}
+                      {rooms &&
+                        rooms.map((room) => (
+                          <SelectItem value={room.name} key={room.name}>
+                            {room.name}
+                          </SelectItem>
+                        ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -250,4 +249,9 @@ export default function Page() {
       </PageContainer>
     </>
   )
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError()
+  return <FetchError isRouteError={isRouteErrorResponse(error)} />
 }

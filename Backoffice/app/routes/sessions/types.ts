@@ -3,13 +3,15 @@ export type Session = {
   title: string
   description: string
   speaker?: string
-  room?: {
-    name: string
-    capacity?: number
-  }
+  room?: Room
   date: string
   startedAt: string
   endedAt: string
   capacity?: number
   labels?: string[]
+}
+
+export type Room = {
+  name: string
+  capacity?: number
 }
