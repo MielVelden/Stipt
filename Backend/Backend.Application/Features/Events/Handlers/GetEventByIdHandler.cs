@@ -26,6 +26,7 @@ public sealed class GetEventByIdHandler(IEventRepository eventRepository)
                 eventItem.Style.PrimaryForegroundColor,
                 eventItem.Style.LogoImageUrl
             ),
+            eventItem.IsArchived,
             eventItem.CreatedAtUtc,
             eventItem.UpdatedAtUtc
         );

@@ -1,5 +1,3 @@
-using Backend.Application.Features.Events.Requests;
-
 namespace Backend.Application.Features.Events.Responses;
 
 public sealed record CreateEventResponse(
@@ -9,5 +7,6 @@ public sealed record CreateEventResponse(
     DateTimeOffset StartDate,
     DateTimeOffset EndDate,
     EventStyleDto Style,
+    bool IsArchived,
     DateTime CreatedAtUtc
 );

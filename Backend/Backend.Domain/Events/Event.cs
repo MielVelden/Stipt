@@ -8,6 +8,7 @@ public sealed class Event
     public DateTimeOffset StartDate { get; set; }
     public DateTimeOffset EndDate { get; set; }
     public required EventStyle Style { get; set; }
+    public bool IsArchived { get; set; }
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }

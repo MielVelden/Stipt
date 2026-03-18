@@ -23,6 +23,7 @@ public sealed class GetAllEventsHandler(IEventRepository eventRepository)
                 e.Style.PrimaryForegroundColor,
                 e.Style.LogoImageUrl
             ),
+            e.IsArchived,
             e.CreatedAtUtc,
             e.UpdatedAtUtc
         )).ToList();

@@ -1,5 +1,3 @@
-using Backend.Application.Features.Events.Requests;
-
 namespace Backend.Application.Features.Events.Responses;
 
 public sealed record UpdateEventResponse(
@@ -9,6 +7,7 @@ public sealed record UpdateEventResponse(
     DateTimeOffset StartDate,
     DateTimeOffset EndDate,
     EventStyleDto Style,
+    bool IsArchived,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc
 );

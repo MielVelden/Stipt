@@ -44,6 +44,10 @@ internal sealed class EventConfiguration : IEntityTypeConfiguration<Event>
                 .HasColumnName("style_logo_image_url");
         });
 
+        builder.Property(x => x.IsArchived)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
 

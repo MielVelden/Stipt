@@ -1,5 +1,3 @@
-using Backend.Application.Features.Events.Requests;
-
 namespace Backend.Application.Features.Events.Responses;
 
 public sealed record GetEventByIdResponse(
@@ -9,6 +7,7 @@ public sealed record GetEventByIdResponse(
     DateTimeOffset StartDate,
     DateTimeOffset EndDate,
     EventStyleDto Style,
+    bool IsArchived,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc
 );

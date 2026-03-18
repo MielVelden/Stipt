@@ -24,6 +24,7 @@ public sealed class CreateEventHandler(IEventRepository eventRepository)
                 PrimaryForegroundColor = request.Style.PrimaryForegroundColor.Trim(),
                 LogoImageUrl = request.Style.LogoImageUrl?.Trim()
             },
+            IsArchived = false,
             CreatedAtUtc = DateTime.UtcNow
         };
 
@@ -40,6 +41,7 @@ public sealed class CreateEventHandler(IEventRepository eventRepository)
                 eventItem.Style.PrimaryForegroundColor,
                 eventItem.Style.LogoImageUrl
             ),
+            eventItem.IsArchived,
             eventItem.CreatedAtUtc
         );
     }

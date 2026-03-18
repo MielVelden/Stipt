@@ -8,10 +8,10 @@ public sealed record CreateEventRequest(
     string Location,
     DateTimeOffset StartDate,
     DateTimeOffset EndDate,
-    EventStyleDto Style
+    CreateEventStyleRequest Style
 ) : IRequest<CreateEventResponse>;
 
-public sealed record EventStyleDto(
+public sealed record CreateEventStyleRequest(
     string PrimaryBackgroundColor,
     string PrimaryForegroundColor,
     string? LogoImageUrl
