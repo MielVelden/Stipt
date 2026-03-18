@@ -9,13 +9,14 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "react-router"
-import type { Route } from "./+types/sessions.create" // Pas aan naar je eigen types pad
+import type { Route } from "./+types/sessions.create"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import {
   Field,
   FieldContent,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSet,
@@ -44,6 +45,10 @@ import { toast } from "sonner"
 import type { Room } from "./types"
 import FetchError from "~/components/fetch-error"
 
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useFieldArray, useForm } from "react-hook-form"
+import * as z from "zod"
+
 export async function clientLoader() {
   try {
     return null // TODO remove when rooms are implemented
@@ -55,6 +60,8 @@ export async function clientLoader() {
 }
 
 export async function clientAction({ request }: ActionFunctionArgs) {
+  console.log(request)
+  //TODO: implement action to create session, give correct data instead of form data
   const formData = await request.formData()
 
   const labelsRaw = formData.get("labels") as string
@@ -67,7 +74,7 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     title: formData.get("title"),
     description: formData.get("description"),
     speaker: formData.get("speaker"),
-    room: { name: formData.get("room") }, // TODO implement correct room handling when rooms are implemented
+    room: formData.get("room"), // TODO implement correct room handling when rooms are implemented
     capacity: capacity,
     date: formData.get("date"),
     startedAt: formData.get("startedAt"),
@@ -85,9 +92,60 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 }
 
+const formSchema = z.object({
+  title: z.string().nonempty({ message: "Dit veld is verplicht" }),
+  description: z.string().nonempty({ message: "Dit veld is verplicht" }),
+  speaker: z.string().nonempty({ message: "Dit veld is verplicht" }),
+  room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" }))
+  capacity: z
+    .string()
+    .optional()
+    .refine((val) => !val || Number(val) > 0, {
+      message: "Capaciteit moet een positief getal zijn",
+    }),
+  date: z.string().nonempty({ message: "Dit veld is verplicht" }),
+  startedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
+  endedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
+  labels: z
+    .array(z.string())
+    .default([])
+    .optional()
+    .refine((labels) => new Set(labels).size === labels?.length, {
+      message: "Labels moeten uniek zijn",
+    }),
+})
+
 export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   const fetcher = useFetcher()
-  const isSubmitting = fetcher.state !== "idle"
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      speaker: "",
+      room: "",
+      capacity: undefined,
+      date: "",
+      startedAt: "",
+      endedAt: "",
+      labels: [],
+    },
+  })
+
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    data.labels = labels
+    fetcher.submit(data, { method: "post" })
+
+    // TODO remove when action is implemented
+    toast("You submitted the following values:", {
+      description: (
+        <pre className="bg-code mt-2 w-[320px] overflow-x-auto rounded-md p-4 text-red-600">
+          <code>{JSON.stringify(data, null, 2)}</code>
+        </pre>
+      ),
+    })
+  }
 
   // Label State
   const [labels, setLabels] = useState<string[]>([])
@@ -103,98 +161,189 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
     setLabels(labels.filter((l) => l !== labelToRemove))
   }
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    formData.set("labels", JSON.stringify(labels))
-
-    fetcher.submit(formData, { method: "post" })
-  }
-
   return (
     <>
       <PageHeader title="Sessie aanmaken" />
       <PageContainer>
-        <Form onSubmit={handleSubmit}>
+        <form onSubmit={form.handleSubmit(onSubmit)} id="form-session-create">
           <FieldSet className="max-w-2xl gap-6">
-            <Field>
-              <FieldLabel htmlFor="title">Titel</FieldLabel>
-              <Input
-                id="title"
-                name="title"
-                type="text"
-                placeholder="Titel van de sessie"
-                required
-              />
-            </Field>
+            {/* TODO: add required attribute to inputs */}
+            <Controller
+              name="title"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="title">Titel</FieldLabel>
+                  <Input
+                    {...field}
+                    id="title"
+                    placeholder="Titel van de sessie"
+                    type="text"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
-            <Field>
-              <FieldLabel htmlFor="description">Beschrijving</FieldLabel>
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="Beschrijving van de sessie"
-                rows={4}
-                required
-              />
-            </Field>
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="description">Beschrijving</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="description"
+                    placeholder="Beschrijving van de sessie"
+                    rows={4}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
-            <Field>
-              <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
-              <Input
-                id="speaker"
-                name="speaker"
-                type="text"
-                placeholder="Naam van de spreker"
-              />
-            </Field>
+            <Controller
+              name="speaker"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
+                  <Input
+                    {...field}
+                    id="speaker"
+                    placeholder="Naam van de spreker"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
             <FieldGroup className="flex flex-row">
-              <Field>
-                <FieldLabel>Ruimte</FieldLabel>
-                <Select name="room">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecteer een ruimte" />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectGroup>
-                      {rooms &&
-                        rooms.map((room) => (
-                          <SelectItem value={room.name} key={room.name}>
-                            {room.name}
-                          </SelectItem>
-                        ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="capacity">Capaciteit</FieldLabel>
-                <Input
-                  id="capacity"
-                  name="capacity"
-                  type="number"
-                  placeholder="Capaciteit van de sessie"
-                />
-                <FieldDescription className="text-xs">
-                  Laat leeg om de capaciteit van de ruimte te gebruiken
-                </FieldDescription>
-              </Field>
+              <Controller
+                name="room"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="room">Ruimte</FieldLabel>
+                    <Select
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger
+                        id="room"
+                        aria-invalid={fieldState.invalid}
+                      >
+                        <SelectValue placeholder="Selecteer een ruimte" />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectGroup>
+                          {rooms &&
+                            rooms.map((room) => (
+                              <SelectItem value={room.name} key={room.name}>
+                                {room.name}
+                              </SelectItem>
+                            ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="capacity"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="capacity">Capaciteit</FieldLabel>
+                    <Input
+                      {...field}
+                      id="capacity"
+                      type="number"
+                      placeholder="Capaciteit van de sessie"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    <FieldDescription className="text-xs">
+                      Laat leeg om de capaciteit van de ruimte te gebruiken
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
 
             <FieldGroup className="flex flex-row">
-              <Field>
-                <FieldLabel htmlFor="start-date">Startdatum</FieldLabel>
-                <Input id="start-date" name="date" type="date" required />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="start-time">Starttijd</FieldLabel>
-                <Input id="start-time" name="startedAt" type="time" required />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="end-time">Eindtijd</FieldLabel>
-                <Input id="end-time" name="endedAt" type="time" required />
-              </Field>
+              <Controller
+                name="date"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="date">Datum</FieldLabel>
+                    <Input
+                      {...field}
+                      id="date"
+                      type="date"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="startedAt"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="startedAt">Starttijd</FieldLabel>
+                    <Input
+                      {...field}
+                      id="startedAt"
+                      type="time"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="endedAt"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="endedAt">Eindtijd</FieldLabel>
+                    <Input
+                      {...field}
+                      id="endedAt"
+                      type="time"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
 
             <Field>
@@ -237,15 +386,19 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
             </Field>
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" type="button" asChild>
-                <Link to={"/app/sessies"}>Annuleren</Link>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => form.reset()}
+              >
+                Annuleren
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Bezig..." : "Opslaan"}
+              <Button type="submit" form="form-session-create">
+                Opslaan
               </Button>
             </div>
           </FieldSet>
-        </Form>
+        </form>
       </PageContainer>
     </>
   )
