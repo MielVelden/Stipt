@@ -1,8 +1,6 @@
 import { useState } from "react"
 import {
   useFetcher,
-  Link,
-  Form,
   type ActionFunctionArgs,
   redirect,
   isRouteErrorResponse,
@@ -16,6 +14,7 @@ import {
   Field,
   FieldContent,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSet,
@@ -53,8 +52,31 @@ import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import FetchError from "~/components/fetch-error"
 
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useForm } from "react-hook-form"
+import * as z from "zod"
+
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
+    return {
+      session: {
+        id: 0,
+        title: "title",
+        description: "description",
+        speaker: "john doe",
+        room: { id: 1, name: "zaal 1" },
+        capacity: 25,
+        date: "2024-01-01",
+        startedAt: "12:00",
+        endedAt: "16:00",
+        labels: ["james", "john"],
+      } as Session,
+      rooms: [
+        { id: 1, name: "Zaal 1", capacity: 50 },
+        { id: 2, name: "Zaal 2", capacity: 100 },
+      ] as Room[],
+    } // TODO remove mock data
+
     const sessionResponse = await apiClient.get<Session>(
       "/sessions/" + (params.id as string)
     )
@@ -67,13 +89,11 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
 }
 
 export async function clientAction({ request }: ActionFunctionArgs) {
-  const formData = await request.formData()
-  const id = formData.get("id")
+  const session = await request.json()
 
-  // handle delete action
   if (request.method === "DELETE") {
     try {
-      await apiClient.delete(`/sessions/${id}`)
+      await apiClient.delete(`/sessions/${session.id}`)
       toast.success("De sessie is succesvol verwijderd.")
       return redirect("/app/sessies")
     } catch (error) {
@@ -82,27 +102,8 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     }
   }
 
-  // handle update action
-  let capacity = formData.get("capacity")
-    ? Number(formData.get("capacity"))
-    : null
-  const labelsRaw = formData.get("labels") as string
-  const labels = JSON.parse(labelsRaw || "[]")
-
-  const updatedSession = {
-    title: formData.get("title"),
-    description: formData.get("description"),
-    speaker: formData.get("speaker"),
-    room: { name: formData.get("room") }, // TODO implement correct room handling when rooms are implemented
-    capacity: capacity,
-    date: formData.get("date"),
-    startedAt: formData.get("startedAt"),
-    endedAt: formData.get("endedAt"),
-    labels,
-  }
-
   try {
-    const result = await apiClient.put(`/sessions/${id}`, updatedSession)
+    const result = await apiClient.put(`/sessions/${session.id}`, session)
     toast.success("De sessie is succesvol bijgewerkt.")
     return { success: true, session: result.data }
   } catch (error) {
@@ -111,11 +112,62 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 }
 
+const formSchema = z
+  .object({
+    title: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    description: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    speaker: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" })). Also in the submit handler
+    capacity: z
+      .string()
+      .optional()
+      .refine((val) => !val || Number(val) > 0, {
+        message: "Capaciteit moet een positief getal zijn",
+      }),
+    date: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    startedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    endedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    labels: z
+      .array(z.string())
+      .default([])
+      .optional()
+      .refine((labels) => new Set(labels).size === labels?.length, {
+        message: "Labels moeten uniek zijn",
+      }),
+  })
+  .refine((data) => data.endedAt > data.startedAt, {
+    message: "Eindtijd moet na starttijd zijn",
+    path: ["endedAt"],
+  })
+
 export default function Page({
   loaderData: { session, rooms },
 }: Route.ComponentProps) {
   const fetcher = useFetcher()
-  const isSubmitting = fetcher.state !== "idle"
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: session.title,
+      description: session.description,
+      speaker: session.speaker,
+      room: session.room.name,
+      capacity: session.capacity?.toString(),
+      date: session.date,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      labels: session.labels || [],
+    },
+  })
+
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    const updatedSession = {
+      ...data,
+      labels: labels,
+      capacity: session.capacity ? Number(session.capacity) : null,
+    }
+    fetcher.submit(updatedSession, { method: "put" })
+  }
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
@@ -132,17 +184,6 @@ export default function Page({
     setLabels(labels.filter((label) => label !== labelToRemove))
   }
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    const formData = new FormData(e.currentTarget)
-    formData.set("labels", JSON.stringify(labels))
-
-    fetcher.submit(formData, {
-      method: "post",
-    })
-  }
-
   const confirmDelete = () => {
     fetcher.submit({ id: session.id.toString() }, { method: "delete" })
   }
@@ -151,108 +192,193 @@ export default function Page({
     <>
       <PageHeader title="Sessie bewerken" />
       <PageContainer>
-        <Form onSubmit={handleSubmit} encType="multipart/form-data">
+        <form onSubmit={form.handleSubmit(onSubmit)} id="form-session-edit">
           <input type="hidden" name="id" value={session.id} />
 
           <FieldSet className="max-w-2xl gap-6">
-            <Field>
-              <FieldLabel htmlFor="title">Titel</FieldLabel>
-              <Input
-                id="title"
-                name="title"
-                type="text"
-                placeholder="Titel van de sessie"
-                defaultValue={session.title}
-                required
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="description">Beschrijving</FieldLabel>
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="Beschrijving van de sessie"
-                rows={4}
-                defaultValue={session.description}
-                required
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
-              <Input
-                id="speaker"
-                name="speaker"
-                type="text"
-                placeholder="Naam van de spreker"
-                defaultValue={session.speaker}
-              />
-            </Field>
+            <Controller
+              name="title"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="title">Titel</FieldLabel>
+                  <Input
+                    {...field}
+                    id="title"
+                    placeholder="Titel van de sessie"
+                    type="text"
+                    aria-invalid={fieldState.invalid}
+                    required
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="description">Beschrijving</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="description"
+                    placeholder="Beschrijving van de sessie"
+                    rows={4}
+                    aria-invalid={fieldState.invalid}
+                    required
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="speaker"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
+                  <Input
+                    {...field}
+                    id="speaker"
+                    placeholder="Naam van de spreker"
+                    aria-invalid={fieldState.invalid}
+                    required
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
             <FieldGroup className="flex flex-row">
-              <Field>
-                <FieldLabel>Ruimte</FieldLabel>
-                <Select defaultValue={String(session.room.id)} name="room">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecteer een ruimte" />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectGroup>
-                      {rooms.map((room) => (
-                        <SelectItem value={String(room.id)} key={room.id}>
-                          {room.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="capacity">Capaciteit</FieldLabel>
-                <Input
-                  id="capacity"
-                  name="capacity"
-                  type="number"
-                  placeholder="Capaciteit van de sessie"
-                  defaultValue={session.capacity}
-                />
-                <FieldDescription className="text-xs">
-                  Laat leeg om de capaciteit van de ruimte te gebruiken
-                </FieldDescription>
-              </Field>
+              <Controller
+                name="room"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="room">Ruimte</FieldLabel>
+                    <Select
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      required
+                    >
+                      <SelectTrigger
+                        id="room"
+                        aria-invalid={fieldState.invalid}
+                      >
+                        <SelectValue placeholder="Selecteer een ruimte" />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectGroup>
+                          {rooms &&
+                            rooms.map((room) => (
+                              <SelectItem value={room.name} key={room.name}>
+                                {room.name}
+                              </SelectItem>
+                            ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="capacity"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="capacity">Capaciteit</FieldLabel>
+                    <Input
+                      {...field}
+                      id="capacity"
+                      type="number"
+                      placeholder="Capaciteit van de sessie"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    <FieldDescription className="text-xs">
+                      Laat leeg om de capaciteit van de ruimte te gebruiken
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
 
             <FieldGroup className="flex flex-row">
-              <Field>
-                <FieldLabel htmlFor="start-date">Startdatum</FieldLabel>
-                <Input
-                  id="start-date"
-                  type="date"
-                  defaultValue={session.date}
-                  name="date"
-                  required
-                />
-              </Field>
+              <Controller
+                name="date"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="date">Datum</FieldLabel>
+                    <Input
+                      {...field}
+                      id="date"
+                      type="date"
+                      aria-invalid={fieldState.invalid}
+                      required
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-              <Field>
-                <FieldLabel htmlFor="start-time">Starttijd</FieldLabel>
-                <Input
-                  id="start-time"
-                  type="time"
-                  defaultValue={session.startedAt}
-                  name="startedAt"
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="end-time">Eindtijd</FieldLabel>
-                <Input
-                  id="end-time"
-                  type="time"
-                  defaultValue={session.endedAt}
-                  name="endedAt"
-                  required
-                />
-              </Field>
+              <Controller
+                name="startedAt"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="startedAt">Starttijd</FieldLabel>
+                    <Input
+                      {...field}
+                      id="startedAt"
+                      type="time"
+                      aria-invalid={fieldState.invalid}
+                      required
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="endedAt"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="endedAt">Eindtijd</FieldLabel>
+                    <Input
+                      {...field}
+                      id="endedAt"
+                      type="time"
+                      aria-invalid={fieldState.invalid}
+                      required
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
 
             <Field>
@@ -269,23 +395,23 @@ export default function Page({
                 <InputGroupAddon align="inline-end">
                   <InputGroupButton
                     variant={"link"}
-                    onClick={addLabel}
                     type="button"
+                    onClick={addLabel}
                   >
                     Toevoegen
                   </InputGroupButton>
                 </InputGroupAddon>
               </InputGroup>
-
               <FieldContent className="flex flex-row flex-wrap gap-2">
-                {labels.map((label, index) => (
-                  <Badge key={index} variant={"secondary"}>
+                {labels.map((label) => (
+                  <Badge key={label} variant={"secondary"}>
                     {label}
                     <Button
                       onClick={() => removeLabel(label)}
                       variant="ghost"
                       size="icon"
-                      className="h-5 w-5 cursor-pointer"
+                      className="ml-1 h-5 w-5 cursor-pointer"
+                      type="button"
                     >
                       <XIcon />
                     </Button>
@@ -299,26 +425,24 @@ export default function Page({
                 variant={"destructive"}
                 onClick={() => setDeleteDialogOpen(true)}
                 type="button"
-                disabled={isSubmitting}
               >
-                {fetcher.formData?.get("_method") === "delete" ||
-                (fetcher.state !== "idle" && !fetcher.formData?.get("title"))
-                  ? "Bezig..."
-                  : "Verwijderen"}
+                Verwijderen
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" type="button" asChild>
-                  <Link to={"/app/sessies"}>Annuleren</Link>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => form.reset()}
+                >
+                  Annuleren
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && fetcher.formData?.get("title")
-                    ? "Opslaan..."
-                    : "Opslaan"}
+                <Button type="submit" form="form-session-edit">
+                  Opslaan
                 </Button>
               </div>
             </div>
           </FieldSet>
-        </Form>
+        </form>
       </PageContainer>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -332,11 +456,7 @@ export default function Page({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuleren</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={isSubmitting}
-            >
+            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
               Verwijderen
             </AlertDialogAction>
           </AlertDialogFooter>
