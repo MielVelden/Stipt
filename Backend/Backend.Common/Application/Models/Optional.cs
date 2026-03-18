@@ -8,9 +8,7 @@ public readonly struct Optional<T>(T? value)
     public void IfPresent(Action<T> action)
     {
         if (HasValue)
-        {
             action(Value!);
-        }
     }
 
     public static implicit operator Optional<T>(T? value) => new(value);

@@ -10,7 +10,8 @@ public sealed class UpdateEventHandler(IEventRepository eventRepository) : IRequ
     public async Task<UpdateEventResponse?> Handle(UpdateEventCommand command, CancellationToken cancellationToken)
     {
         var eventItem = await eventRepository.GetByIdAsync(command.Id, cancellationToken);
-        if (eventItem is null) return null;
+        if (eventItem is null)
+            return null;
 
         var request = command.Request;
 
@@ -19,17 +20,18 @@ public sealed class UpdateEventHandler(IEventRepository eventRepository) : IRequ
         request.IsArchived.IfPresent(value => eventItem.IsArchived = value);
         request.StartDate.IfPresent(value => eventItem.StartDate = value);
         request.EndDate.IfPresent(value => eventItem.EndDate = value);
-        
+
         request.Style.IfPresent(value =>
         {
             value.PrimaryBackgroundColor.IfPresent(bg => eventItem.Style.PrimaryBackgroundColor = bg.Trim());
             value.PrimaryForegroundColor.IfPresent(fg => eventItem.Style.PrimaryForegroundColor = fg.Trim());
             value.LogoImageUrl.IfPresent(img => eventItem.Style.LogoImageUrl = img?.Trim());
         });
-
         eventItem.UpdatedAtUtc = DateTime.UtcNow;
+        
         var updated = await eventRepository.UpdateAsync(eventItem, cancellationToken);
-        if (!updated) return null;
+        if (!updated)
+            return null;
 
         return new UpdateEventResponse(
             eventItem.Id,
