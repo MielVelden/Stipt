@@ -46,12 +46,12 @@ import type { Room } from "./types"
 import FetchError from "~/components/fetch-error"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useFieldArray, useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
 
 export async function clientLoader() {
   try {
-    return null // TODO remove when rooms are implemented
+    return [{ id: "room-1", name: "Zaal 1", capacity: 50 }] as Room[] // TODO remove when rooms are implemented
     const response = await apiClient.get<Room[]>("/rooms")
     return response.data
   } catch (error) {
@@ -60,27 +60,7 @@ export async function clientLoader() {
 }
 
 export async function clientAction({ request }: ActionFunctionArgs) {
-  console.log(request)
-  //TODO: implement action to create session, give correct data instead of form data
-  const formData = await request.formData()
-
-  const labelsRaw = formData.get("labels") as string
-  const labels = JSON.parse(labelsRaw || "[]")
-  let capacity = formData.get("capacity")
-    ? Number(formData.get("capacity"))
-    : null
-
-  const newSession = {
-    title: formData.get("title"),
-    description: formData.get("description"),
-    speaker: formData.get("speaker"),
-    room: formData.get("room"), // TODO implement correct room handling when rooms are implemented
-    capacity: capacity,
-    date: formData.get("date"),
-    startedAt: formData.get("startedAt"),
-    endedAt: formData.get("endedAt"),
-    labels,
-  }
+  const newSession = await request.json()
 
   try {
     await apiClient.post("/sessions", newSession)
@@ -96,7 +76,7 @@ const formSchema = z.object({
   title: z.string().nonempty({ message: "Dit veld is verplicht" }),
   description: z.string().nonempty({ message: "Dit veld is verplicht" }),
   speaker: z.string().nonempty({ message: "Dit veld is verplicht" }),
-  room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" }))
+  room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" })). Also in the submit handler
   capacity: z
     .string()
     .optional()
@@ -134,16 +114,14 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   })
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    data.labels = labels
-    fetcher.submit(data, { method: "post" })
-
-    // TODO remove when action is implemented
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="bg-code mt-2 w-[320px] overflow-x-auto rounded-md p-4 text-red-600">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
+    const formattedData = {
+      ...data,
+      labels: labels,
+      capacity: data.capacity ? Number(data.capacity) : null,
+    }
+    fetcher.submit(formattedData, {
+      method: "post",
+      encType: "application/json",
     })
   }
 
@@ -167,7 +145,6 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
       <PageContainer>
         <form onSubmit={form.handleSubmit(onSubmit)} id="form-session-create">
           <FieldSet className="max-w-2xl gap-6">
-            {/* TODO: add required attribute to inputs */}
             <Controller
               name="title"
               control={form.control}
@@ -180,6 +157,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                     placeholder="Titel van de sessie"
                     type="text"
                     aria-invalid={fieldState.invalid}
+                    required
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -200,6 +178,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                     placeholder="Beschrijving van de sessie"
                     rows={4}
                     aria-invalid={fieldState.invalid}
+                    required
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -219,6 +198,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                     id="speaker"
                     placeholder="Naam van de spreker"
                     aria-invalid={fieldState.invalid}
+                    required
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -238,6 +218,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       name={field.name}
                       value={field.value}
                       onValueChange={field.onChange}
+                      required
                     >
                       <SelectTrigger
                         id="room"
@@ -299,6 +280,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       id="date"
                       type="date"
                       aria-invalid={fieldState.invalid}
+                      required
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -318,6 +300,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       id="startedAt"
                       type="time"
                       aria-invalid={fieldState.invalid}
+                      required
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -337,6 +320,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       id="endedAt"
                       type="time"
                       aria-invalid={fieldState.invalid}
+                      required
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
