@@ -5,29 +5,31 @@ using MediatR;
 
 namespace Backend.Application.Features.Events.Handlers;
 
-public sealed class UpdateEventHandler(IEventRepository eventRepository) 
-    : IRequestHandler<UpdateEventRequest, UpdateEventResponse?>
+public sealed class UpdateEventHandler(IEventRepository eventRepository) : IRequestHandler<UpdateEventCommand, UpdateEventResponse?>
 {
-    public async Task<UpdateEventResponse?> Handle(UpdateEventRequest request, CancellationToken cancellationToken)
+    public async Task<UpdateEventResponse?> Handle(UpdateEventCommand command, CancellationToken cancellationToken)
     {
-        var eventItem = await eventRepository.GetByIdAsync(request.Id, cancellationToken);
+        var eventItem = await eventRepository.GetByIdAsync(command.Id, cancellationToken);
+        if (eventItem is null) return null;
 
-        if (eventItem is null)
-            return null;
+        var request = command.Request;
 
-        eventItem.Name = request.Name.Trim();
-        eventItem.Location = request.Location.Trim();
-        eventItem.StartDate = request.StartDate;
-        eventItem.EndDate = request.EndDate;
-        eventItem.Style.PrimaryBackgroundColor = request.Style.PrimaryBackgroundColor.Trim();
-        eventItem.Style.PrimaryForegroundColor = request.Style.PrimaryForegroundColor.Trim();
-        eventItem.Style.LogoImageUrl = request.Style.LogoImageUrl?.Trim();
+        request.Name.IfPresent(value => eventItem.Name = value.Trim());
+        request.Location.IfPresent(value => eventItem.Location = value.Trim());
+        request.IsArchived.IfPresent(value => eventItem.IsArchived = value);
+        request.StartDate.IfPresent(value => eventItem.StartDate = value);
+        request.EndDate.IfPresent(value => eventItem.EndDate = value);
+        
+        request.Style.IfPresent(value =>
+        {
+            value.PrimaryBackgroundColor.IfPresent(bg => eventItem.Style.PrimaryBackgroundColor = bg.Trim());
+            value.PrimaryForegroundColor.IfPresent(fg => eventItem.Style.PrimaryForegroundColor = fg.Trim());
+            value.LogoImageUrl.IfPresent(img => eventItem.Style.LogoImageUrl = img?.Trim());
+        });
+
         eventItem.UpdatedAtUtc = DateTime.UtcNow;
-
         var updated = await eventRepository.UpdateAsync(eventItem, cancellationToken);
-
-        if (!updated)
-            return null;
+        if (!updated) return null;
 
         return new UpdateEventResponse(
             eventItem.Id,
@@ -40,8 +42,9 @@ public sealed class UpdateEventHandler(IEventRepository eventRepository)
                 eventItem.Style.PrimaryForegroundColor,
                 eventItem.Style.LogoImageUrl
             ),
+            eventItem.IsArchived,
             eventItem.CreatedAtUtc,
-            eventItem.UpdatedAtUtc.Value
+            eventItem.UpdatedAtUtc!.Value
         );
     }
 }
