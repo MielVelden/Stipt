@@ -72,28 +72,33 @@ export async function clientAction({ request }: ActionFunctionArgs) {
   }
 }
 
-const formSchema = z.object({
-  title: z.string().nonempty({ message: "Dit veld is verplicht" }),
-  description: z.string().nonempty({ message: "Dit veld is verplicht" }),
-  speaker: z.string().nonempty({ message: "Dit veld is verplicht" }),
-  room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" })). Also in the submit handler
-  capacity: z
-    .string()
-    .optional()
-    .refine((val) => !val || Number(val) > 0, {
-      message: "Capaciteit moet een positief getal zijn",
-    }),
-  date: z.string().nonempty({ message: "Dit veld is verplicht" }),
-  startedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
-  endedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
-  labels: z
-    .array(z.string())
-    .default([])
-    .optional()
-    .refine((labels) => new Set(labels).size === labels?.length, {
-      message: "Labels moeten uniek zijn",
-    }),
-})
+const formSchema = z
+  .object({
+    title: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    description: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    speaker: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" })). Also in the submit handler
+    capacity: z
+      .string()
+      .optional()
+      .refine((val) => !val || Number(val) > 0, {
+        message: "Capaciteit moet een positief getal zijn",
+      }),
+    date: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    startedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    endedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    labels: z
+      .array(z.string())
+      .default([])
+      .optional()
+      .refine((labels) => new Set(labels).size === labels?.length, {
+        message: "Labels moeten uniek zijn",
+      }),
+  })
+  .refine((data) => data.endedAt > data.startedAt, {
+    message: "Eindtijd moet na starttijd zijn",
+    path: ["endedAt"],
+  })
 
 export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   const fetcher = useFetcher()
