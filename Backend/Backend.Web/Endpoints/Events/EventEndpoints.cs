@@ -75,10 +75,8 @@ public sealed class EventEndpoints : IEndpoint
         ISender sender,
         CancellationToken cancellationToken)
     {
-        if (id != request.Id)
-            return Results.BadRequest("ID in URL does not match ID in request body");
-
-        var response = await sender.Send(request, cancellationToken);
+        var command = new UpdateEventCommand(id, request);
+        var response = await sender.Send(command, cancellationToken);
         return response is null ? Results.NotFound() : Results.Ok(response);
     }
 
