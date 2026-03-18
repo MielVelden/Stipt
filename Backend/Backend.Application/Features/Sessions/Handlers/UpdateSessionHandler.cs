@@ -33,7 +33,7 @@ public sealed class UpdateSessionHandler(ISessionRepository sessionRepository)
         var updatedSession = new Session
         {
             Id = request.Id,
-            Title = request.Title?.Trim() ?? string.Empty,
+            Title = request.Title?.Trim() ?? "Updated Session",
             Description = request.Description?.Trim() ?? string.Empty,
             Speaker = request.Speaker?.Trim() ?? string.Empty,
             Room = request.Room?.Trim() ?? string.Empty,

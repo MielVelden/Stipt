@@ -27,7 +27,7 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
         var session = new Session
         {
             Id = Guid.NewGuid(),
-            Title = request.Title?.Trim() ?? string.Empty,
+            Title = request.Title?.Trim() ?? "New Session",
             Description = request.Description?.Trim() ?? string.Empty,
             Speaker = request.Speaker?.Trim() ?? string.Empty,
             Room = request.Room?.Trim() ?? string.Empty,
