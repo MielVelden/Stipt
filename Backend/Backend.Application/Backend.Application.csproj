@@ -16,6 +16,15 @@
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
         <PackageReference Include="MediatR" Version="13.1.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+        <PackageReference Include="NodaTime" Version="3.3.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\Sessions\Handlers\" />
+      <Folder Include="Features\Sessions\Repositories\" />
+      <Folder Include="Features\Sessions\Requests\" />
+      <Folder Include="Features\Sessions\Responses\" />
+      <Folder Include="Features\Sessions\Validators\" />
     </ItemGroup>
 
 </Project>
