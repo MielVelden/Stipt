@@ -61,9 +61,7 @@ internal sealed class MockSessionRepository : ISessionRepository
     public Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken)
     {
         if (!sessions.ContainsKey(session.Id))
-        {
             return Task.FromResult(false);
-        }
 
         sessions[session.Id] = Clone(session);
         return Task.FromResult(true);

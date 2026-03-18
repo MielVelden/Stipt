@@ -26,9 +26,7 @@ public sealed class UpdateSessionHandler(ISessionRepository sessionRepository)
             cancellationToken);
 
         if (hasOverlap)
-        {
             throw new ConflictException("The requested time slot overlaps with another session in the same room.");
-        }
 
         var updatedSession = new Session
         {
