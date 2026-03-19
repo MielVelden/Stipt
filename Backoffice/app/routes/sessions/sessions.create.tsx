@@ -38,6 +38,7 @@ import FetchError from "~/components/fetch-error"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
+import type { Session } from "./types"
 
 const formSchema = z
   .object({
@@ -100,8 +101,20 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   })
 
   async function onSubmit(data: SessionFormValues) {
+    const session: Session = {
+      id: "",
+      title: data.title,
+      description: data.description,
+      speaker: data.speaker,
+      room: data.room,
+      startTime: `${data.date}T${data.startedAt}:00Z`,
+      endTime: `${data.date}T${data.endedAt}:00Z`,
+      capacity: data.capacity ? Number(data.capacity) : undefined,
+      labels: data.labels ?? [],
+    }
+
     try {
-      const response = await apiClient.post("/sessions", data)
+      const response = await apiClient.post("/sessions", session)
       if (response.status !== 201) throw new Error("Aanmaken mislukt")
 
       toast.success("De sessie is succesvol aangemaakt.")

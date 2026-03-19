@@ -76,7 +76,7 @@ export async function clientLoader() {
 
     return rawSessions.map((session) => ({
       ...session,
-      "date-time": formatDateTime(session.startDateTime, session.endDateTime),
+      "date-time": formatDateTime(session.startTime, session.endTime),
       // "capacity-display": session.capacity ?? session.room.capacity ?? "-", // TODO implement when rooms are implemented
     }))
   } catch (error) {

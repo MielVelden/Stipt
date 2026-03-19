@@ -4,8 +4,8 @@ export type Session = {
   description: string
   speaker: string
   room: string
-  startDateTime: string
-  endDateTime: string
+  startTime: string
+  endTime: string
   capacity?: number
   labels: string[]
 }

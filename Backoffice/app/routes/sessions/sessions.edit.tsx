@@ -117,14 +117,14 @@ export default function Page({
       speaker: session.speaker,
       room: session.room,
       capacity: session.capacity?.toString(),
-      date: session.startDateTime.split("T")[0],
-      startedAt: session.startDateTime.split("T")[1].substring(0, 5),
-      endedAt: session.endDateTime.split("T")[1].substring(0, 5),
+      date: session.startTime.split("T")[0],
+      startedAt: session.startTime.split("T")[1].substring(0, 5),
+      endedAt: session.endTime.split("T")[1].substring(0, 5),
       labels: session.labels || [],
     },
   })
 
-  async function confirmDelete(sessionId: string) {
+  async function confirmDelete() {
     try {
       await apiClient.delete(`/sessions/${session.id}`)
       toast.success("De sessie is succesvol verwijderd.")
@@ -136,8 +136,20 @@ export default function Page({
   }
 
   async function onSubmit(data: SessionFormValues) {
+    const session: Session = {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      speaker: data.speaker,
+      room: data.room,
+      startTime: `${data.date}T${data.startedAt}:00Z`,
+      endTime: `${data.date}T${data.endedAt}:00Z`,
+      capacity: data.capacity ? Number(data.capacity) : undefined,
+      labels: data.labels ?? [],
+    }
+
     try {
-      const response = await apiClient.put(`/sessions/${session.id}`, data)
+      const response = await apiClient.put(`/sessions/${session.id}`, session)
       if (response.status !== 200) throw new Error("Bijwerken mislukt")
 
       toast.success("De sessie is succesvol bijgewerkt.")
@@ -446,7 +458,7 @@ export default function Page({
             <AlertDialogCancel>Annuleren</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() => confirmDelete(String(session.id))}
+              onClick={() => confirmDelete()}
             >
               Verwijderen
             </AlertDialogAction>

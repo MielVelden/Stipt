@@ -9,6 +9,9 @@ public static class ApplicationBuilderExtensions
         app.UseExceptionHandler();
 
         app.UseHttpsRedirection();
+
+        app.UseCors();
+
         app.UseAuthorization();
 
         app.MapEndpointDefinitions();

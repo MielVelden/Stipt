@@ -72,21 +72,21 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
             <Field className="w-fit">
               <FieldLabel>Startdatum</FieldLabel>
               <FieldContent>
-                {new Date(
-                  session.startDateTime.split("T")[0]
-                ).toLocaleDateString("nl-NL")}
+                {new Date(session.startTime.split("T")[0]).toLocaleDateString(
+                  "nl-NL"
+                )}
               </FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Starttijd</FieldLabel>
               <FieldContent>
-                {session.startDateTime.split("T")[1].substring(0, 5)}
+                {session.startTime.split("T")[1].substring(0, 5)}
               </FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Eindtijd</FieldLabel>
               <FieldContent>
-                {session.endDateTime.split("T")[1].substring(0, 5)}
+                {session.endTime.split("T")[1].substring(0, 5)}
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -94,8 +94,8 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <Field>
             <FieldLabel>Labels</FieldLabel>
             <FieldContent className="flex flex-row flex-wrap gap-2">
-              {session.labels.length === 0 && <span>-</span>}
-              {session.labels.map((label, index) => (
+              {session.labels && session.labels.length === 0 && <span>-</span>}
+              {session.labels?.map((label, index) => (
                 <Badge key={index} variant={"secondary"}>
                   {label}
                 </Badge>
