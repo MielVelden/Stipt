@@ -1,14 +1,5 @@
 import { useState } from "react"
-import {
-  useFetcher,
-  Link,
-  useLoaderData,
-  Form,
-  type ActionFunctionArgs,
-  redirect,
-  useRouteError,
-  isRouteErrorResponse,
-} from "react-router"
+import { useNavigate, useRouteError, isRouteErrorResponse } from "react-router"
 import type { Route } from "./+types/sessions.create"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
@@ -39,7 +30,7 @@ import {
   InputGroupInput,
 } from "~/components/ui/input-group"
 import { Button } from "~/components/ui/button"
-import { XIcon } from "lucide-react"
+import { XIcon, Loader2 } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import type { Room } from "./types"
@@ -49,44 +40,21 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
 
-export async function clientLoader() {
-  try {
-    return [{ id: "room-1", name: "Zaal 1", capacity: 50 }] as Room[] // TODO remove when rooms are implemented
-    const response = await apiClient.get<Room[]>("/rooms")
-    return response.data
-  } catch (error) {
-    throw new Response("Kon data niet laden", { status: 500 })
-  }
-}
-
-export async function clientAction({ request }: ActionFunctionArgs) {
-  const newSession = await request.json()
-
-  try {
-    await apiClient.post("/sessions", newSession)
-    toast.success("De sessie is succesvol aangemaakt.")
-    return redirect("/app/sessies")
-  } catch (error) {
-    toast.error("Aanmaken mislukt.")
-    return { error: "Opslaan mislukt." }
-  }
-}
-
 const formSchema = z
   .object({
-    title: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    description: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    speaker: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" })). Also in the submit handler
+    title: z.string().min(1, "Dit veld is verplicht"),
+    description: z.string().min(1, "Dit veld is verplicht"),
+    speaker: z.string().min(1, "Dit veld is verplicht"),
+    room: z.string().min(1, "Selecteer een ruimte"),
     capacity: z
       .string()
       .optional()
       .refine((val) => !val || Number(val) > 0, {
         message: "Capaciteit moet een positief getal zijn",
       }),
-    date: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    startedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    endedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
+    date: z.string().min(1, "Dit veld is verplicht"),
+    startedAt: z.string().min(1, "Dit veld is verplicht"),
+    endedAt: z.string().min(1, "Dit veld is verplicht"),
     labels: z
       .array(z.string())
       .default([])
@@ -100,10 +68,26 @@ const formSchema = z
     path: ["endedAt"],
   })
 
-export default function Page({ loaderData: rooms }: Route.ComponentProps) {
-  const fetcher = useFetcher()
+type SessionFormValues = z.infer<typeof formSchema>
 
-  const form = useForm<z.infer<typeof formSchema>>({
+export async function clientLoader() {
+  try {
+    return [
+      { id: "room-1", name: "Zaal 1", capacity: 50 },
+      { id: "room-2", name: "Zaal 2", capacity: 30 },
+    ] as Room[] // TODO remove when rooms are implemented
+    const response = await apiClient.get<Room[]>("/rooms")
+    return response.data
+  } catch (error) {
+    throw new Response("Kon data niet laden", { status: 500 })
+  }
+}
+
+export default function Page({ loaderData: rooms }: Route.ComponentProps) {
+  const navigate = useNavigate()
+  const [newLabel, setNewLabel] = useState("")
+
+  const form = useForm<SessionFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -118,30 +102,38 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    const formattedData = {
-      ...data,
-      labels: labels,
-      capacity: data.capacity ? Number(data.capacity) : null,
+  async function onSubmit(data: SessionFormValues) {
+    try {
+      const response = await apiClient.post("/sessions", data)
+      if (response.status !== 201) throw new Error("Aanmaken mislukt")
+
+      toast.success("De sessie is succesvol aangemaakt.")
+
+      if (response.data?.id) navigate(`/app/sessies/${response.data.id}`)
+      navigate("/app/sessies")
+    } catch (error) {
+      toast.error("Aanmaken mislukt.")
+      return { error: "Aanmaken mislukt." }
     }
-    fetcher.submit(formattedData, {
-      method: "post",
-      encType: "application/json",
-    })
   }
 
-  // Label State
-  const [labels, setLabels] = useState<string[]>([])
-  const [newLabel, setNewLabel] = useState("")
+  // Helper for labels
+  const currentLabels = form.watch("labels") ?? []
   const addLabel = () => {
     const trimmed = newLabel.trim()
-    if (trimmed && !labels.includes(trimmed)) {
-      setLabels([...labels, trimmed])
+    if (trimmed && !currentLabels.includes(trimmed)) {
+      form.setValue("labels", [...currentLabels, trimmed], {
+        shouldValidate: true,
+      })
       setNewLabel("")
     }
   }
   const removeLabel = (labelToRemove: string) => {
-    setLabels(labels.filter((l) => l !== labelToRemove))
+    form.setValue(
+      "labels",
+      currentLabels.filter((l) => l !== labelToRemove),
+      { shouldValidate: true }
+    )
   }
 
   return (
@@ -149,7 +141,10 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
       <PageHeader title="Sessie aanmaken" />
       <PageContainer>
         <form onSubmit={form.handleSubmit(onSubmit)} id="form-session-create">
-          <FieldSet className="max-w-2xl gap-6">
+          <FieldSet
+            className="max-w-2xl gap-6"
+            disabled={form.formState.isSubmitting}
+          >
             <Controller
               name="title"
               control={form.control}
@@ -159,12 +154,10 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                   <Input
                     {...field}
                     id="title"
-                    placeholder="Titel van de sessie"
-                    type="text"
+                    placeholder="Wat is de titel van de sessie?"
                     aria-invalid={fieldState.invalid}
-                    required
                   />
-                  {fieldState.invalid && (
+                  {fieldState.error && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
@@ -180,12 +173,11 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                   <Textarea
                     {...field}
                     id="description"
-                    placeholder="Beschrijving van de sessie"
                     rows={4}
+                    placeholder="Waar gaat de sessie over?"
                     aria-invalid={fieldState.invalid}
-                    required
                   />
-                  {fieldState.invalid && (
+                  {fieldState.error && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
@@ -203,46 +195,39 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                     id="speaker"
                     placeholder="Naam van de spreker"
                     aria-invalid={fieldState.invalid}
-                    required
                   />
-                  {fieldState.invalid && (
+                  {fieldState.error && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
               )}
             />
 
-            <FieldGroup className="flex flex-row">
+            <FieldGroup className="flex flex-row gap-4">
               <Controller
                 name="room"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="room">Ruimte</FieldLabel>
-                    <Select
-                      name={field.name}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      required
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
                         id="room"
                         aria-invalid={fieldState.invalid}
                       >
-                        <SelectValue placeholder="Selecteer een ruimte" />
+                        <SelectValue placeholder="Kies een ruimte" />
                       </SelectTrigger>
                       <SelectContent position="popper">
                         <SelectGroup>
-                          {rooms &&
-                            rooms.map((room) => (
-                              <SelectItem value={room.name} key={room.name}>
-                                {room.name}
-                              </SelectItem>
-                            ))}
+                          {rooms?.map((room) => (
+                            <SelectItem key={room.id} value={room.name}>
+                              {room.name}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -253,19 +238,19 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 name="capacity"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="capacity">Capaciteit</FieldLabel>
                     <Input
                       {...field}
-                      id="capacity"
                       type="number"
-                      placeholder="Capaciteit van de sessie"
+                      id="capacity"
+                      placeholder="Aantal personen"
                       aria-invalid={fieldState.invalid}
                     />
                     <FieldDescription className="text-xs">
                       Laat leeg om de capaciteit van de ruimte te gebruiken
                     </FieldDescription>
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -273,61 +258,56 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
               />
             </FieldGroup>
 
-            <FieldGroup className="flex flex-row">
+            <FieldGroup className="flex flex-row gap-4">
               <Controller
                 name="date"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="date">Datum</FieldLabel>
                     <Input
                       {...field}
                       id="date"
                       type="date"
                       aria-invalid={fieldState.invalid}
-                      required
                     />
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
               />
-
               <Controller
                 name="startedAt"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="startedAt">Starttijd</FieldLabel>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="startedAt">Start</FieldLabel>
                     <Input
                       {...field}
                       id="startedAt"
                       type="time"
                       aria-invalid={fieldState.invalid}
-                      required
                     />
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
               />
-
               <Controller
                 name="endedAt"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="endedAt">Eindtijd</FieldLabel>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="endedAt">Eind</FieldLabel>
                     <Input
                       {...field}
                       id="endedAt"
                       type="time"
                       aria-invalid={fieldState.invalid}
-                      required
                     />
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -336,19 +316,23 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
             </FieldGroup>
 
             <Field>
-              <FieldLabel>Labels</FieldLabel>
+              <FieldLabel htmlFor="labels">Labels</FieldLabel>
               <InputGroup className="mb-2 max-w-xs">
                 <InputGroupInput
-                  placeholder="Vul een label in..."
+                  id="labels"
+                  placeholder="Typ een label..."
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), addLabel())
-                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      addLabel()
+                    }
+                  }}
                 />
                 <InputGroupAddon align="inline-end">
                   <InputGroupButton
-                    variant={"link"}
+                    variant="link"
                     type="button"
                     onClick={addLabel}
                   >
@@ -356,34 +340,43 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                   </InputGroupButton>
                 </InputGroupAddon>
               </InputGroup>
+
               <FieldContent className="flex flex-row flex-wrap gap-2">
-                {labels.map((label) => (
-                  <Badge key={label} variant={"secondary"}>
+                {currentLabels.map((label) => (
+                  <Badge
+                    key={label}
+                    variant="secondary"
+                    className="py-1 pr-1 pl-2"
+                  >
                     {label}
                     <Button
                       onClick={() => removeLabel(label)}
                       variant="ghost"
                       size="icon"
-                      className="ml-1 h-5 w-5 cursor-pointer"
+                      className="ml-1 h-4 w-4 cursor-pointer rounded-full"
                       type="button"
                     >
-                      <XIcon />
+                      <XIcon className="h-3 w-3" />
                     </Button>
                   </Badge>
                 ))}
               </FieldContent>
             </Field>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3 border-t pt-4">
               <Button
                 variant="outline"
                 type="button"
                 onClick={() => form.reset()}
+                disabled={form.formState.isSubmitting}
               >
                 Annuleren
               </Button>
-              <Button type="submit" form="form-session-create">
-                Opslaan
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {form.formState.isSubmitting ? "Bezig..." : "Sessie opslaan"}
               </Button>
             </div>
           </FieldSet>
