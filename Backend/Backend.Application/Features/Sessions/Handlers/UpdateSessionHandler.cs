@@ -38,7 +38,7 @@ public sealed class UpdateSessionHandler(ISessionRepository sessionRepository)
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Capacity = request.Capacity,
-            Tags = request.Tags?.Select(tag => tag.Trim()).ToList() ?? []
+            Labels = request.Labels?.Select(tag => tag.Trim()).ToList() ?? []
         };
 
         await sessionRepository.UpdateAsync(updatedSession, cancellationToken);
@@ -52,6 +52,6 @@ public sealed class UpdateSessionHandler(ISessionRepository sessionRepository)
             updatedSession.StartTime,
             updatedSession.EndTime,
             updatedSession.Capacity,
-            updatedSession.Tags.AsReadOnly());
+            updatedSession.Labels.AsReadOnly());
     }
 }

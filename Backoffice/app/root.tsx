@@ -10,6 +10,10 @@ import {
 import type { Route } from "./+types/root"
 import "./app.css"
 import { TooltipProvider } from "~/components/ui/tooltip"
+import { Toaster } from "~/components/ui/sonner"
+import * as z from "zod"
+
+z.config(z.locales.nl())
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -23,7 +27,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <TooltipProvider>{children}</TooltipProvider>
-
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
       </body>

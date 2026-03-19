@@ -14,9 +14,7 @@ type actionDropdown = {
   icon?: React.ReactNode
   variant?: "default" | "destructive"
   separatorBefore?: boolean
-  linkTo?: string
-  onClick?: () => void
-}
+} & ({ linkTo: string } | { onClick: () => void })
 
 export function ActionsDropdown({ actions }: { actions: actionDropdown[] }) {
   return (
@@ -37,10 +35,10 @@ export function ActionsDropdown({ actions }: { actions: actionDropdown[] }) {
             {action.separatorBefore && <DropdownMenuSeparator />}
             <DropdownMenuItem
               variant={action.variant}
-              asChild={!!action.linkTo}
-              onClick={action.onClick}
+              asChild={"linkTo" in action}
+              onClick={"onClick" in action ? action.onClick : undefined}
             >
-              {action.linkTo ? (
+              {"linkTo" in action ? (
                 <Link to={action.linkTo}>
                   {action.icon && <span className="ml-2">{action.icon}</span>}
                   {action.label}

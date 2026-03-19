@@ -19,6 +19,13 @@ export default [
         route(":id", "routes/events/events.details.tsx"),
       ]),
 
+      ...prefix("sessies", [
+        route("", "routes/sessions/sessions.overview.tsx"),
+        route(":id", "routes/sessions/sessions.details.tsx"),
+        route(":id/bewerken", "routes/sessions/sessions.edit.tsx"),
+        route("nieuw", "routes/sessions/sessions.create.tsx"),
+      ]),
+
       ...prefix("ruimtes", [
         route("", "routes/rooms/rooms.overview.tsx"),
         route("nieuw", "routes/rooms/rooms.new.tsx"),
