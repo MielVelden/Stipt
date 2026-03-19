@@ -14,6 +14,7 @@ import { Button } from "~/components/ui/button"
 import { isRouteErrorResponse, Link, useRouteError } from "react-router"
 import apiClient from "~/lib/api-client"
 import FetchError from "~/components/fetch-error"
+import { formatDate, formatTime } from "~/lib/utils"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
@@ -71,23 +72,15 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <FieldGroup className="flex flex-row gap-12">
             <Field className="w-fit">
               <FieldLabel>Startdatum</FieldLabel>
-              <FieldContent>
-                {new Date(session.startTime.split("T")[0]).toLocaleDateString(
-                  "nl-NL"
-                )}
-              </FieldContent>
+              <FieldContent>{formatDate(session.startTime)}</FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Starttijd</FieldLabel>
-              <FieldContent>
-                {session.startTime.split("T")[1].substring(0, 5)}
-              </FieldContent>
+              <FieldContent>{formatTime(session.startTime)}</FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Eindtijd</FieldLabel>
-              <FieldContent>
-                {session.endTime.split("T")[1].substring(0, 5)}
-              </FieldContent>
+              <FieldContent>{formatTime(session.endTime)}</FieldContent>
             </Field>
           </FieldGroup>
 

@@ -1,10 +1,5 @@
 import { useState } from "react"
-import {
-  redirect,
-  isRouteErrorResponse,
-  useRouteError,
-  useNavigate,
-} from "react-router"
+import { isRouteErrorResponse, useRouteError, useNavigate } from "react-router"
 import type { Route } from "./+types/sessions.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
@@ -36,16 +31,6 @@ import {
   InputGroupInput,
 } from "~/components/ui/input-group"
 import { Button } from "~/components/ui/button"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "~/components/ui/alert-dialog"
 import { Loader2, XIcon } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
@@ -124,17 +109,6 @@ export default function Page({
     },
   })
 
-  async function confirmDelete() {
-    try {
-      await apiClient.delete(`/sessions/${session.id}`)
-      toast.success("De sessie is succesvol verwijderd.")
-      return redirect("/app/sessies")
-    } catch (error) {
-      toast.error("Verwijderen mislukt.")
-      return { error: "Verwijderen mislukt." }
-    }
-  }
-
   async function onSubmit(data: SessionFormValues) {
     const session: Session = {
       id: data.id,
@@ -150,8 +124,6 @@ export default function Page({
 
     try {
       const response = await apiClient.put(`/sessions/${session.id}`, session)
-      if (response.status !== 200) throw new Error("Bijwerken mislukt")
-
       toast.success("De sessie is succesvol bijgewerkt.")
       return { success: true, session: response.data }
     } catch (error) {
@@ -159,8 +131,6 @@ export default function Page({
       return { error: "Opslaan mislukt." }
     }
   }
-
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // Helper for labels
   const currentLabels = form.watch("labels") ?? []
@@ -411,60 +381,29 @@ export default function Page({
               </FieldContent>
             </Field>
 
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-end gap-2 border-t pt-4">
               <Button
-                variant={"destructive"}
-                onClick={() => setDeleteDialogOpen(true)}
+                variant="outline"
                 type="button"
+                onClick={() => form.reset()}
                 disabled={form.formState.isSubmitting}
               >
-                Verwijderen
+                Annuleren
               </Button>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => form.reset()}
-                  disabled={form.formState.isSubmitting}
-                >
-                  Annuleren
-                </Button>
-                <Button
-                  type="submit"
-                  form="form-session-edit"
-                  disabled={form.formState.isSubmitting}
-                >
-                  {form.formState.isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {form.formState.isSubmitting ? "Bezig..." : "Sessie opslaan"}
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                form="form-session-edit"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {form.formState.isSubmitting ? "Bezig..." : "Sessie opslaan"}
+              </Button>
             </div>
           </FieldSet>
         </form>
       </PageContainer>
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Weet je het zeker?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Je staat op het punt om de sessie <strong>{session.title}</strong>{" "}
-              te verwijderen. Dit kan niet ongedaan worden gemaakt.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuleren</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => confirmDelete()}
-            >
-              Verwijderen
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   )
 }

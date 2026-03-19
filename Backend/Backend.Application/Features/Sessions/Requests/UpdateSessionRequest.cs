@@ -13,4 +13,4 @@ public sealed record UpdateSessionRequest(
     Instant StartTime,
     Instant EndTime,
     int? Capacity,
-    List<string> Tags) : IRequest<UpdateSessionResponse?>;
+    List<string> Labels) : IRequest<UpdateSessionResponse?>;

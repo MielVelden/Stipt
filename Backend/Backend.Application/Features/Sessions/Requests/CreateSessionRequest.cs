@@ -12,4 +12,4 @@ public sealed record CreateSessionRequest(
     Instant StartTime,
     Instant EndTime,
     int? Capacity,
-    List<string> Tags) : IRequest<CreateSessionResponse>;
+    List<string> Labels) : IRequest<CreateSessionResponse>;

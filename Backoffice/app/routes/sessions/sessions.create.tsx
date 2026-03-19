@@ -38,7 +38,7 @@ import FetchError from "~/components/fetch-error"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
-import type { Session } from "./types"
+import type { CreateSession, Session } from "./types"
 
 const formSchema = z
   .object({
@@ -101,8 +101,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   })
 
   async function onSubmit(data: SessionFormValues) {
-    const session: Session = {
-      id: "",
+    const session: CreateSession = {
       title: data.title,
       description: data.description,
       speaker: data.speaker,
@@ -115,12 +114,13 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
 
     try {
       const response = await apiClient.post("/sessions", session)
-      if (response.status !== 201) throw new Error("Aanmaken mislukt")
-
       toast.success("De sessie is succesvol aangemaakt.")
 
-      if (response.data?.id) navigate(`/app/sessies/${response.data.id}`)
-      navigate("/app/sessies")
+      if (response.data?.id) {
+        navigate(`/app/sessies/${response.data.id}`)
+      } else {
+        navigate("/app/sessies")
+      }
     } catch (error) {
       toast.error("Aanmaken mislukt.")
       return { error: "Aanmaken mislukt." }

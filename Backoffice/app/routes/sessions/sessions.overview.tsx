@@ -41,30 +41,12 @@ import {
 import apiClient from "~/lib/api-client"
 import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
+import { formatDate, formatTime } from "~/lib/utils"
 
 function formatDateTime(startDateTime: string, endDateTime: string) {
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: "2-digit",
-    minute: "2-digit",
-  }
-
-  const date = new Date(`${startDateTime}`).toLocaleDateString(
-    "nl-NL",
-    dateOptions
-  )
-  const startTime = new Date(`${startDateTime}`).toLocaleTimeString(
-    "nl-NL",
-    timeOptions
-  )
-  const endTime = new Date(`${endDateTime}`).toLocaleTimeString(
-    "nl-NL",
-    timeOptions
-  )
+  const date = formatDate(startDateTime)
+  const startTime = formatTime(startDateTime)
+  const endTime = formatTime(endDateTime)
 
   return `${date}, ${startTime} - ${endTime}`
 }
@@ -121,7 +103,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       header: "Spreker",
     },
     {
-      accessorKey: "room.name",
+      accessorKey: "room",
       header: "Ruimte",
     },
     {
@@ -129,7 +111,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       header: "Datum & tijd",
     },
     {
-      accessorKey: "capacity-display",
+      accessorKey: "capacity",
       header: "Capaciteit",
     },
     {
