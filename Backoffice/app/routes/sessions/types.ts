@@ -7,5 +7,5 @@ export type Session = {
   startTime: string
   endTime: string
   capacity?: number
-  labels: string[]
+  tags: string[]
 }

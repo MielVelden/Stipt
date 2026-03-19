@@ -41,33 +41,14 @@ import {
 import apiClient from "~/lib/api-client"
 import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
+import { formatDateTime } from "~/lib/utils"
+import { nameofFactory } from "~/lib/fields"
 
-function formatDateTime(startDateTime: string, endDateTime: string) {
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: "2-digit",
-    minute: "2-digit",
-  }
-
-  const date = new Date(`${startDateTime}`).toLocaleDateString(
-    "nl-NL",
-    dateOptions
-  )
-  const startTime = new Date(`${startDateTime}`).toLocaleTimeString(
-    "nl-NL",
-    timeOptions
-  )
-  const endTime = new Date(`${endDateTime}`).toLocaleTimeString(
-    "nl-NL",
-    timeOptions
-  )
-
-  return `${date}, ${startTime} - ${endTime}`
+interface SessionEx extends Session {
+  dateTime: string
 }
+
+const fieldsSession = nameofFactory<SessionEx>();
 
 export async function clientLoader() {
   try {
@@ -76,9 +57,8 @@ export async function clientLoader() {
 
     return rawSessions.map((session) => ({
       ...session,
-      "date-time": formatDateTime(session.startTime, session.endTime),
-      // "capacity-display": session.capacity ?? session.room.capacity ?? "-", // TODO implement when rooms are implemented
-    }))
+      dateTime: formatDateTime(session.startTime, session.endTime),
+    })) as SessionEx[]
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
@@ -101,9 +81,9 @@ export async function clientAction({ request }: { request: Request }) {
 }
 
 export default function Page({ loaderData: sessions }: Route.ComponentProps) {
-  const columns: ColumnDef<Session>[] = [
+  const columns: ColumnDef<SessionEx>[] = [
     {
-      accessorKey: "title",
+      accessorKey: fieldsSession("title"),
       header: "Titel",
       cell: ({ row }) => {
         return (
@@ -117,38 +97,39 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       },
     },
     {
-      accessorKey: "speaker",
+      accessorKey: fieldsSession("speaker"),
       header: "Spreker",
     },
     {
-      accessorKey: "room.name",
+      accessorKey: fieldsSession("room"),
       header: "Ruimte",
     },
     {
-      accessorKey: "date-time",
+      accessorKey: fieldsSession("dateTime"),
       header: "Datum & tijd",
     },
     {
-      accessorKey: "capacity-display",
+      accessorKey: fieldsSession("capacity"),
       header: "Capaciteit",
     },
     {
-      accessorKey: "labels",
+      accessorKey: fieldsSession("tags"),
       header: "Labels",
       cell: ({ row }) => {
-        const labels = row.original.labels
-        if (!labels || labels.length === 0) return null
+        const tags = row.original.tags
+        if (!tags || tags.length === 0)
+          return null
         return (
           <div className="flex flex-wrap gap-1">
-            {(labels && labels.length > 3 ? labels.slice(0, 2) : labels).map(
-              (label, index) => (
+            {(tags && tags.length > 3 ? tags.slice(0, 2) : tags).map(
+              (tag, index) => (
                 <Badge key={index} variant={"secondary"}>
-                  {label}
+                  {tag}
                 </Badge>
               )
             )}
-            {labels && labels.length > 3 && (
-              <Badge variant={"secondary"}>+{labels.length - 2}</Badge>
+            {tags && tags.length > 3 && (
+              <Badge variant={"secondary"}>+{tags.length - 2}</Badge>
             )}
           </div>
         )
@@ -160,17 +141,17 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
         return ActionsDropdown({
           actions: [
             {
-              label: "Bekijk",
+              label: "Bekijken",
               icon: <EyeIcon />,
               linkTo: `/app/sessies/${row.original.id}`,
             },
             {
-              label: "Bewerk",
+              label: "Bewerken",
               icon: <EditIcon />,
               linkTo: `/app/sessies/${row.original.id}/bewerken`,
             },
             {
-              label: "Verwijder",
+              label: "Verwijderen",
               icon: <TrashIcon />,
               separatorBefore: true,
               variant: "destructive",
@@ -188,7 +169,8 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const filteredSessions = useMemo(() => {
     const query = searchQuery.toLowerCase().trim()
-    if (!query) return sessions
+    if (!query)
+      return sessions
 
     return sessions.filter((session) => {
       return (
