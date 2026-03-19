@@ -19,3 +19,11 @@ export function formatTime(dateString: string) {
     minute: "2-digit",
   }).format(new Date(dateString))
 }
+
+export function formatDateRange(startDateTime: string, endDateTime: string) {
+  const date = formatDate(startDateTime)
+  const startTime = formatTime(startDateTime)
+  const endTime = formatTime(endDateTime)
+
+  return `${date}, ${startTime} - ${endTime}`
+}

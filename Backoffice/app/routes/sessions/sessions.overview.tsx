@@ -41,15 +41,7 @@ import {
 import apiClient from "~/lib/api-client"
 import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
-import { formatDate, formatTime } from "~/lib/utils"
-
-function formatDateTime(startDateTime: string, endDateTime: string) {
-  const date = formatDate(startDateTime)
-  const startTime = formatTime(startDateTime)
-  const endTime = formatTime(endDateTime)
-
-  return `${date}, ${startTime} - ${endTime}`
-}
+import { formatDateRange } from "~/lib/utils"
 
 export async function clientLoader() {
   try {
@@ -58,7 +50,7 @@ export async function clientLoader() {
 
     return rawSessions.map((session) => ({
       ...session,
-      "date-time": formatDateTime(session.startTime, session.endTime),
+      "date-time": formatDateRange(session.startTime, session.endTime),
       // "capacity-display": session.capacity ?? session.room.capacity ?? "-", // TODO implement when rooms are implemented
     }))
   } catch (error) {
