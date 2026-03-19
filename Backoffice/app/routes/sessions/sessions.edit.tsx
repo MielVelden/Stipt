@@ -5,6 +5,7 @@ import {
   redirect,
   isRouteErrorResponse,
   useRouteError,
+  useNavigate,
 } from "react-router"
 import type { Route } from "./+types/sessions.edit"
 import { PageHeader } from "~/layouts/components/page-header"
@@ -47,7 +48,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog"
-import { XIcon } from "lucide-react"
+import { Loader2, XIcon } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import FetchError from "~/components/fetch-error"
@@ -55,6 +56,37 @@ import FetchError from "~/components/fetch-error"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
+
+const formSchema = z
+  .object({
+    id: z.string().min(1, "Deze sessie kan niet worden gevonden"),
+    title: z.string().min(1, "Dit veld is verplicht"),
+    description: z.string().min(1, "Dit veld is verplicht"),
+    speaker: z.string().min(1, "Dit veld is verplicht"),
+    room: z.string().min(1, "Selecteer een ruimte"),
+    capacity: z
+      .string()
+      .optional()
+      .refine((val) => !val || Number(val) > 0, {
+        message: "Capaciteit moet een positief getal zijn",
+      }),
+    date: z.string().min(1, "Dit veld is verplicht"),
+    startedAt: z.string().min(1, "Dit veld is verplicht"),
+    endedAt: z.string().min(1, "Dit veld is verplicht"),
+    labels: z
+      .array(z.string())
+      .default([])
+      .optional()
+      .refine((labels) => new Set(labels).size === labels?.length, {
+        message: "Labels moeten uniek zijn",
+      }),
+  })
+  .refine((data) => data.endedAt > data.startedAt, {
+    message: "Eindtijd moet na starttijd zijn",
+    path: ["endedAt"],
+  })
+
+type SessionFormValues = z.infer<typeof formSchema>
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
@@ -88,66 +120,16 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 }
 
-export async function clientAction({ request }: ActionFunctionArgs) {
-  const session = await request.json()
-
-  if (request.method === "DELETE") {
-    try {
-      await apiClient.delete(`/sessions/${session.id}`)
-      toast.success("De sessie is succesvol verwijderd.")
-      return redirect("/app/sessies")
-    } catch (error) {
-      toast.error("Verwijderen mislukt.")
-      return { error: "Verwijderen mislukt." }
-    }
-  }
-
-  try {
-    const result = await apiClient.put(`/sessions/${session.id}`, session)
-    toast.success("De sessie is succesvol bijgewerkt.")
-    return { success: true, session: result.data }
-  } catch (error) {
-    toast.error("Opslaan mislukt.")
-    return { error: "Opslaan mislukt." }
-  }
-}
-
-const formSchema = z
-  .object({
-    title: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    description: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    speaker: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    room: z.string(), // TODO implement correct room handling when rooms are implemented (add .nonempty({ message: "Dit veld is verplicht" })). Also in the submit handler
-    capacity: z
-      .string()
-      .optional()
-      .refine((val) => !val || Number(val) > 0, {
-        message: "Capaciteit moet een positief getal zijn",
-      }),
-    date: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    startedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    endedAt: z.string().nonempty({ message: "Dit veld is verplicht" }),
-    labels: z
-      .array(z.string())
-      .default([])
-      .optional()
-      .refine((labels) => new Set(labels).size === labels?.length, {
-        message: "Labels moeten uniek zijn",
-      }),
-  })
-  .refine((data) => data.endedAt > data.startedAt, {
-    message: "Eindtijd moet na starttijd zijn",
-    path: ["endedAt"],
-  })
-
 export default function Page({
   loaderData: { session, rooms },
 }: Route.ComponentProps) {
-  const fetcher = useFetcher()
+  const navigate = useNavigate()
+  const [newLabel, setNewLabel] = useState("")
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<SessionFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      id: session.id.toString(),
       title: session.title,
       description: session.description,
       speaker: session.speaker,
@@ -160,32 +142,49 @@ export default function Page({
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    const updatedSession = {
-      ...data,
-      labels: labels,
-      capacity: session.capacity ? Number(session.capacity) : null,
+  async function confirmDelete(sessionId: string) {
+    try {
+      await apiClient.delete(`/sessions/${session.id}`)
+      toast.success("De sessie is succesvol verwijderd.")
+      return redirect("/app/sessies")
+    } catch (error) {
+      toast.error("Verwijderen mislukt.")
+      return { error: "Verwijderen mislukt." }
     }
-    fetcher.submit(updatedSession, { method: "put" })
+  }
+
+  async function onSubmit(data: SessionFormValues) {
+    try {
+      const response = await apiClient.put(`/sessions/${session.id}`, data)
+      if (response.status !== 201) throw new Error("Aanmaken mislukt")
+
+      toast.success("De sessie is succesvol bijgewerkt.")
+      return { success: true, session: response.data }
+    } catch (error) {
+      toast.error("Opslaan mislukt.")
+      return { error: "Opslaan mislukt." }
+    }
   }
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  const [labels, setLabels] = useState<string[]>(session.labels || [])
-  const [newLabel, setNewLabel] = useState("")
+  // Helper for labels
+  const currentLabels = form.watch("labels") ?? []
   const addLabel = () => {
-    const trimmedLabel = newLabel.trim()
-    if (trimmedLabel && !labels.includes(trimmedLabel)) {
-      setLabels([...labels, trimmedLabel])
+    const trimmed = newLabel.trim()
+    if (trimmed && !currentLabels.includes(trimmed)) {
+      form.setValue("labels", [...currentLabels, trimmed], {
+        shouldValidate: true,
+      })
       setNewLabel("")
     }
   }
   const removeLabel = (labelToRemove: string) => {
-    setLabels(labels.filter((label) => label !== labelToRemove))
-  }
-
-  const confirmDelete = () => {
-    fetcher.submit({ id: session.id.toString() }, { method: "delete" })
+    form.setValue(
+      "labels",
+      currentLabels.filter((l) => l !== labelToRemove),
+      { shouldValidate: true }
+    )
   }
 
   return (
@@ -195,7 +194,10 @@ export default function Page({
         <form onSubmit={form.handleSubmit(onSubmit)} id="form-session-edit">
           <input type="hidden" name="id" value={session.id} />
 
-          <FieldSet className="max-w-2xl gap-6">
+          <FieldSet
+            className="max-w-2xl gap-6"
+            disabled={form.formState.isSubmitting}
+          >
             <Controller
               name="title"
               control={form.control}
@@ -205,12 +207,10 @@ export default function Page({
                   <Input
                     {...field}
                     id="title"
-                    placeholder="Titel van de sessie"
-                    type="text"
+                    placeholder="Wat is de titel van de sessie?"
                     aria-invalid={fieldState.invalid}
-                    required
                   />
-                  {fieldState.invalid && (
+                  {fieldState.error && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
@@ -226,12 +226,11 @@ export default function Page({
                   <Textarea
                     {...field}
                     id="description"
-                    placeholder="Beschrijving van de sessie"
+                    placeholder="Waar gaat de sessie over?"
                     rows={4}
                     aria-invalid={fieldState.invalid}
-                    required
                   />
-                  {fieldState.invalid && (
+                  {fieldState.error && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
@@ -249,9 +248,8 @@ export default function Page({
                     id="speaker"
                     placeholder="Naam van de spreker"
                     aria-invalid={fieldState.invalid}
-                    required
                   />
-                  {fieldState.invalid && (
+                  {fieldState.error && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
@@ -265,30 +263,24 @@ export default function Page({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="room">Ruimte</FieldLabel>
-                    <Select
-                      name={field.name}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      required
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
                         id="room"
                         aria-invalid={fieldState.invalid}
                       >
-                        <SelectValue placeholder="Selecteer een ruimte" />
+                        <SelectValue placeholder="Kies een ruimte" />
                       </SelectTrigger>
                       <SelectContent position="popper">
                         <SelectGroup>
-                          {rooms &&
-                            rooms.map((room) => (
-                              <SelectItem value={room.name} key={room.name}>
-                                {room.name}
-                              </SelectItem>
-                            ))}
+                          {rooms?.map((room) => (
+                            <SelectItem key={room.id} value={room.name}>
+                              {room.name}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -311,7 +303,7 @@ export default function Page({
                     <FieldDescription className="text-xs">
                       Laat leeg om de capaciteit van de ruimte te gebruiken
                     </FieldDescription>
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -319,21 +311,20 @@ export default function Page({
               />
             </FieldGroup>
 
-            <FieldGroup className="flex flex-row">
+            <FieldGroup className="flex flex-row gap-4">
               <Controller
                 name="date"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="date">Datum</FieldLabel>
                     <Input
                       {...field}
                       id="date"
                       type="date"
                       aria-invalid={fieldState.invalid}
-                      required
                     />
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -344,16 +335,15 @@ export default function Page({
                 name="startedAt"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="startedAt">Starttijd</FieldLabel>
                     <Input
                       {...field}
                       id="startedAt"
                       type="time"
                       aria-invalid={fieldState.invalid}
-                      required
                     />
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -364,16 +354,15 @@ export default function Page({
                 name="endedAt"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="endedAt">Eindtijd</FieldLabel>
                     <Input
                       {...field}
                       id="endedAt"
                       type="time"
                       aria-invalid={fieldState.invalid}
-                      required
                     />
-                    {fieldState.invalid && (
+                    {fieldState.error && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
@@ -385,12 +374,15 @@ export default function Page({
               <FieldLabel>Labels</FieldLabel>
               <InputGroup className="mb-2 max-w-xs">
                 <InputGroupInput
-                  placeholder="Vul een label in..."
+                  placeholder="Typ een label..."
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), addLabel())
-                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      addLabel()
+                    }
+                  }}
                 />
                 <InputGroupAddon align="inline-end">
                   <InputGroupButton
@@ -402,18 +394,23 @@ export default function Page({
                   </InputGroupButton>
                 </InputGroupAddon>
               </InputGroup>
+
               <FieldContent className="flex flex-row flex-wrap gap-2">
-                {labels.map((label) => (
-                  <Badge key={label} variant={"secondary"}>
+                {currentLabels.map((label) => (
+                  <Badge
+                    key={label}
+                    variant="secondary"
+                    className="py-1 pr-1 pl-2"
+                  >
                     {label}
                     <Button
                       onClick={() => removeLabel(label)}
                       variant="ghost"
                       size="icon"
-                      className="ml-1 h-5 w-5 cursor-pointer"
+                      className="ml-1 h-4 w-4 cursor-pointer rounded-full"
                       type="button"
                     >
-                      <XIcon />
+                      <XIcon className="h-3 w-3" />
                     </Button>
                   </Badge>
                 ))}
@@ -425,6 +422,7 @@ export default function Page({
                 variant={"destructive"}
                 onClick={() => setDeleteDialogOpen(true)}
                 type="button"
+                disabled={form.formState.isSubmitting}
               >
                 Verwijderen
               </Button>
@@ -433,11 +431,19 @@ export default function Page({
                   variant="outline"
                   type="button"
                   onClick={() => form.reset()}
+                  disabled={form.formState.isSubmitting}
                 >
                   Annuleren
                 </Button>
-                <Button type="submit" form="form-session-edit">
-                  Opslaan
+                <Button
+                  type="submit"
+                  form="form-session-edit"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {form.formState.isSubmitting ? "Bezig..." : "Sessie opslaan"}
                 </Button>
               </div>
             </div>
@@ -456,7 +462,10 @@ export default function Page({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuleren</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => confirmDelete(String(session.id))}
+            >
               Verwijderen
             </AlertDialogAction>
           </AlertDialogFooter>
