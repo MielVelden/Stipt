@@ -17,10 +17,7 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
-            {
-                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
-                npgsql.UseNodaTime();
-            }));
+                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<ITodoRepository, TodoRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();

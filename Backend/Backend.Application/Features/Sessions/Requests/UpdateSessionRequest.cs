@@ -1,6 +1,5 @@
 using Backend.Application.Features.Sessions.Responses;
 using MediatR;
-using NodaTime;
 
 namespace Backend.Application.Features.Sessions.Requests;
 
@@ -10,8 +9,8 @@ public sealed record UpdateSessionRequest(
     string? Description,
     string Speaker,
     string Room,
-    Instant StartTime,
-    Instant EndTime,
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime,
     int? Capacity,
     List<string> Tags,
     bool IsArchived) : IRequest<UpdateSessionResponse?>;

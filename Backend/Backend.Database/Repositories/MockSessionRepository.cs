@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Backend.Application.Features.Sessions.Repositories;
 using Backend.Domain.Sessions;
-using NodaTime;
 
 namespace Backend.Database.Repositories;
 
@@ -42,8 +41,8 @@ internal sealed class MockSessionRepository : ISessionRepository
 
     public Task<bool> HasOverlapAsync(
         string room,
-        Instant startTime,
-        Instant endTime,
+        DateTimeOffset startTime,
+        DateTimeOffset endTime,
         Guid? excludedSessionId,
         CancellationToken cancellationToken)
     {

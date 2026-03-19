@@ -1,5 +1,3 @@
-using NodaTime;
-
 namespace Backend.Application.Features.Sessions.Responses;
 
 public sealed record CreateSessionResponse(
@@ -8,9 +6,9 @@ public sealed record CreateSessionResponse(
     string? Description,
     string Speaker,
     string Room,
-    Instant StartTime,
-    Instant EndTime,
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime,
     int? Capacity,
     IReadOnlyCollection<string> Tags,
     bool IsArchived,
-    Instant CreatedAtUtc);
+    DateTime CreatedAtUtc);

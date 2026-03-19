@@ -1,5 +1,3 @@
-using NodaTime;
-
 namespace Backend.Domain.Sessions;
 
 public sealed class Session
@@ -9,11 +7,11 @@ public sealed class Session
     public string? Description { get; set; }
     public required string Speaker { get; set; }
     public required string Room { get; set; }
-    public Instant StartTime { get; set; }
-    public Instant EndTime { get; set; }
+    public DateTimeOffset StartTime { get; set; }
+    public DateTimeOffset EndTime { get; set; }
     public int? Capacity { get; set; }
     public List<string> Tags { get; set; } = [];
     public bool IsArchived { get; set; }
-    public Instant CreatedAtUtc { get; init; }
-    public Instant? UpdatedAtUtc { get; set; }
+    public DateTime CreatedAtUtc { get; init; }
+    public DateTime? UpdatedAtUtc { get; set; }
 }

@@ -4,11 +4,10 @@ using Backend.Application.Features.Sessions.Responses;
 using Backend.Common.Application;
 using Backend.Domain.Sessions;
 using MediatR;
-using NodaTime;
 
 namespace Backend.Application.Features.Sessions.Handlers;
 
-public sealed class CreateSessionHandler(ISessionRepository sessionRepository, IClock clock)
+public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
     : IRequestHandler<CreateSessionRequest, CreateSessionResponse>
 {
     public async Task<CreateSessionResponse> Handle(CreateSessionRequest request, CancellationToken cancellationToken)
@@ -35,7 +34,7 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository, I
             Capacity = request.Capacity,
             Tags = request.Tags?.Select(tag => tag.Trim()).ToList() ?? [],
             IsArchived = false,
-            CreatedAtUtc = clock.GetCurrentInstant()
+            CreatedAtUtc = DateTime.UtcNow
         };
 
         await sessionRepository.AddAsync(session, cancellationToken);

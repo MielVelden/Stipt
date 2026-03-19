@@ -2,7 +2,6 @@ using Backend.Application.Features.Sessions.Repositories;
 using Backend.Database.Persistence;
 using Backend.Domain.Sessions;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 
 namespace Backend.Database.Repositories;
 
@@ -50,18 +49,18 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
 
     public async Task<bool> HasOverlapAsync(
         string room,
-        Instant startTime,
-        Instant endTime,
+        DateTimeOffset startTime,
+        DateTimeOffset endTime,
         Guid? excludedSessionId,
         CancellationToken cancellationToken)
     {
-        var normalizedRoom = room.Trim();
+        var normalizedRoom = room.Trim().ToLower();
 
         return await dbContext.Sessions
             .AsNoTracking()
             .AnyAsync(
                 s => (!excludedSessionId.HasValue || s.Id != excludedSessionId.Value)
-                     && s.Room.ToLower() == normalizedRoom.ToLower()
+                     && s.Room.ToLower() == normalizedRoom
                      && s.StartTime < endTime
                      && s.EndTime > startTime,
                 cancellationToken);

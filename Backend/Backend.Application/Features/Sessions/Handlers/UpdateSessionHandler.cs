@@ -2,13 +2,11 @@ using Backend.Application.Features.Sessions.Repositories;
 using Backend.Application.Features.Sessions.Requests;
 using Backend.Application.Features.Sessions.Responses;
 using Backend.Common.Application;
-using Backend.Domain.Sessions;
 using MediatR;
-using NodaTime;
 
 namespace Backend.Application.Features.Sessions.Handlers;
 
-public sealed class UpdateSessionHandler(ISessionRepository sessionRepository, IClock clock)
+public sealed class UpdateSessionHandler(ISessionRepository sessionRepository)
     : IRequestHandler<UpdateSessionRequest, UpdateSessionResponse?>
 {
     public async Task<UpdateSessionResponse?> Handle(UpdateSessionRequest request, CancellationToken cancellationToken)
@@ -36,7 +34,7 @@ public sealed class UpdateSessionHandler(ISessionRepository sessionRepository, I
         existingSession.Capacity = request.Capacity;
         existingSession.Tags = request.Tags?.Select(tag => tag.Trim()).ToList() ?? [];
         existingSession.IsArchived = request.IsArchived;
-        existingSession.UpdatedAtUtc = clock.GetCurrentInstant();
+        existingSession.UpdatedAtUtc = DateTime.UtcNow;
 
         var updated = await sessionRepository.UpdateAsync(existingSession, cancellationToken);
         if (!updated)
