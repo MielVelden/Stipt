@@ -78,6 +78,9 @@ internal sealed class MockSessionRepository : ISessionRepository
             StartTime = session.StartTime,
             EndTime = session.EndTime,
             Capacity = session.Capacity,
-            Tags = session.Tags.ToList()
+            Tags = session.Tags.ToList(),
+            IsArchived = session.IsArchived,
+            CreatedAtUtc = session.CreatedAtUtc,
+            UpdatedAtUtc = session.UpdatedAtUtc
         };
 }

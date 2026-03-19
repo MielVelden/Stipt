@@ -7,10 +7,11 @@ namespace Backend.Application.Features.Sessions.Requests;
 public sealed record UpdateSessionRequest(
     Guid Id,
     string Title,
-    string Description,
+    string? Description,
     string Speaker,
     string Room,
     Instant StartTime,
     Instant EndTime,
     int? Capacity,
-    List<string> Tags) : IRequest<UpdateSessionResponse?>;
+    List<string> Tags,
+    bool IsArchived) : IRequest<UpdateSessionResponse?>;

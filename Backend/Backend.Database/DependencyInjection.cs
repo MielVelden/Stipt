@@ -17,11 +17,13 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
-                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+            {
+                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                npgsql.UseNodaTime();
+            }));
 
         services.AddScoped<ITodoRepository, TodoRepository>();
-        // TODO change to scoped after implementing full repository
-        services.AddSingleton<ISessionRepository, MockSessionRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
 
         return services;
     }

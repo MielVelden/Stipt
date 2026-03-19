@@ -4,10 +4,11 @@ using Backend.Application.Features.Sessions.Responses;
 using Backend.Common.Application;
 using Backend.Domain.Sessions;
 using MediatR;
+using NodaTime;
 
 namespace Backend.Application.Features.Sessions.Handlers;
 
-public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
+public sealed class CreateSessionHandler(ISessionRepository sessionRepository, IClock clock)
     : IRequestHandler<CreateSessionRequest, CreateSessionResponse>
 {
     public async Task<CreateSessionResponse> Handle(CreateSessionRequest request, CancellationToken cancellationToken)
@@ -25,14 +26,16 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
         var session = new Session
         {
             Id = Guid.NewGuid(),
-            Title = request.Title?.Trim() ?? "New Session",
-            Description = request.Description?.Trim() ?? string.Empty,
-            Speaker = request.Speaker?.Trim() ?? string.Empty,
-            Room = request.Room?.Trim() ?? string.Empty,
+            Title = request.Title.Trim(),
+            Description = request.Description?.Trim(),
+            Speaker = request.Speaker.Trim(),
+            Room = request.Room.Trim(),
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Capacity = request.Capacity,
-            Tags = request.Tags?.Select(tag => tag.Trim()).ToList() ?? []
+            Tags = request.Tags?.Select(tag => tag.Trim()).ToList() ?? [],
+            IsArchived = false,
+            CreatedAtUtc = clock.GetCurrentInstant()
         };
 
         await sessionRepository.AddAsync(session, cancellationToken);
@@ -46,6 +49,8 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
             session.StartTime,
             session.EndTime,
             session.Capacity,
-            session.Tags.AsReadOnly());
+            session.Tags.AsReadOnly(),
+            session.IsArchived,
+            session.CreatedAtUtc);
     }
 }
