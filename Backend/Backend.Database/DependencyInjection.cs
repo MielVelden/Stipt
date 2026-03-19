@@ -1,3 +1,4 @@
+using Backend.Application.Features.Sessions.Repositories;
 using Backend.Application.Features.Todos.Repositories;
 using Backend.Application.Features.Rooms.Repositories;
 using Backend.Database.Persistence;
@@ -21,6 +22,8 @@ public static class DependencyInjection
 
         services.AddScoped<ITodoRepository, TodoRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
+        // TODO change to scoped after implementing full repository
+        services.AddSingleton<ISessionRepository, MockSessionRepository>();
 
         return services;
     }

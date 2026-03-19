@@ -2,13 +2,22 @@ import {
   type RouteConfig,
   index,
   layout,
+  prefix,
   route,
-} from "@react-router/dev/routes";
+} from "@react-router/dev/routes"
 
 export default [
-  layout("routes/app-layout.tsx", [
-    index("routes/dashboard.tsx"),
-    route("requests", "routes/requests.tsx"),
-    route("settings", "routes/settings.tsx"),
-  ]),
-] satisfies RouteConfig;
+  index("routes/home/home.tsx"),
+
+  layout(
+    "layouts/dashboard.layout.tsx",
+    prefix("app", [
+      route("", "routes/dashboard/dashboard.overview.tsx"),
+
+      ...prefix("evenementen", [
+        route("", "routes/events/events.overview.tsx"),
+        route(":id", "routes/events/events.details.tsx"),
+      ]),
+    ])
+  ),
+] satisfies RouteConfig
