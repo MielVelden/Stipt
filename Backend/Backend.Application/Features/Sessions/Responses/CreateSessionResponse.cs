@@ -10,5 +10,4 @@ public sealed record CreateSessionResponse(
     DateTimeOffset EndTime,
     int? Capacity,
     IReadOnlyCollection<string> Tags,
-    bool IsArchived,
     DateTime CreatedAtUtc);

@@ -44,11 +44,6 @@ namespace Backend.Database.Migrations
                     b.Property<DateTimeOffset>("EndTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsArchived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Room")
                         .IsRequired()
                         .HasMaxLength(200)

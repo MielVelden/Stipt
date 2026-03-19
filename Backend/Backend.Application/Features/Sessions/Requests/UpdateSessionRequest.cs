@@ -12,5 +12,4 @@ public sealed record UpdateSessionRequest(
     DateTimeOffset StartTime,
     DateTimeOffset EndTime,
     int? Capacity,
-    List<string> Tags,
-    bool IsArchived) : IRequest<UpdateSessionResponse?>;
+    List<string> Tags) : IRequest<UpdateSessionResponse?>;

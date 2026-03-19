@@ -25,7 +25,6 @@ namespace Backend.Database.Migrations
                     EndTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Capacity = table.Column<int>(type: "integer", nullable: true),
                     Tags = table.Column<List<string>>(type: "text[]", nullable: false),
-                    IsArchived = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

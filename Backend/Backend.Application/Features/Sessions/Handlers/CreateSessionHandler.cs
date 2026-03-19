@@ -33,7 +33,6 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
             EndTime = request.EndTime,
             Capacity = request.Capacity,
             Tags = request.Tags?.Select(tag => tag.Trim()).ToList() ?? [],
-            IsArchived = false,
             CreatedAtUtc = DateTime.UtcNow
         };
 
@@ -49,7 +48,6 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
             session.EndTime,
             session.Capacity,
             session.Tags.AsReadOnly(),
-            session.IsArchived,
             session.CreatedAtUtc);
     }
 }

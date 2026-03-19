@@ -10,6 +10,5 @@ public sealed record GetSessionByIdResponse(
     DateTimeOffset EndTime,
     int? Capacity,
     IReadOnlyCollection<string> Tags,
-    bool IsArchived,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);

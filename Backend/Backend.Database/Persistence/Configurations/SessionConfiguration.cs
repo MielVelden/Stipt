@@ -40,10 +40,6 @@ internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
             .HasColumnType("text[]")
             .IsRequired();
 
-        builder.Property(x => x.IsArchived)
-            .IsRequired()
-            .HasDefaultValue(false);
-
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
 
