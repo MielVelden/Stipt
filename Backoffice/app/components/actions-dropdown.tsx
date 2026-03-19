@@ -15,6 +15,7 @@ type actionDropdown = {
   variant?: "default" | "destructive"
   separatorBefore?: boolean
   linkTo?: string
+  onClick?: () => void
 }
 
 export function ActionsDropdown({ actions }: { actions: actionDropdown[] }) {
@@ -37,6 +38,7 @@ export function ActionsDropdown({ actions }: { actions: actionDropdown[] }) {
             <DropdownMenuItem
               variant={action.variant}
               asChild={!!action.linkTo}
+              onClick={action.onClick}
             >
               {action.linkTo ? (
                 <Link to={action.linkTo}>

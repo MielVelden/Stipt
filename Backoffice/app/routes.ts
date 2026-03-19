@@ -18,6 +18,12 @@ export default [
         route("", "routes/events/events.overview.tsx"),
         route(":id", "routes/events/events.details.tsx"),
       ]),
+
+      ...prefix("ruimtes", [
+        route("", "routes/rooms/rooms.overview.tsx"),
+        route("nieuw", "routes/rooms/rooms.new.tsx"),
+        route(":id/bewerken", "routes/rooms/rooms.edit.tsx"),
+      ]),
     ])
   ),
 ] satisfies RouteConfig

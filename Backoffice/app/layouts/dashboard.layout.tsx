@@ -1,9 +1,11 @@
 import { AppSidebar } from "~/layouts/components/app-sidebar"
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar"
 import { Outlet } from "react-router"
+import { AppProvider } from "~/contexts/app-context"
 
 export default function Page() {
   return (
+    <AppProvider>
     <SidebarProvider
       style={
         {
@@ -17,5 +19,6 @@ export default function Page() {
         <Outlet />
       </SidebarInset>
     </SidebarProvider>
+    </AppProvider>
   )
 }
