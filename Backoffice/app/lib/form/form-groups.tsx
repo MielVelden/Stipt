@@ -12,6 +12,8 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
+import { DatePicker } from "~/components/ui/date-picker"
+import { ColorPicker } from "~/components/ui/color-picker"
 import {
   Select,
   SelectContent,
@@ -55,6 +57,22 @@ function ReadonlyField<TEntity>({
               </Badge>
             ))
           )}
+        </FieldContent>
+      </Field>
+    )
+  }
+
+  if (config.kind === "color") {
+    const color = config.readonlyValue(entity) as string
+    return (
+      <Field className={config.className}>
+        <FieldLabel>{config.label}</FieldLabel>
+        <FieldContent className="flex items-center gap-2">
+          <div
+            className="h-5 w-5 rounded border"
+            style={{ backgroundColor: color }}
+          />
+          {color}
         </FieldContent>
       </Field>
     )
@@ -218,10 +236,12 @@ function EditField({
             break
           case "date":
             widget = (
-              <Input
-                {...field}
-                id={config.name}
-                type="date"
+              <DatePicker
+                id={config.name as string}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                disabled={field.disabled}
                 aria-invalid={fieldState.invalid}
               />
             )
@@ -230,7 +250,7 @@ function EditField({
             widget = (
               <Input
                 {...field}
-                id={config.name}
+                id={config.name as string}
                 type="time"
                 aria-invalid={fieldState.invalid}
               />
@@ -256,6 +276,18 @@ function EditField({
             )
             break
           }
+          case "color":
+            widget = (
+              <ColorPicker
+                id={config.name as string}
+                value={field.value || "#000000"}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                disabled={field.disabled}
+                aria-invalid={fieldState.invalid}
+              />
+            )
+            break
         }
 
         return (

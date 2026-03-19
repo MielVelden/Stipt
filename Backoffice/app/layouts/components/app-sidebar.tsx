@@ -13,8 +13,13 @@ import {
 import { Link } from "react-router"
 import logo from "~/assets/images/iO-logo.svg"
 import { NavEventSelect } from "./nav-event-select"
+import type { Event } from "~/routes/events/types"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  events: Event[]
+}
+
+export function AppSidebar({ events, ...props }: AppSidebarProps) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -34,7 +39,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavEventSelect />
+        <NavEventSelect events={events} />
         <NavMain />
       </SidebarContent>
 
