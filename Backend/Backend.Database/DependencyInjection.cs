@@ -1,4 +1,5 @@
 using Backend.Application.Features.Events.Repositories;
+using Backend.Application.Features.Sessions.Repositories;
 using Backend.Application.Features.Todos.Repositories;
 using Backend.Database.Persistence;
 using Backend.Database.Repositories;
@@ -21,6 +22,8 @@ public static class DependencyInjection
 
         services.AddScoped<ITodoRepository, TodoRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
+        // TODO change to scoped after implementing full repository
+        services.AddSingleton<ISessionRepository, MockSessionRepository>();
 
         return services;
     }
