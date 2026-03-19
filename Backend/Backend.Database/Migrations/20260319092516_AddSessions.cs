@@ -24,7 +24,7 @@ namespace Backend.Database.Migrations
                     StartTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     EndTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Capacity = table.Column<int>(type: "integer", nullable: true),
-                    Tags = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Labels = table.Column<List<string>>(type: "text[]", nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

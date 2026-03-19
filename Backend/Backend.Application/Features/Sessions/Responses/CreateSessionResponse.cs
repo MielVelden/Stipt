@@ -9,5 +9,5 @@ public sealed record CreateSessionResponse(
     DateTimeOffset StartTime,
     DateTimeOffset EndTime,
     int? Capacity,
-    IReadOnlyCollection<string> Tags,
+    IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc);

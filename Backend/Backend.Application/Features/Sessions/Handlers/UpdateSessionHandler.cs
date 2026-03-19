@@ -32,7 +32,7 @@ public sealed class UpdateSessionHandler(ISessionRepository sessionRepository)
         existingSession.StartTime = request.StartTime;
         existingSession.EndTime = request.EndTime;
         existingSession.Capacity = request.Capacity;
-        existingSession.Tags = request.Tags?.Select(tag => tag.Trim()).ToList() ?? [];
+        existingSession.Labels = request.Labels?.Select(label => label.Trim()).ToList() ?? [];
         existingSession.UpdatedAtUtc = DateTime.UtcNow;
 
         var updated = await sessionRepository.UpdateAsync(existingSession, cancellationToken);
@@ -48,7 +48,7 @@ public sealed class UpdateSessionHandler(ISessionRepository sessionRepository)
             existingSession.StartTime,
             existingSession.EndTime,
             existingSession.Capacity,
-            existingSession.Tags.AsReadOnly(),
+            existingSession.Labels.AsReadOnly(),
             existingSession.CreatedAtUtc,
             existingSession.UpdatedAtUtc.Value);
     }

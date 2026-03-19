@@ -54,7 +54,7 @@ namespace Backend.Database.Migrations
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.PrimitiveCollection<List<string>>("Tags")
+                    b.PrimitiveCollection<List<string>>("Labels")
                         .IsRequired()
                         .HasColumnType("text[]");
 

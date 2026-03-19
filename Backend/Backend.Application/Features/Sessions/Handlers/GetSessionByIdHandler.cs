@@ -22,7 +22,7 @@ public sealed class GetSessionByIdHandler(ISessionRepository sessionRepository)
                 session.StartTime,
                 session.EndTime,
                 session.Capacity,
-                session.Tags.AsReadOnly(),
+                session.Labels.AsReadOnly(),
                 session.CreatedAtUtc,
                 session.UpdatedAtUtc);
     }

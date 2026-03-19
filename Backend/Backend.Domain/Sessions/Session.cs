@@ -10,7 +10,7 @@ public sealed class Session
     public DateTimeOffset StartTime { get; set; }
     public DateTimeOffset EndTime { get; set; }
     public int? Capacity { get; set; }
-    public List<string> Tags { get; set; } = [];
+    public List<string> Labels { get; set; } = [];
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }

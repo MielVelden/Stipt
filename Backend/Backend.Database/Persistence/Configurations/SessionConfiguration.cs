@@ -36,7 +36,7 @@ internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 
         builder.Property(x => x.Capacity);
 
-        builder.Property(x => x.Tags)
+        builder.Property(x => x.Labels)
             .HasColumnType("text[]")
             .IsRequired();
 

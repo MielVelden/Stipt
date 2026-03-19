@@ -9,6 +9,6 @@ public sealed record GetAllSessionsResponse(
     DateTimeOffset StartTime,
     DateTimeOffset EndTime,
     int? Capacity,
-    IReadOnlyCollection<string> Tags,
+    IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);

@@ -11,4 +11,4 @@ public sealed record CreateSessionRequest(
     DateTimeOffset StartTime,
     DateTimeOffset EndTime,
     int? Capacity,
-    List<string> Tags) : IRequest<CreateSessionResponse>;
+    List<string> Labels) : IRequest<CreateSessionResponse>;
