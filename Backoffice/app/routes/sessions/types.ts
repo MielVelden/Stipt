@@ -9,3 +9,5 @@ export type Session = {
   capacity?: number
   tags: string[]
 }
+
+export type CreateSession = Omit<Session, "id">

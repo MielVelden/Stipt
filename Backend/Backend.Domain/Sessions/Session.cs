@@ -12,5 +12,5 @@ public sealed class Session
     public Instant StartTime { get; set; }
     public Instant EndTime { get; set; }
     public int? Capacity { get; set; }
-    public List<string> Tags { get; set; }
+    public List<string> Labels { get; set; }
 }

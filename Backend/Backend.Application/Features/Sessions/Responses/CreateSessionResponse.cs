@@ -11,4 +11,4 @@ public sealed record CreateSessionResponse(
     Instant StartTime,
     Instant EndTime,
     int? Capacity,
-    IReadOnlyCollection<string> Tags);
+    IReadOnlyCollection<string> TagLabelss);
