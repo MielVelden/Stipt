@@ -32,6 +32,18 @@ public static class DependencyInjection
         services.AddAuthorization();
         services.AddEndpointDefinitions(typeof(Program).Assembly);
 
+        // TODO
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(
+                builder =>
+                {
+                    builder.WithOrigins("http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+        });
+
         return services;
     }
 }

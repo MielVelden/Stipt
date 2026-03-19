@@ -21,7 +21,7 @@ public sealed class GetAllSessionsHandler(ISessionRepository sessionRepository)
                 session.StartTime,
                 session.EndTime,
                 session.Capacity,
-                session.Tags.AsReadOnly()))
+                session.Labels.AsReadOnly()))
             .ToArray();
     }
 }
