@@ -33,7 +33,6 @@ import { Button } from "~/components/ui/button"
 import { XIcon, Loader2 } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
-import type { Room } from "./types"
 import FetchError from "~/components/fetch-error"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -72,12 +71,10 @@ type SessionFormValues = z.infer<typeof formSchema>
 
 export async function clientLoader() {
   try {
-    return [
-      { id: "room-1", name: "Zaal 1", capacity: 50 },
-      { id: "room-2", name: "Zaal 2", capacity: 30 },
-    ] as Room[] // TODO remove when rooms are implemented
-    const response = await apiClient.get<Room[]>("/rooms")
-    return response.data
+    return ["Zaal 1", "Zaal 2", "Zaal 3"]
+    // TODO remove when rooms are implemented
+    // const response = await apiClient.get<Room[]>("/rooms")
+    // return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
@@ -220,8 +217,8 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       <SelectContent position="popper">
                         <SelectGroup>
                           {rooms?.map((room) => (
-                            <SelectItem key={room.id} value={room.name}>
-                              {room.name}
+                            <SelectItem key={room} value={room}>
+                              {room}
                             </SelectItem>
                           ))}
                         </SelectGroup>

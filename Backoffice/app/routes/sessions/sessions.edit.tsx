@@ -8,7 +8,7 @@ import {
 import type { Route } from "./+types/sessions.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
-import type { Room, Session } from "./types"
+import type { Session } from "./types"
 import {
   Field,
   FieldContent,
@@ -88,31 +88,15 @@ type SessionFormValues = z.infer<typeof formSchema>
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
-    return {
-      session: {
-        id: 0,
-        title: "title",
-        description: "description",
-        speaker: "john doe",
-        room: { id: 1, name: "zaal 1" },
-        capacity: 25,
-        date: "2024-01-01",
-        startedAt: "12:00",
-        endedAt: "16:00",
-        labels: ["james", "john"],
-      } as Session,
-      rooms: [
-        { id: 1, name: "Zaal 1", capacity: 50 },
-        { id: 2, name: "Zaal 2", capacity: 100 },
-      ] as Room[],
-    } // TODO remove mock data
-
     const sessionResponse = await apiClient.get<Session>(
       "/sessions/" + (params.id as string)
     )
-    const roomsResponse = await apiClient.get<Room[]>("/rooms")
+    // const roomsResponse = await apiClient.get<Room[]>("/rooms") // TODO implement when rooms are implemented
 
-    return { session: sessionResponse.data, rooms: roomsResponse.data }
+    return {
+      session: sessionResponse.data,
+      rooms: ["Zaal 1", "Zaal 2", "Zaal 3"], // TODO remove mock data
+    }
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
@@ -131,11 +115,11 @@ export default function Page({
       title: session.title,
       description: session.description,
       speaker: session.speaker,
-      room: session.room.name,
+      room: session.room,
       capacity: session.capacity?.toString(),
-      date: session.date,
-      startedAt: session.startedAt,
-      endedAt: session.endedAt,
+      date: session.startDateTime.split("T")[0],
+      startedAt: session.startDateTime.split("T")[1].substring(0, 5),
+      endedAt: session.endDateTime.split("T")[1].substring(0, 5),
       labels: session.labels || [],
     },
   })
@@ -154,7 +138,7 @@ export default function Page({
   async function onSubmit(data: SessionFormValues) {
     try {
       const response = await apiClient.put(`/sessions/${session.id}`, data)
-      if (response.status !== 201) throw new Error("Aanmaken mislukt")
+      if (response.status !== 200) throw new Error("Bijwerken mislukt")
 
       toast.success("De sessie is succesvol bijgewerkt.")
       return { success: true, session: response.data }
@@ -271,8 +255,8 @@ export default function Page({
                       <SelectContent position="popper">
                         <SelectGroup>
                           {rooms?.map((room) => (
-                            <SelectItem key={room.id} value={room.name}>
-                              {room.name}
+                            <SelectItem key={room} value={room}>
+                              {room}
                             </SelectItem>
                           ))}
                         </SelectGroup>

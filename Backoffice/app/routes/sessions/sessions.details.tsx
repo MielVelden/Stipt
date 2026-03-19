@@ -57,12 +57,13 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <FieldGroup className="flex flex-row gap-12">
             <Field className="w-fit">
               <FieldLabel>Ruimte</FieldLabel>
-              <FieldContent>{session.room.name}</FieldContent>
+              <FieldContent>{session.room}</FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Capaciteit</FieldLabel>
               <FieldContent>
-                {session.capacity ?? session.room.capacity ?? "-"}
+                {/* // TODO implement when rooms are implemented {session.capacity ?? session.room.capacity ?? "-"} */}
+                {session.capacity ?? "-"}
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -71,16 +72,22 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
             <Field className="w-fit">
               <FieldLabel>Startdatum</FieldLabel>
               <FieldContent>
-                {new Date(session.date).toLocaleDateString("nl-NL")}
+                {new Date(
+                  session.startDateTime.split("T")[0]
+                ).toLocaleDateString("nl-NL")}
               </FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Starttijd</FieldLabel>
-              <FieldContent>{session.startedAt}</FieldContent>
+              <FieldContent>
+                {session.startDateTime.split("T")[1].substring(0, 5)}
+              </FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Eindtijd</FieldLabel>
-              <FieldContent>{session.endedAt}</FieldContent>
+              <FieldContent>
+                {session.endDateTime.split("T")[1].substring(0, 5)}
+              </FieldContent>
             </Field>
           </FieldGroup>
 

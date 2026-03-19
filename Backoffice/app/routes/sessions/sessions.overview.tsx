@@ -42,32 +42,42 @@ import apiClient from "~/lib/api-client"
 import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
 
-function formatDateTime(date: string, startedAt: string, endedAt: string) {
-  const dateObj = new Date(`${date}T${startedAt}`)
-  const options: Intl.DateTimeFormatOptions = {
+function formatDateTime(startDateTime: string, endDateTime: string) {
+  const dateOptions: Intl.DateTimeFormatOptions = {
     day: "numeric",
     month: "long",
     year: "numeric",
   }
-  const formattedDate = dateObj.toLocaleDateString("nl-NL", options)
-  return `${formattedDate}, ${startedAt} - ${endedAt}`
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+  }
+
+  const date = new Date(`${startDateTime}`).toLocaleDateString(
+    "nl-NL",
+    dateOptions
+  )
+  const startTime = new Date(`${startDateTime}`).toLocaleTimeString(
+    "nl-NL",
+    timeOptions
+  )
+  const endTime = new Date(`${endDateTime}`).toLocaleTimeString(
+    "nl-NL",
+    timeOptions
+  )
+
+  return `${date}, ${startTime} - ${endTime}`
 }
 
 export async function clientLoader() {
   try {
-    // return [] as Session[] //TODO: remove this line and uncomment the code below when API is ready
-
     const response = await apiClient.get<Session[]>("/sessions")
     const rawSessions = response.data
 
     return rawSessions.map((session) => ({
       ...session,
-      "date-time": formatDateTime(
-        session.date,
-        session.startedAt,
-        session.endedAt
-      ),
-      "capacity-display": session.capacity ?? session.room.capacity ?? "-",
+      "date-time": formatDateTime(session.startDateTime, session.endDateTime),
+      // "capacity-display": session.capacity ?? session.room.capacity ?? "-", // TODO implement when rooms are implemented
     }))
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
