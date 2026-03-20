@@ -5,29 +5,25 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDateTime(startDateTime: string, endDateTime: string) {
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    day: "numeric",
-    month: "long",
+export function formatDate(dateString: string) {
+  return Intl.DateTimeFormat("nl-NL", {
+    day: "2-digit",
+    month: "short",
     year: "numeric",
-  }
-  const timeOptions: Intl.DateTimeFormatOptions = {
+  }).format(new Date(dateString))
+}
+
+export function formatTime(dateString: string) {
+  return Intl.DateTimeFormat("nl-NL", {
     hour: "2-digit",
     minute: "2-digit",
-  }
+  }).format(new Date(dateString))
+}
 
-  const date = new Date(`${startDateTime}`).toLocaleDateString(
-    "nl-NL",
-    dateOptions
-  )
-  const startTime = new Date(`${startDateTime}`).toLocaleTimeString(
-    "nl-NL",
-    timeOptions
-  )
-  const endTime = new Date(`${endDateTime}`).toLocaleTimeString(
-    "nl-NL",
-    timeOptions
-  )
+export function formatDateRange(startDateTime: string, endDateTime: string) {
+  const date = formatDate(startDateTime)
+  const startTime = formatTime(startDateTime)
+  const endTime = formatTime(endDateTime)
 
   return `${date}, ${startTime} - ${endTime}`
 }

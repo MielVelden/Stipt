@@ -14,11 +14,11 @@ const sessionBaseObjectSchema = z.object({
   date: z.string().min(1, "Dit veld is verplicht"),
   startedAt: z.string().min(1, "Dit veld is verplicht"),
   endedAt: z.string().min(1, "Dit veld is verplicht"),
-  tags: z
+  labels: z
     .array(z.string())
     .default([])
     .optional()
-    .refine((tags) => new Set(tags).size === tags?.length, {
+    .refine((labels) => new Set(labels).size === labels?.length, {
       message: "Labels moeten uniek zijn",
     }),
 })

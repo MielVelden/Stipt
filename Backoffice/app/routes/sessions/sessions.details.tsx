@@ -1,12 +1,20 @@
-import { isRouteErrorResponse, Link, useRouteError } from "react-router"
-import type { Route } from "./+types/sessions.details"
-import type { Session } from "./types"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
+import type { Route } from "./+types/sessions.details"
+import type { Session } from "./types"
+import {
+  Field,
+  FieldContent,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+} from "~/components/ui/field"
+import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import FetchError from "~/components/fetch-error"
+import { isRouteErrorResponse, Link, useRouteError } from "react-router"
 import apiClient from "~/lib/api-client"
-import { SessionForm } from "./session-form"
+import FetchError from "~/components/fetch-error"
+import { formatDate, formatTime } from "~/lib/utils"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
@@ -14,7 +22,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
       "/sessions/" + (params.id as string)
     )
     return response.data
-  } catch {
+  } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
 }
@@ -31,7 +39,63 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           </Button>
         </div>
 
-        <SessionForm mode="readonly" session={session} />
+        <FieldSet className="max-w-2xl gap-6">
+          <Field>
+            <FieldLabel>Titel</FieldLabel>
+            <FieldContent>{session.title}</FieldContent>
+          </Field>
+          <Field>
+            <FieldLabel>Beschrijving</FieldLabel>
+            <FieldContent className="max-w-2xl">
+              {session.description}
+            </FieldContent>
+          </Field>
+          <Field>
+            <FieldLabel>Spreker</FieldLabel>
+            <FieldContent>{session.speaker}</FieldContent>
+          </Field>
+
+          <FieldGroup className="flex flex-row gap-12">
+            <Field className="w-fit">
+              <FieldLabel>Ruimte</FieldLabel>
+              <FieldContent>{session.room}</FieldContent>
+            </Field>
+            <Field className="w-fit">
+              <FieldLabel>Capaciteit</FieldLabel>
+              <FieldContent>
+                {/* // TODO implement when rooms are implemented {session.capacity ?? session.room.capacity ?? "-"} */}
+                {session.capacity ?? "-"}
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+
+          <FieldGroup className="flex flex-row gap-12">
+            <Field className="w-fit">
+              <FieldLabel>Startdatum</FieldLabel>
+              <FieldContent>{formatDate(session.startTime)}</FieldContent>
+            </Field>
+            <Field className="w-fit">
+              <FieldLabel>Starttijd</FieldLabel>
+              <FieldContent>{formatTime(session.startTime)}</FieldContent>
+            </Field>
+            <Field className="w-fit">
+              <FieldLabel>Eindtijd</FieldLabel>
+              <FieldContent>{formatTime(session.endTime)}</FieldContent>
+            </Field>
+          </FieldGroup>
+
+          <Field>
+            <FieldLabel>Labels</FieldLabel>
+            <FieldContent className="flex flex-row flex-wrap gap-2">
+              {session.labels && session.labels.length === 0 && <span>-</span>}
+              {session.labels?.map((label, index) => (
+                <Badge key={index} variant={"secondary"}>
+                  {label}
+                </Badge>
+              ))}
+            </FieldContent>
+          </Field>
+        </FieldSet>
       </PageContainer>
     </>
   )

@@ -7,7 +7,7 @@ export type Session = {
   startTime: string
   endTime: string
   capacity?: number
-  tags: string[]
+  labels: string[]
 }
 
 export type CreateSession = Omit<Session, "id">
