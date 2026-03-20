@@ -1,9 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Backend.Application;
+using Backend.Common.Application.Converters;
 using Backend.Common.Web;
 using Backend.Database;
 using Microsoft.AspNetCore.Http.Json;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace Backend.Web.Configuration;
 
@@ -18,6 +21,9 @@ public static class DependencyInjection
         {
             options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            
+            options.SerializerOptions.Converters.Add(new OptionalConverterFactory());
+            options.SerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
         });
 
         services.AddApplication();

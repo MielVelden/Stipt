@@ -1,3 +1,4 @@
+using Backend.Application.Features.Events.Repositories;
 using Backend.Application.Features.Sessions.Repositories;
 using Backend.Application.Features.Todos.Repositories;
 using Backend.Database.Persistence;
@@ -21,6 +22,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITodoRepository, TodoRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
 
         return services;
     }
