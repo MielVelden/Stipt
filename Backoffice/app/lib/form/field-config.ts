@@ -5,6 +5,7 @@ export type DateFieldConfig = { kind: "date" }
 export type TimeFieldConfig = { kind: "time" }
 export type SelectFieldConfig = { kind: "select"; placeholder?: string; optionsKey: string }
 export type TagsFieldConfig = { kind: "tags" }
+export type ColorFieldConfig = { kind: "color" }
 
 export type FieldKindConfig =
   | TextFieldConfig
@@ -14,6 +15,7 @@ export type FieldKindConfig =
   | TimeFieldConfig
   | SelectFieldConfig
   | TagsFieldConfig
+  | ColorFieldConfig
 
 export type FieldConfig<
   TFormValues extends Record<string, any>,
