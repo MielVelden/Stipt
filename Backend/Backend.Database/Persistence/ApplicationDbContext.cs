@@ -1,3 +1,4 @@
+using Backend.Domain.Sessions;
 using Backend.Domain.Events;
 using Backend.Domain.Todos;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 {
     public DbSet<TodoItem> Todos => Set<TodoItem>();
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<Session> Sessions => Set<Session>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

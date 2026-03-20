@@ -21,9 +21,8 @@ public static class DependencyInjection
                 npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<ITodoRepository, TodoRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
-        // TODO change to scoped after implementing full repository
-        services.AddSingleton<ISessionRepository, MockSessionRepository>();
 
         return services;
     }

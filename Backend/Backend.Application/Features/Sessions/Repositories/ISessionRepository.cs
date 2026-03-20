@@ -1,5 +1,4 @@
 using Backend.Domain.Sessions;
-using NodaTime;
 
 namespace Backend.Application.Features.Sessions.Repositories;
 
@@ -11,8 +10,8 @@ public interface ISessionRepository
     Task<Session?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> HasOverlapAsync(
         string room,
-        Instant startTime,
-        Instant endTime,
+        DateTimeOffset startTime,
+        DateTimeOffset endTime,
         Guid? excludedSessionId,
         CancellationToken cancellationToken);
     Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken);
