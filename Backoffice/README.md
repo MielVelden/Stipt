@@ -1,31 +1,24 @@
-# Backoffice
+## iO Event Connect – Backoffice (Frontend)
 
-React Router front-end scaffold for a REST API driven backoffice.
+### Packages
+- React
+- React Router
+- shadcn/ui
 
-## Structure
-
-```text
-app/
-  components/   shared UI building blocks
-  config/       app-level constants and environment defaults
-  layouts/      reusable route shells
-  lib/          low-level helpers such as the API client
-  routes/       route modules
-  services/     feature-facing data access and mock scaffolding
-  types/        shared TypeScript models
+### Projectstructuur
+```
+├── public/         # Alle source bestanden
+├── app/            # In veel talen de src-folder
+    ├── components/             # Components die voor de hele app gebruikt worden
+        ├── ui/                     # Componenten uit shadcn/ui, hoef je waarschijnlijk niet te wijzigen
+    ├── routes/
+        ├── [module]/           # Bijvoorbeeld: events
+            ├── components/                 # Component enkel gebruikt door deze module
+            ├── [module].[pagina].tsx       # Bestand per pagina
+    ├── routes.ts     # Route configuratie
+    
 ```
 
-## Development
-
-```bash
-cp .env.example .env
-npm run dev
-```
-
-Set `VITE_API_BASE_URL` in `.env` to set the API url
-
-## Notes
-
-- `app/lib/api-client.ts` is the fetch wrapper for REST calls.
-- `app/services/` is where feature modules should call the API client.
-- `app/routes/` should stay focused on rendering, loaders, and actions.
+### Editor setup
+Dit project maakt gebruik van Eslint en Prettier. In de meeste editors is deze configuratie al ingesteld.
+> Tip: zet bij "actions on save": "run prettier" en "run eslint --fix" aan
