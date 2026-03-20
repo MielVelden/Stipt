@@ -1,6 +1,7 @@
 using Backend.Domain.Sessions;
 using Backend.Domain.Events;
 using Backend.Domain.Todos;
+using Backend.Domain.Rooms;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Database.Persistence;
@@ -8,6 +9,7 @@ namespace Backend.Database.Persistence;
 public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<TodoItem> Todos => Set<TodoItem>();
+    public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Session> Sessions => Set<Session>();
 
