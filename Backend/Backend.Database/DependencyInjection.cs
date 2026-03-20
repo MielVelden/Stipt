@@ -1,3 +1,4 @@
+using Backend.Application.Features.Events.Repositories;
 using Backend.Application.Features.Sessions.Repositories;
 using Backend.Application.Features.Todos.Repositories;
 using Backend.Application.Features.Rooms.Repositories;
@@ -22,6 +23,8 @@ public static class DependencyInjection
 
         services.AddScoped<ITodoRepository, TodoRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
+
         // TODO change to scoped after implementing full repository
         services.AddSingleton<ISessionRepository, MockSessionRepository>();
 

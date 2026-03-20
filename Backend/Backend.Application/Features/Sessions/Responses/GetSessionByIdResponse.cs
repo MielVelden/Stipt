@@ -11,4 +11,4 @@ public sealed record GetSessionByIdResponse(
     Instant StartTime,
     Instant EndTime,
     int? Capacity,
-    IReadOnlyCollection<string> Tags);
+    IReadOnlyCollection<string> Labels);

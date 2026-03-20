@@ -17,7 +17,7 @@ namespace Backend.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -38,6 +38,47 @@ namespace Backend.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("rooms", (string)null);
+                });
+            
+            modelBuilder.Entity("Backend.Domain.Events.Event", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("StartDate");
+
+                    b.ToTable("events", (string)null);
                 });
 
             modelBuilder.Entity("Backend.Domain.Todos.TodoItem", b =>
@@ -65,6 +106,42 @@ namespace Backend.Database.Migrations
                     b.HasIndex("CreatedAtUtc");
 
                     b.ToTable("todos", (string)null);
+                });
+
+            modelBuilder.Entity("Backend.Domain.Events.Event", b =>
+                {
+                    b.OwnsOne("Backend.Domain.Events.EventStyle", "Style", b1 =>
+                        {
+                            b1.Property<Guid>("EventId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("LogoImageUrl")
+                                .HasMaxLength(2000)
+                                .HasColumnType("character varying(2000)")
+                                .HasColumnName("style_logo_image_url");
+
+                            b1.Property<string>("PrimaryBackgroundColor")
+                                .IsRequired()
+                                .HasMaxLength(7)
+                                .HasColumnType("character varying(7)")
+                                .HasColumnName("style_primary_background_color");
+
+                            b1.Property<string>("PrimaryForegroundColor")
+                                .IsRequired()
+                                .HasMaxLength(7)
+                                .HasColumnType("character varying(7)")
+                                .HasColumnName("style_primary_foreground_color");
+
+                            b1.HasKey("EventId");
+
+                            b1.ToTable("events");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EventId");
+                        });
+
+                    b.Navigation("Style")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

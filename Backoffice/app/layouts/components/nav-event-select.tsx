@@ -4,11 +4,9 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
-import { ArrowRight, Plus, TicketIcon } from "lucide-react"
+import { ArrowRight, Plus } from "lucide-react"
 import { Link } from "react-router"
 import {
   Select,
@@ -19,15 +17,9 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Button } from "~/components/ui/button"
+import type { Event } from "~/routes/events/types"
 
-// TODO: Replace with actual events from the API
-const events = [
-  { id: "1", name: "Example 1" },
-  { id: "2", name: "Example 2" },
-  { id: "3", name: "Example 3" },
-]
-
-export function NavEventSelect() {
+export function NavEventSelect({ events }: { events: Event[] }) {
   return (
     <SidebarGroup>
       <div className="flex items-center justify-between">
