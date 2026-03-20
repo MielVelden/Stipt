@@ -12,9 +12,8 @@ public sealed class UpdateRoomHandler(IRoomRepository roomRepository) : IRequest
         var room = await roomRepository.GetByIdAsync(request.Id, ct);
 
         if (room == null)
-        {
             throw new Exception($"Ruimte met ID {request.Id} niet gevonden.");
-        }
+        
 
         room.Name = request.Name.Trim();
         room.Capacity = request.Capacity;
