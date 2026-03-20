@@ -1,3 +1,4 @@
+using Backend.Domain.Sessions;
 using Backend.Domain.Events;
 using Backend.Domain.Todos;
 using Backend.Domain.Rooms;
@@ -10,6 +11,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<TodoItem> Todos => Set<TodoItem>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<Session> Sessions => Set<Session>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

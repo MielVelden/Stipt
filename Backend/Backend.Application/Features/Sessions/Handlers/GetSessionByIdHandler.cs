@@ -22,6 +22,8 @@ public sealed class GetSessionByIdHandler(ISessionRepository sessionRepository)
                 session.StartTime,
                 session.EndTime,
                 session.Capacity,
-                session.Labels.AsReadOnly());
+                session.Labels.AsReadOnly(),
+                session.CreatedAtUtc,
+                session.UpdatedAtUtc);
     }
 }
