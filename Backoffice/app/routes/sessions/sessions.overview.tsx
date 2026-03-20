@@ -41,14 +41,7 @@ import {
 import apiClient from "~/lib/api-client"
 import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
-import { formatDateTime } from "~/lib/utils"
-import { nameofFactory } from "~/lib/fields"
-
-interface SessionEx extends Session {
-  dateTime: string
-}
-
-const fieldsSession = nameofFactory<SessionEx>();
+import { formatDateRange } from "~/lib/utils"
 
 export async function clientLoader() {
   try {
@@ -57,8 +50,9 @@ export async function clientLoader() {
 
     return rawSessions.map((session) => ({
       ...session,
-      dateTime: formatDateTime(session.startTime, session.endTime),
-    })) as SessionEx[]
+      "date-time": formatDateRange(session.startTime, session.endTime),
+      // "capacity-display": session.capacity ?? session.room.capacity ?? "-", // TODO implement when rooms are implemented
+    }))
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
@@ -81,9 +75,9 @@ export async function clientAction({ request }: { request: Request }) {
 }
 
 export default function Page({ loaderData: sessions }: Route.ComponentProps) {
-  const columns: ColumnDef<SessionEx>[] = [
+  const columns: ColumnDef<Session>[] = [
     {
-      accessorKey: fieldsSession("title"),
+      accessorKey: "title",
       header: "Titel",
       cell: ({ row }) => {
         return (
@@ -97,39 +91,38 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       },
     },
     {
-      accessorKey: fieldsSession("speaker"),
+      accessorKey: "speaker",
       header: "Spreker",
     },
     {
-      accessorKey: fieldsSession("room"),
+      accessorKey: "room",
       header: "Ruimte",
     },
     {
-      accessorKey: fieldsSession("dateTime"),
+      accessorKey: "date-time",
       header: "Datum & tijd",
     },
     {
-      accessorKey: fieldsSession("capacity"),
+      accessorKey: "capacity",
       header: "Capaciteit",
     },
     {
-      accessorKey: fieldsSession("tags"),
+      accessorKey: "labels",
       header: "Labels",
       cell: ({ row }) => {
-        const tags = row.original.tags
-        if (!tags || tags.length === 0)
-          return null
+        const labels = row.original.labels
+        if (!labels || labels.length === 0) return null
         return (
           <div className="flex flex-wrap gap-1">
-            {(tags && tags.length > 3 ? tags.slice(0, 2) : tags).map(
-              (tag, index) => (
+            {(labels && labels.length > 3 ? labels.slice(0, 2) : labels).map(
+              (label, index) => (
                 <Badge key={index} variant={"secondary"}>
-                  {tag}
+                  {label}
                 </Badge>
               )
             )}
-            {tags && tags.length > 3 && (
-              <Badge variant={"secondary"}>+{tags.length - 2}</Badge>
+            {labels && labels.length > 3 && (
+              <Badge variant={"secondary"}>+{labels.length - 2}</Badge>
             )}
           </div>
         )
@@ -141,17 +134,17 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
         return ActionsDropdown({
           actions: [
             {
-              label: "Bekijken",
+              label: "Bekijk",
               icon: <EyeIcon />,
               linkTo: `/app/sessies/${row.original.id}`,
             },
             {
-              label: "Bewerken",
+              label: "Bewerk",
               icon: <EditIcon />,
               linkTo: `/app/sessies/${row.original.id}/bewerken`,
             },
             {
-              label: "Verwijderen",
+              label: "Verwijder",
               icon: <TrashIcon />,
               separatorBefore: true,
               variant: "destructive",
@@ -169,8 +162,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const filteredSessions = useMemo(() => {
     const query = searchQuery.toLowerCase().trim()
-    if (!query)
-      return sessions
+    if (!query) return sessions
 
     return sessions.filter((session) => {
       return (

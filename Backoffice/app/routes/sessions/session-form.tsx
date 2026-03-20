@@ -66,7 +66,7 @@ function CreateSessionForm({ rooms }: { rooms: string[] }) {
       date: "",
       startedAt: "",
       endedAt: "",
-      tags: [],
+      labels: [],
     },
   })
 
@@ -80,7 +80,7 @@ function CreateSessionForm({ rooms }: { rooms: string[] }) {
       startTime: `${data.date}T${data.startedAt}:00Z`,
       endTime: `${data.date}T${data.endedAt}:00Z`,
       capacity: data.capacity ? Number(data.capacity) : undefined,
-      tags: data.tags ?? [],
+      labels: data.labels ?? [],
     }
 
     try {
@@ -96,7 +96,10 @@ function CreateSessionForm({ rooms }: { rooms: string[] }) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} id="form-session-create">
-      <FieldSet className="max-w-2xl gap-6" disabled={form.formState.isSubmitting}>
+      <FieldSet
+        className="max-w-2xl gap-6"
+        disabled={form.formState.isSubmitting}
+      >
         <FormGroups
           mode="edit"
           control={form.control}
@@ -148,7 +151,7 @@ function EditSessionForm({
       date: session.startTime.split("T")[0],
       startedAt: session.startTime.split("T")[1].substring(0, 5),
       endedAt: session.endTime.split("T")[1].substring(0, 5),
-      tags: session.tags || [],
+      labels: session.labels || [],
     },
   })
 
@@ -162,7 +165,7 @@ function EditSessionForm({
       startTime: `${data.date}T${data.startedAt}:00Z`,
       endTime: `${data.date}T${data.endedAt}:00Z`,
       capacity: data.capacity ? Number(data.capacity) : undefined,
-      tags: data.tags ?? [],
+      labels: data.labels ?? [],
     }
 
     try {

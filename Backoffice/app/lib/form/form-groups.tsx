@@ -12,6 +12,8 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
+import { DatePicker } from "~/components/ui/date-picker"
+import { ColorPicker } from "~/components/ui/color-picker"
 import {
   Select,
   SelectContent,
@@ -40,21 +42,37 @@ function ReadonlyField<TEntity>({
   config: FieldConfig<any, TEntity>
   entity: TEntity
 }) {
-  if (config.kind === "tags") {
-    const tags = config.readonlyValue(entity) as string[]
+  if (config.kind === "labels") {
+    const labels = config.readonlyValue(entity) as string[]
     return (
       <Field className={config.className}>
         <FieldLabel>{config.label}</FieldLabel>
         <FieldContent className="flex flex-row flex-wrap gap-2">
-          {tags.length === 0 ? (
+          {labels.length === 0 ? (
             <span>-</span>
           ) : (
-            tags.map((tag) => (
-              <Badge key={tag} variant="secondary">
-                {tag}
+            labels.map((label) => (
+              <Badge key={label} variant="secondary">
+                {label}
               </Badge>
             ))
           )}
+        </FieldContent>
+      </Field>
+    )
+  }
+
+  if (config.kind === "color") {
+    const color = config.readonlyValue(entity) as string
+    return (
+      <Field className={config.className}>
+        <FieldLabel>{config.label}</FieldLabel>
+        <FieldContent className="flex items-center gap-2">
+          <div
+            className="h-5 w-5 rounded border"
+            style={{ backgroundColor: color }}
+          />
+          {color}
         </FieldContent>
       </Field>
     )
@@ -70,7 +88,7 @@ function ReadonlyField<TEntity>({
 
 // --- Edit ---
 
-function TagsEditField({
+function LabelsEditField({
   name,
   label,
   className,
@@ -83,21 +101,21 @@ function TagsEditField({
   setValue: UseFormSetValue<any>
   watch: UseFormWatch<any>
 }) {
-  const [newTag, setNewTag] = useState("")
-  const currentTags = (watch(name) as string[]) ?? []
+  const [newLabel, setNewLabel] = useState("")
+  const currentLabels = (watch(name) as string[]) ?? []
 
-  const addTag = () => {
-    const trimmed = newTag.trim()
-    if (trimmed && !currentTags.includes(trimmed)) {
-      setValue(name, [...currentTags, trimmed], { shouldValidate: true })
-      setNewTag("")
+  const addLabel = () => {
+    const trimmed = newLabel.trim()
+    if (trimmed && !currentLabels.includes(trimmed)) {
+      setValue(name, [...currentLabels, trimmed], { shouldValidate: true })
+      setNewLabel("")
     }
   }
 
-  const removeTag = (tag: string) => {
+  const removeLabel = (label: string) => {
     setValue(
       name,
-      currentTags.filter((t) => t !== tag),
+      currentLabels.filter((l) => l !== label),
       { shouldValidate: true }
     )
   }
@@ -107,28 +125,28 @@ function TagsEditField({
       <FieldLabel>{label}</FieldLabel>
       <InputGroup className="mb-2 max-w-xs">
         <InputGroupInput
-          placeholder="Typ een tag..."
-          value={newTag}
-          onChange={(e) => setNewTag(e.target.value)}
+          placeholder="Typ een label..."
+          value={newLabel}
+          onChange={(e) => setNewLabel(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault()
-              addTag()
+              addLabel()
             }
           }}
         />
         <InputGroupAddon align="inline-end">
-          <InputGroupButton variant="link" type="button" onClick={addTag}>
+          <InputGroupButton variant="link" type="button" onClick={addLabel}>
             Toevoegen
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
       <FieldContent className="flex flex-row flex-wrap gap-2">
-        {currentTags.map((tag) => (
-          <Badge key={tag} variant="secondary" className="py-1 pr-1 pl-2">
-            {tag}
+        {currentLabels.map((label) => (
+          <Badge key={label} variant="secondary" className="py-1 pr-1 pl-2">
+            {label}
             <Button
-              onClick={() => removeTag(tag)}
+              onClick={() => removeLabel(label)}
               variant="ghost"
               size="icon"
               className="ml-1 h-4 w-4 cursor-pointer rounded-full"
@@ -156,9 +174,9 @@ function EditField({
   watch: UseFormWatch<any>
   selectOptions?: Record<string, string[]>
 }) {
-  if (config.kind === "tags") {
+  if (config.kind === "labels") {
     return (
-      <TagsEditField
+      <LabelsEditField
         name={config.name}
         label={config.label}
         className={config.className}
@@ -218,10 +236,12 @@ function EditField({
             break
           case "date":
             widget = (
-              <Input
-                {...field}
-                id={config.name}
-                type="date"
+              <DatePicker
+                id={config.name as string}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                disabled={field.disabled}
                 aria-invalid={fieldState.invalid}
               />
             )
@@ -230,7 +250,7 @@ function EditField({
             widget = (
               <Input
                 {...field}
-                id={config.name}
+                id={config.name as string}
                 type="time"
                 aria-invalid={fieldState.invalid}
               />
@@ -256,6 +276,18 @@ function EditField({
             )
             break
           }
+          case "color":
+            widget = (
+              <ColorPicker
+                id={config.name as string}
+                value={field.value || "#000000"}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                disabled={field.disabled}
+                aria-invalid={fieldState.invalid}
+              />
+            )
+            break
         }
 
         return (

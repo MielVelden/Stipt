@@ -25,14 +25,15 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
         var session = new Session
         {
             Id = Guid.NewGuid(),
-            Title = request.Title?.Trim() ?? "New Session",
-            Description = request.Description?.Trim() ?? string.Empty,
-            Speaker = request.Speaker?.Trim() ?? string.Empty,
-            Room = request.Room?.Trim() ?? string.Empty,
+            Title = request.Title.Trim(),
+            Description = request.Description?.Trim(),
+            Speaker = request.Speaker.Trim(),
+            Room = request.Room.Trim(),
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Capacity = request.Capacity,
-            Labels = request.Labels?.Select(tag => tag.Trim()).ToList() ?? []
+            Labels = request.Labels?.Select(label => label.Trim()).ToList() ?? [],
+            CreatedAtUtc = DateTime.UtcNow
         };
 
         await sessionRepository.AddAsync(session, cancellationToken);
@@ -46,6 +47,7 @@ public sealed class CreateSessionHandler(ISessionRepository sessionRepository)
             session.StartTime,
             session.EndTime,
             session.Capacity,
-            session.Labels.AsReadOnly());
+            session.Labels.AsReadOnly(),
+            session.CreatedAtUtc);
     }
 }

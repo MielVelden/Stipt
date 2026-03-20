@@ -2,8 +2,19 @@ import { AppSidebar } from "~/layouts/components/app-sidebar"
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar"
 import { Outlet } from "react-router"
 import { AppProvider } from "~/contexts/app-context"
+import apiClient from "~/lib/api-client"
+import type { Event } from "~/routes/events/types"
 
-export default function Page() {
+export async function clientLoader() {
+  try {
+    const response = await apiClient.get<Event[]>("/events")
+    return response.data
+  } catch {
+    return []
+  }
+}
+
+export default function Page({ loaderData: events }: { loaderData: Event[] }) {
   return (
     <AppProvider>
     <SidebarProvider
@@ -14,7 +25,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" collapsible="icon" />
+      <AppSidebar variant="inset" collapsible="icon" events={events} />
       <SidebarInset>
         <Outlet />
       </SidebarInset>

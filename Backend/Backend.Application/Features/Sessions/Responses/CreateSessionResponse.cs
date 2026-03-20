@@ -1,14 +1,13 @@
-using NodaTime;
-
 namespace Backend.Application.Features.Sessions.Responses;
 
 public sealed record CreateSessionResponse(
     Guid Id,
     string Title,
-    string Description,
+    string? Description,
     string Speaker,
     string Room,
-    Instant StartTime,
-    Instant EndTime,
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime,
     int? Capacity,
-    IReadOnlyCollection<string> TagLabelss);
+    IReadOnlyCollection<string> Labels,
+    DateTime CreatedAtUtc);

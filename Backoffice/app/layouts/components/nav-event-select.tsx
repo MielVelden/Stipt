@@ -18,9 +18,10 @@ import {
 } from "~/components/ui/select"
 import { Button } from "~/components/ui/button"
 import { useAppContext } from "~/contexts/app-context"
+import type { Event } from "~/routes/events/types"
 
-export function NavEventSelect() {
-  const { events, selectedEventId, setSelectedEventId } = useAppContext()
+export function NavEventSelect({ events }: { events: Event[] }) {
+  const { selectedEventId, setSelectedEventId } = useAppContext()
 
   return (
     <SidebarGroup>

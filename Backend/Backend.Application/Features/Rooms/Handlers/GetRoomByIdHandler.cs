@@ -12,9 +12,7 @@ public sealed class GetRoomByIdHandler(IRoomRepository roomRepository) : IReques
         var room = await roomRepository.GetByIdAsync(request.Id, ct);
 
         if (room == null)
-        {
-            return null;
-        }
+            throw new Exception($"Ruimte met ID {request.Id} niet gevonden.");
 
         return new GetRoomResponse(
             room.Id,
