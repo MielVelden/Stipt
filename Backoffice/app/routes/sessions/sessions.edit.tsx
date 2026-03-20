@@ -8,7 +8,7 @@ import {
 import type { Route } from "./+types/sessions.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
-import type { Session } from "./types"
+import type { Room, Session } from "./types"
 import {
   Field,
   FieldContent,
@@ -81,11 +81,11 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
     const sessionResponse = await apiClient.get<Session>(
       "/sessions/" + (params.id as string)
     )
-    // const roomsResponse = await apiClient.get<Room[]>("/rooms") // TODO implement when rooms are implemented
+    const roomsResponse = await apiClient.get<Room[]>("/rooms")
 
     return {
       session: sessionResponse.data,
-      rooms: ["Zaal 1", "Zaal 2", "Zaal 3"], // TODO remove mock data
+      rooms: roomsResponse.data,
     }
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -242,10 +242,15 @@ export default function Page({
                       <SelectContent position="popper">
                         <SelectGroup>
                           {rooms?.map((room) => (
-                            <SelectItem key={room} value={room}>
-                              {room}
+                            <SelectItem key={room.id} value={room.id}>
+                              {room.name}
                             </SelectItem>
                           ))}
+                          {!rooms?.length && (
+                            <SelectItem value="null" disabled>
+                              Geen ruimtes beschikbaar
+                            </SelectItem>
+                          )}
                         </SelectGroup>
                       </SelectContent>
                     </Select>

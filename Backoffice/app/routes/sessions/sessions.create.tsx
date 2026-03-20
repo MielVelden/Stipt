@@ -43,7 +43,7 @@ import FetchError from "~/components/fetch-error"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
-import type { CreateSession, Session } from "./types"
+import type { CreateSession, Room, Session } from "./types"
 
 const formSchema = z
   .object({
@@ -77,10 +77,8 @@ type SessionFormValues = z.infer<typeof formSchema>
 
 export async function clientLoader() {
   try {
-    return ["Zaal 1", "Zaal 2", "Zaal 3"]
-    // TODO remove when rooms are implemented
-    // const response = await apiClient.get<Room[]>("/rooms")
-    // return response.data
+    const response = await apiClient.get<Room[]>("/rooms")
+    return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
@@ -235,10 +233,15 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       <SelectContent position="popper">
                         <SelectGroup>
                           {rooms?.map((room) => (
-                            <SelectItem key={room} value={room}>
-                              {room}
+                            <SelectItem key={room.id} value={room.id}>
+                              {room.name}
                             </SelectItem>
                           ))}
+                          {!rooms?.length && (
+                            <SelectItem value="null" disabled>
+                              Geen ruimtes beschikbaar
+                            </SelectItem>
+                          )}
                         </SelectGroup>
                       </SelectContent>
                     </Select>

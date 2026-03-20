@@ -11,3 +11,10 @@ export type Session = {
 }
 
 export type CreateSession = Omit<Session, "id">
+
+export type Room = {
+  id: string
+  eventId: string
+  name: string
+  capacity: number
+}
