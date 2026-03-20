@@ -1,6 +1,7 @@
 import { AppSidebar } from "~/layouts/components/app-sidebar"
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar"
 import { Outlet } from "react-router"
+import { AppProvider } from "~/contexts/app-context"
 import apiClient from "~/lib/api-client"
 import type { Event } from "~/routes/events/types"
 
@@ -15,6 +16,7 @@ export async function clientLoader() {
 
 export default function Page({ loaderData: events }: { loaderData: Event[] }) {
   return (
+    <AppProvider>
     <SidebarProvider
       style={
         {
@@ -28,5 +30,6 @@ export default function Page({ loaderData: events }: { loaderData: Event[] }) {
         <Outlet />
       </SidebarInset>
     </SidebarProvider>
+    </AppProvider>
   )
 }
