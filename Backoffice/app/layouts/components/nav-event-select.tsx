@@ -17,9 +17,12 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Button } from "~/components/ui/button"
+import { useAppContext } from "~/contexts/app-context"
 import type { Event } from "~/routes/events/types"
 
 export function NavEventSelect({ events }: { events: Event[] }) {
+  const { selectedEventId, setSelectedEventId } = useAppContext()
+
   return (
     <SidebarGroup>
       <div className="flex items-center justify-between">
@@ -42,7 +45,10 @@ export function NavEventSelect({ events }: { events: Event[] }) {
               className="group-data-[collapsible=icon]:hidden"
             >
               <div className="flex items-center gap-1">
-                <Select>
+                <Select
+                  value={selectedEventId ?? undefined}
+                  onValueChange={setSelectedEventId}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecteer een evenement" />
                   </SelectTrigger>

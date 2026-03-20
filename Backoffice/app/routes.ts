@@ -27,6 +27,12 @@ export default [
         route(":id/bewerken", "routes/sessions/sessions.edit.tsx"),
         route("nieuw", "routes/sessions/sessions.create.tsx"),
       ]),
+
+      ...prefix("ruimtes", [
+        route("", "routes/rooms/rooms.overview.tsx"),
+        route("nieuw", "routes/rooms/rooms.new.tsx"),
+        route(":id/bewerken", "routes/rooms/rooms.edit.tsx"),
+      ]),
     ])
   ),
 ] satisfies RouteConfig
