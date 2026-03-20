@@ -77,8 +77,9 @@ type SessionFormValues = z.infer<typeof formSchema>
 
 export async function clientLoader() {
   try {
-    const response = await apiClient.get<Room[]>("/rooms")
-    return response.data
+    return ["Zaal 1", "Zaal 2", "Zaal 3"] // TODO remove Mock data for rooms
+    // const response = await apiClient.get<Room[]>("/rooms")
+    // return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
@@ -233,8 +234,8 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       <SelectContent position="popper">
                         <SelectGroup>
                           {rooms?.map((room) => (
-                            <SelectItem key={room.id} value={room.id}>
-                              {room.name}
+                            <SelectItem key={room} value={room}>
+                              {room}
                             </SelectItem>
                           ))}
                           {!rooms?.length && (

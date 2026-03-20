@@ -81,7 +81,8 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
     const sessionResponse = await apiClient.get<Session>(
       "/sessions/" + (params.id as string)
     )
-    const roomsResponse = await apiClient.get<Room[]>("/rooms")
+    // const roomsResponse = await apiClient.get<Room[]>("/rooms")
+    const roomsResponse = { data: ["Zaal 1", "Zaal 2", "Zaal 3"] } // TODO remove Mock data for rooms
 
     return {
       session: sessionResponse.data,
@@ -242,8 +243,8 @@ export default function Page({
                       <SelectContent position="popper">
                         <SelectGroup>
                           {rooms?.map((room) => (
-                            <SelectItem key={room.id} value={room.id}>
-                              {room.name}
+                            <SelectItem key={room} value={room}>
+                              {room}
                             </SelectItem>
                           ))}
                           {!rooms?.length && (
