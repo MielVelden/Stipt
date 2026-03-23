@@ -1,5 +1,5 @@
-using Backend.Application.Features.Events.Requests;
-using Backend.Application.Features.Events.Responses;
+using Backend.Web.Features.Events.Requests;
+using Backend.Web.Features.Events.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

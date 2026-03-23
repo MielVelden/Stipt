@@ -7,6 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FluentValidation" Version="12.1.0" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
+        <PackageReference Include="MediatR" Version="13.1.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,9 +19,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Backend.Application\Backend.Application.csproj" />
         <ProjectReference Include="..\Backend.Common\Backend.Common.csproj" />
         <ProjectReference Include="..\Backend.Database\Backend.Database.csproj" />
+        <ProjectReference Include="..\Backend.Domain\Backend.Domain.csproj" />
     </ItemGroup>
 
 </Project>

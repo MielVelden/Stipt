@@ -1,5 +1,5 @@
-using Backend.Application.Features.Rooms.Requests;
-using Backend.Application.Features.Rooms.Responses;
+using Backend.Web.Features.Rooms.Requests;
+using Backend.Web.Features.Rooms.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

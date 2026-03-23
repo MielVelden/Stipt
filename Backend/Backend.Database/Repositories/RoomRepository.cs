@@ -1,4 +1,4 @@
-using Backend.Application.Features.Rooms.Repositories;
+using Backend.Web.Features.Rooms.Repositories;
 using Backend.Database.Persistence;
 using Backend.Domain.Rooms;
 using Microsoft.EntityFrameworkCore;

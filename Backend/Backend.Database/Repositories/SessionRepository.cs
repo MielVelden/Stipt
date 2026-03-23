@@ -1,4 +1,4 @@
-using Backend.Application.Features.Sessions.Repositories;
+using Backend.Web.Features.Sessions.Repositories;
 using Backend.Database.Persistence;
 using Backend.Domain.Sessions;
 using Microsoft.EntityFrameworkCore;

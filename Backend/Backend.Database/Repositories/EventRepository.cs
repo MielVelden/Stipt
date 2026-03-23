@@ -1,4 +1,4 @@
-using Backend.Application.Features.Events.Repositories;
+using Backend.Web.Features.Events.Repositories;
 using Backend.Database.Persistence;
 using Backend.Domain.Events;
 using Microsoft.EntityFrameworkCore;

@@ -1,5 +1,5 @@
-using Backend.Application.Features.Sessions.Requests;
-using Backend.Application.Features.Sessions.Responses;
+using Backend.Web.Features.Sessions.Requests;
+using Backend.Web.Features.Sessions.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
