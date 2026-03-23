@@ -1,6 +1,4 @@
-using Backend.Domain.Rooms;
-
-namespace Backend.Web.Features.Rooms.Repositories;
+namespace Backend.Database.Entities.Rooms;
 
 public interface IRoomRepository
 {

@@ -1,4 +1,4 @@
-using Backend.Domain.Events;
+using Backend.Database.Entities.Events;
 using Backend.Web.Features.Events.Dtos;
 
 namespace Backend.Web.Features.Events;

@@ -1,8 +1,6 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Web", "Backend.Web\Backend.Web.csproj", "{AEE21A38-EC16-4ABF-94EC-E2E94765E97D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Domain", "Backend.Domain\Backend.Domain.csproj", "{F14F3817-5238-4458-A5D7-2B970313B6F7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Database", "Backend.Database\Backend.Database.csproj", "{D1AADBE2-21CA-45CA-BB0E-F8F95895527E}"
 EndProject
 Global
@@ -15,10 +13,6 @@ Global
 		{AEE21A38-EC16-4ABF-94EC-E2E94765E97D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEE21A38-EC16-4ABF-94EC-E2E94765E97D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEE21A38-EC16-4ABF-94EC-E2E94765E97D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F14F3817-5238-4458-A5D7-2B970313B6F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F14F3817-5238-4458-A5D7-2B970313B6F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F14F3817-5238-4458-A5D7-2B970313B6F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F14F3817-5238-4458-A5D7-2B970313B6F7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1AADBE2-21CA-45CA-BB0E-F8F95895527E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1AADBE2-21CA-45CA-BB0E-F8F95895527E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1AADBE2-21CA-45CA-BB0E-F8F95895527E}.Release|Any CPU.ActiveCfg = Release|Any CPU

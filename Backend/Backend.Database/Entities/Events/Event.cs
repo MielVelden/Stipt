@@ -1,4 +1,4 @@
-namespace Backend.Domain.Events;
+namespace Backend.Database.Entities.Events;
 
 public sealed class Event
 {
@@ -12,3 +12,4 @@ public sealed class Event
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }
+

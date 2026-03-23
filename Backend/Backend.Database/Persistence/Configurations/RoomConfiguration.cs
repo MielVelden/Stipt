@@ -1,4 +1,4 @@
-using Backend.Domain.Rooms;
+using Backend.Database.Entities.Rooms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

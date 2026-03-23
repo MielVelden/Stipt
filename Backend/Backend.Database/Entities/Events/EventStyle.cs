@@ -1,4 +1,4 @@
-namespace Backend.Domain.Events;
+namespace Backend.Database.Entities.Events;
 
 public sealed class EventStyle
 {
@@ -6,3 +6,4 @@ public sealed class EventStyle
     public required string PrimaryForegroundColor { get; set; }
     public string? LogoImageUrl { get; set; }
 }
+

@@ -1,6 +1,4 @@
-using Backend.Domain.Events;
-
-namespace Backend.Web.Features.Events.Repositories;
+namespace Backend.Database.Entities.Events;
 
 public interface IEventRepository
 {

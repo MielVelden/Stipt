@@ -1,6 +1,6 @@
-using Backend.Domain.Sessions;
+using Backend.Database.Entities.Sessions;
 using Backend.Web.Features.Sessions.Dtos;
-using Backend.Web.Features.Sessions.Repositories;
+using Backend.Web.Features.Sessions.Exceptions;
 
 namespace Backend.Web.Features.Sessions;
 

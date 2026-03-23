@@ -1,4 +1,4 @@
-namespace Backend.Domain.Sessions;
+namespace Backend.Database.Entities.Sessions;
 
 public sealed class Session
 {
@@ -14,3 +14,4 @@ public sealed class Session
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }
+

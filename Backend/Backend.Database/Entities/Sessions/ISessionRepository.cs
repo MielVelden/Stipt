@@ -1,6 +1,4 @@
-using Backend.Domain.Sessions;
-
-namespace Backend.Web.Features.Sessions.Repositories;
+namespace Backend.Database.Entities.Sessions;
 
 public interface ISessionRepository
 {

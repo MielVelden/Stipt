@@ -1,4 +1,4 @@
-using Backend.Domain.Rooms;
+using Backend.Database.Entities.Rooms;
 using Backend.Web.Features.Rooms.Dtos;
 
 namespace Backend.Web.Features.Rooms;

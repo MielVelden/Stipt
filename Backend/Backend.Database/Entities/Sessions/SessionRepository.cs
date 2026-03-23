@@ -1,9 +1,7 @@
-using Backend.Web.Features.Sessions.Repositories;
 using Backend.Database.Persistence;
-using Backend.Domain.Sessions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Database.Repositories;
+namespace Backend.Database.Entities.Sessions;
 
 internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessionRepository
 {

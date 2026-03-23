@@ -1,4 +1,4 @@
-using Backend.Domain.Events;
+using Backend.Database.Entities.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

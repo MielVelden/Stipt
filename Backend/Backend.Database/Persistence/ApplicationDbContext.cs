@@ -1,6 +1,6 @@
-using Backend.Domain.Events;
-using Backend.Domain.Rooms;
-using Backend.Domain.Sessions;
+using Backend.Database.Entities.Events;
+using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.Sessions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Database.Persistence;

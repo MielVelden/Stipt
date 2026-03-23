@@ -1,4 +1,4 @@
-namespace Backend.Domain.Rooms;
+namespace Backend.Database.Entities.Rooms;
 
 public sealed class Room
 {
@@ -6,3 +6,4 @@ public sealed class Room
     public required string Name { get; set; }
     public required int Capacity { get; set; }
 }
+

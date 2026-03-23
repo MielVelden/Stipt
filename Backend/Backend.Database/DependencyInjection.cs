@@ -1,8 +1,7 @@
-using Backend.Web.Features.Events.Repositories;
-using Backend.Web.Features.Sessions.Repositories;
-using Backend.Web.Features.Rooms.Repositories;
+using Backend.Database.Entities.Events;
+using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.Sessions;
 using Backend.Database.Persistence;
-using Backend.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

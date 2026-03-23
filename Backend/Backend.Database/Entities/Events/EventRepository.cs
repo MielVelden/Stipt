@@ -1,9 +1,7 @@
-using Backend.Web.Features.Events.Repositories;
 using Backend.Database.Persistence;
-using Backend.Domain.Events;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Database.Repositories;
+namespace Backend.Database.Entities.Events;
 
 internal sealed class EventRepository(ApplicationDbContext dbContext) : IEventRepository
 {

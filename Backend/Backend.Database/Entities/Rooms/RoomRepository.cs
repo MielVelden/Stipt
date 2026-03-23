@@ -1,9 +1,7 @@
-using Backend.Web.Features.Rooms.Repositories;
 using Backend.Database.Persistence;
-using Backend.Domain.Rooms;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Database.Repositories;
+namespace Backend.Database.Entities.Rooms;
 
 internal sealed class RoomRepository(ApplicationDbContext dbContext) : IRoomRepository
 {
