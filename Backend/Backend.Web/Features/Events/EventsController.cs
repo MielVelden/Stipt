@@ -3,7 +3,7 @@ using Backend.Application.Features.Events.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Web.Controllers;
+namespace Backend.Web.Features.Events;
 
 [ApiController]
 [Route("api/[controller]")]
