@@ -1,0 +1,17 @@
+using FluentValidation;
+
+namespace Backend.Web.Features.Rooms.Dtos;
+
+public sealed class CreateRoomDtoValidator : AbstractValidator<CreateRoomDto>
+{
+    public CreateRoomDtoValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .MaximumLength(120);
+
+        RuleFor(x => x.Capacity)
+            .GreaterThan(0);
+    }
+}
+

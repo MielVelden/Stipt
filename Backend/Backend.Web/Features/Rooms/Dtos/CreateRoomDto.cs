@@ -1,4 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Backend.Web.Features.Rooms.Dtos;
 
-public sealed record CreateRoomDto(string Name, int Capacity);
+public sealed record CreateRoomDto(
+	[param: MinLength(1), MaxLength(120)] string Name,
+	[param: Range(1, int.MaxValue)] int Capacity);
 

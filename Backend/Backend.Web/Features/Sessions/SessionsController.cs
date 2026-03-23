@@ -37,9 +37,9 @@ public class SessionsController(ISessionsService sessionsService) : ControllerBa
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<DeleteSessionRo>> DeleteSession(Guid id, CancellationToken ct)
+    public async Task<IActionResult> DeleteSession(Guid id, CancellationToken ct)
     {
-        var response = await sessionsService.DeleteAsync(id, ct);
-        return response is null ? NotFound() : Ok(response);
+        var deleted = await sessionsService.DeleteAsync(id, ct);
+        return deleted ? NoContent() : NotFound();
     }
 }

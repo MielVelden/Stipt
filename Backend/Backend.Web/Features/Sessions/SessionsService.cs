@@ -12,7 +12,7 @@ public interface ISessionsService
     Task<IReadOnlyCollection<SessionRo>> GetAllAsync(CancellationToken cancellationToken);
     Task<SessionRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<SessionRo?> UpdateAsync(Guid id, UpdateSessionDto request, CancellationToken cancellationToken);
-    Task<DeleteSessionRo?> DeleteAsync(Guid id, CancellationToken cancellationToken);
+    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
 }
 
 public sealed class SessionsService(
@@ -148,10 +148,9 @@ public sealed class SessionsService(
             existingSession.UpdatedAtUtc);
     }
 
-    public async Task<DeleteSessionRo?> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await sessionRepository.DeleteAsync(id, cancellationToken);
-        return deleted ? new DeleteSessionRo(id) : null;
+        return await sessionRepository.DeleteAsync(id, cancellationToken);
     }
 }
 
