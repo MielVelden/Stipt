@@ -31,16 +31,18 @@ public static class DependencyInjection
             options.Filters.Add<ValidationActionFilter>();
         });
 
-        // TODO
+        var allowedOrigins = configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? [];
+
         services.AddCors(options =>
         {
-            options.AddDefaultPolicy(
-                builder =>
-                {
-                    builder.WithOrigins("http://localhost:5173")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
+            options.AddDefaultPolicy(builder => 
+            {
+                builder.WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
         });
 
         return services;
