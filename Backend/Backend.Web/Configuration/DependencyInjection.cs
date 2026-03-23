@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Backend.Web;
 using Backend.Common.Application.Converters;
 using Backend.Common.Web;
 using Backend.Database;
@@ -30,7 +29,10 @@ public static class DependencyInjection
         services.AddDatabase(configuration);
         services.AddOpenApi();
         services.AddAuthorization();
-        services.AddControllers();
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<ValidationActionFilter>();
+        });
 
         // TODO
         services.AddCors(options =>

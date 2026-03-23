@@ -1,19 +1,13 @@
 using Backend.Domain.Rooms;
 using Backend.Web.Features.Rooms.Dtos;
 using Backend.Web.Features.Rooms.Repositories;
-using FluentValidation;
 
 namespace Backend.Web.Features.Rooms;
 
-public sealed class RoomsService(
-    IRoomRepository roomRepository,
-    IValidator<CreateRoomDto> createRoomValidator,
-    IValidator<UpdateRoomDto> updateRoomValidator)
+public sealed class RoomsService(IRoomRepository roomRepository)
 {
     public async Task<RoomRo> CreateAsync(CreateRoomDto request, CancellationToken cancellationToken)
     {
-        await createRoomValidator.ValidateAndThrowAsync(request, cancellationToken);
-
         var room = new Room
         {
             Id = Guid.NewGuid(),
@@ -23,28 +17,24 @@ public sealed class RoomsService(
 
         await roomRepository.CreateAsync(room, cancellationToken);
 
-        return new RoomRo(room.Id, room.Name, room.Capacity);
+        return room.ToRo();
     }
 
     public async Task<List<RoomRo>> GetAllAsync(CancellationToken cancellationToken)
     {
         var rooms = await roomRepository.GetAllAsync(cancellationToken);
 
-        return rooms.Select(room => new RoomRo(
-            room.Id,
-            room.Name,
-            room.Capacity)).ToList();
+        return rooms.Select(room => room.ToRo()).ToList();
     }
 
     public async Task<RoomRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var room = await roomRepository.GetByIdAsync(id, cancellationToken);
-        return room is null ? null : new RoomRo(room.Id, room.Name, room.Capacity);
+        return room is null ? null : room.ToRo();
     }
 
     public async Task<RoomRo?> UpdateAsync(Guid id, UpdateRoomDto request, CancellationToken cancellationToken)
     {
-        await updateRoomValidator.ValidateAndThrowAsync(request, cancellationToken);
 
         var room = await roomRepository.GetByIdAsync(id, cancellationToken);
 
@@ -56,7 +46,7 @@ public sealed class RoomsService(
 
         await roomRepository.UpdateAsync(room, cancellationToken);
 
-        return new RoomRo(room.Id, room.Name, room.Capacity);
+        return room.ToRo();
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)

@@ -1,19 +1,13 @@
 using Backend.Domain.Events;
 using Backend.Web.Features.Events.Dtos;
 using Backend.Web.Features.Events.Repositories;
-using FluentValidation;
 
 namespace Backend.Web.Features.Events;
 
-public sealed class EventsService(
-    IEventRepository eventRepository,
-    IValidator<CreateEventDto> createEventValidator,
-    IValidator<UpdateEventDto> updateEventValidator)
+public sealed class EventsService(IEventRepository eventRepository)
 {
     public async Task<EventRo> CreateAsync(CreateEventDto request, CancellationToken cancellationToken)
     {
-        await createEventValidator.ValidateAndThrowAsync(request, cancellationToken);
-
         var eventItem = new Event
         {
             Id = Guid.NewGuid(),
@@ -33,21 +27,7 @@ public sealed class EventsService(
 
         await eventRepository.AddAsync(eventItem, cancellationToken);
 
-        return new EventRo(
-            eventItem.Id,
-            eventItem.Name,
-            eventItem.Location,
-            eventItem.StartDate,
-            eventItem.EndDate,
-            new EventStyleRo(
-                eventItem.Style.PrimaryBackgroundColor,
-                eventItem.Style.PrimaryForegroundColor,
-                eventItem.Style.LogoImageUrl
-            ),
-            eventItem.IsArchived,
-            eventItem.CreatedAtUtc,
-            eventItem.UpdatedAtUtc
-        );
+        return eventItem.ToRo();
     }
 
     public async Task<EventRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -57,47 +37,18 @@ public sealed class EventsService(
         if (eventItem is null)
             return null;
 
-        return new EventRo(
-            eventItem.Id,
-            eventItem.Name,
-            eventItem.Location,
-            eventItem.StartDate,
-            eventItem.EndDate,
-            new EventStyleRo(
-                eventItem.Style.PrimaryBackgroundColor,
-                eventItem.Style.PrimaryForegroundColor,
-                eventItem.Style.LogoImageUrl
-            ),
-            eventItem.IsArchived,
-            eventItem.CreatedAtUtc,
-            eventItem.UpdatedAtUtc
-        );
+        return eventItem.ToRo();
     }
 
     public async Task<List<EventRo>> GetAllAsync(CancellationToken cancellationToken)
     {
         var events = await eventRepository.GetAllAsync(cancellationToken);
 
-        return events.Select(e => new EventRo(
-            e.Id,
-            e.Name,
-            e.Location,
-            e.StartDate,
-            e.EndDate,
-            new EventStyleRo(
-                e.Style.PrimaryBackgroundColor,
-                e.Style.PrimaryForegroundColor,
-                e.Style.LogoImageUrl
-            ),
-            e.IsArchived,
-            e.CreatedAtUtc,
-            e.UpdatedAtUtc
-        )).ToList();
+        return events.Select(EventMappings.ToRo).ToList();
     }
 
     public async Task<EventRo?> UpdateAsync(Guid id, UpdateEventDto request, CancellationToken cancellationToken)
     {
-        await updateEventValidator.ValidateAndThrowAsync(request, cancellationToken);
 
         var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
         if (eventItem is null)
@@ -121,21 +72,7 @@ public sealed class EventsService(
         if (!updated)
             return null;
 
-        return new EventRo(
-            eventItem.Id,
-            eventItem.Name,
-            eventItem.Location,
-            eventItem.StartDate,
-            eventItem.EndDate,
-            new EventStyleRo(
-                eventItem.Style.PrimaryBackgroundColor,
-                eventItem.Style.PrimaryForegroundColor,
-                eventItem.Style.LogoImageUrl
-            ),
-            eventItem.IsArchived,
-            eventItem.CreatedAtUtc,
-            eventItem.UpdatedAtUtc
-        );
+        return eventItem.ToRo();
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)

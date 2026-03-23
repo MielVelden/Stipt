@@ -2,19 +2,13 @@ using Backend.Common.Application;
 using Backend.Domain.Sessions;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Repositories;
-using FluentValidation;
 
 namespace Backend.Web.Features.Sessions;
 
-public sealed class SessionsService(
-    ISessionRepository sessionRepository,
-    IValidator<CreateSessionDto> createSessionValidator,
-    IValidator<UpdateSessionDto> updateSessionValidator)
+public sealed class SessionsService(ISessionRepository sessionRepository)
 {
     public async Task<SessionRo> CreateAsync(CreateSessionDto request, CancellationToken cancellationToken)
     {
-        await createSessionValidator.ValidateAndThrowAsync(request, cancellationToken);
-
         var hasOverlap = await sessionRepository.HasOverlapAsync(
             request.Room,
             request.StartTime,
@@ -41,61 +35,25 @@ public sealed class SessionsService(
 
         await sessionRepository.AddAsync(session, cancellationToken);
 
-        return new SessionRo(
-            session.Id,
-            session.Title,
-            session.Description,
-            session.Speaker,
-            session.Room,
-            session.StartTime,
-            session.EndTime,
-            session.Capacity,
-            session.Labels.AsReadOnly(),
-            session.CreatedAtUtc,
-            session.UpdatedAtUtc);
+        return session.ToRo();
     }
 
     public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(CancellationToken cancellationToken)
     {
         var sessions = await sessionRepository.GetAllAsync(cancellationToken);
         return sessions
-            .Select(session => new SessionRo(
-                session.Id,
-                session.Title,
-                session.Description,
-                session.Speaker,
-                session.Room,
-                session.StartTime,
-                session.EndTime,
-                session.Capacity,
-                session.Labels.AsReadOnly(),
-                session.CreatedAtUtc,
-                session.UpdatedAtUtc))
+            .Select(session => session.ToRo())
             .ToArray();
     }
 
     public async Task<SessionRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var session = await sessionRepository.GetByIdAsync(id, cancellationToken);
-        return session is null
-            ? null
-            : new SessionRo(
-                session.Id,
-                session.Title,
-                session.Description,
-                session.Speaker,
-                session.Room,
-                session.StartTime,
-                session.EndTime,
-                session.Capacity,
-                session.Labels.AsReadOnly(),
-                session.CreatedAtUtc,
-                session.UpdatedAtUtc);
+        return session?.ToRo();
     }
 
     public async Task<SessionRo?> UpdateAsync(Guid id, UpdateSessionDto request, CancellationToken cancellationToken)
     {
-        await updateSessionValidator.ValidateAndThrowAsync(request, cancellationToken);
 
         var existingSession = await sessionRepository.GetByIdAsync(id, cancellationToken);
         if (existingSession is null)
@@ -125,18 +83,7 @@ public sealed class SessionsService(
         if (!updated)
             return null;
 
-        return new SessionRo(
-            existingSession.Id,
-            existingSession.Title,
-            existingSession.Description,
-            existingSession.Speaker,
-            existingSession.Room,
-            existingSession.StartTime,
-            existingSession.EndTime,
-            existingSession.Capacity,
-            existingSession.Labels.AsReadOnly(),
-            existingSession.CreatedAtUtc,
-            existingSession.UpdatedAtUtc);
+        return existingSession.ToRo();
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
