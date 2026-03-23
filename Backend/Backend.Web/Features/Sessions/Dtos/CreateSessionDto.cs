@@ -1,6 +1,6 @@
-namespace Backend.Web.Features.Sessions.Requests;
+namespace Backend.Web.Features.Sessions.Dtos;
 
-public sealed record CreateSessionRequest(
+public sealed record CreateSessionDto(
     string Title,
     string? Description,
     string Speaker,
@@ -9,3 +9,4 @@ public sealed record CreateSessionRequest(
     DateTimeOffset EndTime,
     int? Capacity,
     List<string> Labels);
+

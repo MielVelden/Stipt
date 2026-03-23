@@ -1,6 +1,6 @@
-namespace Backend.Web.Features.Sessions.Responses;
+namespace Backend.Web.Features.Sessions.Dtos;
 
-public sealed record GetSessionByIdResponse(
+public sealed record SessionRo(
     Guid Id,
     string Title,
     string? Description,
@@ -12,3 +12,4 @@ public sealed record GetSessionByIdResponse(
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);
+

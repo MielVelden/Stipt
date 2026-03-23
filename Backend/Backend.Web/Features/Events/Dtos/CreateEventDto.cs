@@ -1,15 +1,16 @@
-namespace Backend.Web.Features.Events.Requests;
+namespace Backend.Web.Features.Events.Dtos;
 
-public sealed record CreateEventRequest(
+public sealed record CreateEventDto(
     string Name,
     string Location,
     DateTimeOffset StartDate,
     DateTimeOffset EndDate,
-    CreateEventStyleRequest Style
+    CreateEventStyleDto Style
 );
 
-public sealed record CreateEventStyleRequest(
+public sealed record CreateEventStyleDto(
     string PrimaryBackgroundColor,
     string PrimaryForegroundColor,
     string? LogoImageUrl
 );
+

@@ -1,27 +1,26 @@
 using Backend.Common.Application;
 using Backend.Domain.Sessions;
+using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Repositories;
-using Backend.Web.Features.Sessions.Requests;
-using Backend.Web.Features.Sessions.Responses;
 using FluentValidation;
 
 namespace Backend.Web.Features.Sessions.Services;
 
 public interface ISessionsService
 {
-    Task<CreateSessionResponse> CreateAsync(CreateSessionRequest request, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<GetAllSessionsResponse>> GetAllAsync(CancellationToken cancellationToken);
-    Task<GetSessionByIdResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-    Task<UpdateSessionResponse?> UpdateAsync(Guid id, UpdateSessionRequest request, CancellationToken cancellationToken);
-    Task<DeleteSessionResponse?> DeleteAsync(Guid id, CancellationToken cancellationToken);
+    Task<SessionRo> CreateAsync(CreateSessionDto request, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<SessionRo>> GetAllAsync(CancellationToken cancellationToken);
+    Task<SessionRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<SessionRo?> UpdateAsync(Guid id, UpdateSessionDto request, CancellationToken cancellationToken);
+    Task<DeleteSessionRo?> DeleteAsync(Guid id, CancellationToken cancellationToken);
 }
 
 public sealed class SessionsService(
     ISessionRepository sessionRepository,
-    IValidator<CreateSessionRequest> createSessionValidator,
-    IValidator<UpdateSessionRequest> updateSessionValidator) : ISessionsService
+    IValidator<CreateSessionDto> createSessionValidator,
+    IValidator<UpdateSessionDto> updateSessionValidator) : ISessionsService
 {
-    public async Task<CreateSessionResponse> CreateAsync(CreateSessionRequest request, CancellationToken cancellationToken)
+    public async Task<SessionRo> CreateAsync(CreateSessionDto request, CancellationToken cancellationToken)
     {
         await createSessionValidator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -51,7 +50,7 @@ public sealed class SessionsService(
 
         await sessionRepository.AddAsync(session, cancellationToken);
 
-        return new CreateSessionResponse(
+        return new SessionRo(
             session.Id,
             session.Title,
             session.Description,
@@ -61,14 +60,15 @@ public sealed class SessionsService(
             session.EndTime,
             session.Capacity,
             session.Labels.AsReadOnly(),
-            session.CreatedAtUtc);
+            session.CreatedAtUtc,
+            session.UpdatedAtUtc);
     }
 
-    public async Task<IReadOnlyCollection<GetAllSessionsResponse>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(CancellationToken cancellationToken)
     {
         var sessions = await sessionRepository.GetAllAsync(cancellationToken);
         return sessions
-            .Select(session => new GetAllSessionsResponse(
+            .Select(session => new SessionRo(
                 session.Id,
                 session.Title,
                 session.Description,
@@ -83,12 +83,12 @@ public sealed class SessionsService(
             .ToArray();
     }
 
-    public async Task<GetSessionByIdResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<SessionRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var session = await sessionRepository.GetByIdAsync(id, cancellationToken);
         return session is null
             ? null
-            : new GetSessionByIdResponse(
+            : new SessionRo(
                 session.Id,
                 session.Title,
                 session.Description,
@@ -102,40 +102,39 @@ public sealed class SessionsService(
                 session.UpdatedAtUtc);
     }
 
-    public async Task<UpdateSessionResponse?> UpdateAsync(Guid id, UpdateSessionRequest request, CancellationToken cancellationToken)
+    public async Task<SessionRo?> UpdateAsync(Guid id, UpdateSessionDto request, CancellationToken cancellationToken)
     {
-        var requestWithId = request with { Id = id };
-        await updateSessionValidator.ValidateAndThrowAsync(requestWithId, cancellationToken);
+        await updateSessionValidator.ValidateAndThrowAsync(request, cancellationToken);
 
         var existingSession = await sessionRepository.GetByIdAsync(id, cancellationToken);
         if (existingSession is null)
             return null;
 
         var hasOverlap = await sessionRepository.HasOverlapAsync(
-            requestWithId.Room,
-            requestWithId.StartTime,
-            requestWithId.EndTime,
+            request.Room,
+            request.StartTime,
+            request.EndTime,
             id,
             cancellationToken);
 
         if (hasOverlap)
             throw new ConflictException("The requested time slot overlaps with another session in the same room.");
 
-        existingSession.Title = requestWithId.Title.Trim();
-        existingSession.Description = requestWithId.Description?.Trim();
-        existingSession.Speaker = requestWithId.Speaker.Trim();
-        existingSession.Room = requestWithId.Room.Trim();
-        existingSession.StartTime = requestWithId.StartTime;
-        existingSession.EndTime = requestWithId.EndTime;
-        existingSession.Capacity = requestWithId.Capacity;
-        existingSession.Labels = requestWithId.Labels?.Select(label => label.Trim()).ToList() ?? [];
+        existingSession.Title = request.Title.Trim();
+        existingSession.Description = request.Description?.Trim();
+        existingSession.Speaker = request.Speaker.Trim();
+        existingSession.Room = request.Room.Trim();
+        existingSession.StartTime = request.StartTime;
+        existingSession.EndTime = request.EndTime;
+        existingSession.Capacity = request.Capacity;
+        existingSession.Labels = request.Labels?.Select(label => label.Trim()).ToList() ?? [];
         existingSession.UpdatedAtUtc = DateTime.UtcNow;
 
         var updated = await sessionRepository.UpdateAsync(existingSession, cancellationToken);
         if (!updated)
             return null;
 
-        return new UpdateSessionResponse(
+        return new SessionRo(
             existingSession.Id,
             existingSession.Title,
             existingSession.Description,
@@ -146,13 +145,13 @@ public sealed class SessionsService(
             existingSession.Capacity,
             existingSession.Labels.AsReadOnly(),
             existingSession.CreatedAtUtc,
-            existingSession.UpdatedAtUtc.Value);
+            existingSession.UpdatedAtUtc);
     }
 
-    public async Task<DeleteSessionResponse?> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<DeleteSessionRo?> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var deleted = await sessionRepository.DeleteAsync(id, cancellationToken);
-        return deleted ? new DeleteSessionResponse(id) : null;
+        return deleted ? new DeleteSessionRo(id) : null;
     }
 }
 

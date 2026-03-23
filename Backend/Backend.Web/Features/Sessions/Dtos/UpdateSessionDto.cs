@@ -1,7 +1,6 @@
-namespace Backend.Web.Features.Sessions.Requests;
+namespace Backend.Web.Features.Sessions.Dtos;
 
-public sealed record UpdateSessionRequest(
-    Guid Id,
+public sealed record UpdateSessionDto(
     string Title,
     string? Description,
     string Speaker,
@@ -10,3 +9,4 @@ public sealed record UpdateSessionRequest(
     DateTimeOffset EndTime,
     int? Capacity,
     List<string> Labels);
+

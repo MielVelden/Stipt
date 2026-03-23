@@ -1,26 +1,25 @@
 using Backend.Domain.Rooms;
+using Backend.Web.Features.Rooms.Dtos;
 using Backend.Web.Features.Rooms.Repositories;
-using Backend.Web.Features.Rooms.Requests;
-using Backend.Web.Features.Rooms.Responses;
 using FluentValidation;
 
 namespace Backend.Web.Features.Rooms.Services;
 
 public interface IRoomsService
 {
-    Task<CreateRoomResponse> CreateAsync(CreateRoomRequest request, CancellationToken cancellationToken);
-    Task<List<GetRoomResponse>> GetAllAsync(CancellationToken cancellationToken);
-    Task<GetRoomResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-    Task<UpdateRoomResponse?> UpdateAsync(Guid id, UpdateRoomRequest request, CancellationToken cancellationToken);
+    Task<RoomRo> CreateAsync(CreateRoomDto request, CancellationToken cancellationToken);
+    Task<List<RoomRo>> GetAllAsync(CancellationToken cancellationToken);
+    Task<RoomRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<RoomRo?> UpdateAsync(Guid id, UpdateRoomDto request, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
 }
 
 public sealed class RoomsService(
     IRoomRepository roomRepository,
-    IValidator<CreateRoomRequest> createRoomValidator,
-    IValidator<UpdateRoomRequest> updateRoomValidator) : IRoomsService
+    IValidator<CreateRoomDto> createRoomValidator,
+    IValidator<UpdateRoomDto> updateRoomValidator) : IRoomsService
 {
-    public async Task<CreateRoomResponse> CreateAsync(CreateRoomRequest request, CancellationToken cancellationToken)
+    public async Task<RoomRo> CreateAsync(CreateRoomDto request, CancellationToken cancellationToken)
     {
         await createRoomValidator.ValidateAndThrowAsync(request, cancellationToken);
 
@@ -33,41 +32,40 @@ public sealed class RoomsService(
 
         await roomRepository.CreateAsync(room, cancellationToken);
 
-        return new CreateRoomResponse(room.Id, room.Name, room.Capacity);
+        return new RoomRo(room.Id, room.Name, room.Capacity);
     }
 
-    public async Task<List<GetRoomResponse>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<List<RoomRo>> GetAllAsync(CancellationToken cancellationToken)
     {
         var rooms = await roomRepository.GetAllAsync(cancellationToken);
 
-        return rooms.Select(room => new GetRoomResponse(
+        return rooms.Select(room => new RoomRo(
             room.Id,
             room.Name,
             room.Capacity)).ToList();
     }
 
-    public async Task<GetRoomResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<RoomRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var room = await roomRepository.GetByIdAsync(id, cancellationToken);
-        return room is null ? null : new GetRoomResponse(room.Id, room.Name, room.Capacity);
+        return room is null ? null : new RoomRo(room.Id, room.Name, room.Capacity);
     }
 
-    public async Task<UpdateRoomResponse?> UpdateAsync(Guid id, UpdateRoomRequest request, CancellationToken cancellationToken)
+    public async Task<RoomRo?> UpdateAsync(Guid id, UpdateRoomDto request, CancellationToken cancellationToken)
     {
-        var requestWithId = request with { Id = id };
-        await updateRoomValidator.ValidateAndThrowAsync(requestWithId, cancellationToken);
+        await updateRoomValidator.ValidateAndThrowAsync(request, cancellationToken);
 
         var room = await roomRepository.GetByIdAsync(id, cancellationToken);
 
         if (room == null)
             return null;
 
-        room.Name = requestWithId.Name.Trim();
-        room.Capacity = requestWithId.Capacity;
+        room.Name = request.Name.Trim();
+        room.Capacity = request.Capacity;
 
         await roomRepository.UpdateAsync(room, cancellationToken);
 
-        return new UpdateRoomResponse(room.Id, room.Name, room.Capacity);
+        return new RoomRo(room.Id, room.Name, room.Capacity);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)

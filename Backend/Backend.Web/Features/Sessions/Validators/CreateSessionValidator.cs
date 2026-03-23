@@ -1,9 +1,9 @@
-using Backend.Web.Features.Sessions.Requests;
+using Backend.Web.Features.Sessions.Dtos;
 using FluentValidation;
 
 namespace Backend.Web.Features.Sessions.Validators;
 
-public sealed class CreateSessionValidator : AbstractValidator<CreateSessionRequest>
+public sealed class CreateSessionValidator : AbstractValidator<CreateSessionDto>
 {
     public CreateSessionValidator()
     {

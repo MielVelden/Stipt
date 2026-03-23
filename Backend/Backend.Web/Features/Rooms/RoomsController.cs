@@ -1,5 +1,4 @@
-using Backend.Web.Features.Rooms.Requests;
-using Backend.Web.Features.Rooms.Responses;
+using Backend.Web.Features.Rooms.Dtos;
 using Backend.Web.Features.Rooms.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,28 +9,28 @@ namespace Backend.Web.Controllers;
 public class RoomsController(IRoomsService roomsService) : ControllerBase
 {
     [HttpPost]
-    public async Task<CreatedAtActionResult> CreateRoom(CreateRoomRequest request, CancellationToken ct)
+    public async Task<CreatedAtActionResult> CreateRoom(CreateRoomDto request, CancellationToken ct)
     {
         var response = await roomsService.CreateAsync(request, ct);
         return CreatedAtAction(nameof(GetRoomById), new { id = response.Id }, response);
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<GetRoomResponse>>> GetAllRooms(CancellationToken ct)
+    public async Task<ActionResult<List<RoomRo>>> GetAllRooms(CancellationToken ct)
     {
         var response = await roomsService.GetAllAsync(ct);
         return Ok(response);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<GetRoomResponse>> GetRoomById(Guid id, CancellationToken ct)
+    public async Task<ActionResult<RoomRo>> GetRoomById(Guid id, CancellationToken ct)
     {
         var response = await roomsService.GetByIdAsync(id, ct);
         return response is null ? NotFound() : Ok(response);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<UpdateRoomResponse>> UpdateRoom(Guid id, UpdateRoomRequest request, CancellationToken ct)
+    public async Task<ActionResult<RoomRo>> UpdateRoom(Guid id, UpdateRoomDto request, CancellationToken ct)
     {
         var response = await roomsService.UpdateAsync(id, request, ct);
         return response is null ? NotFound() : Ok(response);

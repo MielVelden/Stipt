@@ -1,17 +1,17 @@
 using Backend.Common.Application.Models;
 
-namespace Backend.Web.Features.Events.Requests;
+namespace Backend.Web.Features.Events.Dtos;
 
-public sealed record UpdateEventRequest(
+public sealed record UpdateEventDto(
     Optional<string> Name,
     Optional<string> Location,
     Optional<DateTimeOffset> StartDate,
     Optional<DateTimeOffset> EndDate,
-    Optional<UpdateEventStyleRequest> Style,
+    Optional<UpdateEventStyleDto> Style,
     Optional<bool> IsArchived
 );
 
-public sealed record UpdateEventStyleRequest(
+public sealed record UpdateEventStyleDto(
     Optional<string> PrimaryBackgroundColor,
     Optional<string> PrimaryForegroundColor,
     Optional<string?> LogoImageUrl

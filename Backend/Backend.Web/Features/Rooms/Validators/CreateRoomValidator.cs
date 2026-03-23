@@ -1,9 +1,9 @@
-using Backend.Web.Features.Rooms.Requests;
+using Backend.Web.Features.Rooms.Dtos;
 using FluentValidation;
 
 namespace Backend.Web.Features.Rooms.Validators;
 
-public class CreateRoomValidator : AbstractValidator<CreateRoomRequest>
+public class CreateRoomValidator : AbstractValidator<CreateRoomDto>
 {
     public CreateRoomValidator()
     {
