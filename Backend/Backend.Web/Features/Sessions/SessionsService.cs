@@ -1,4 +1,3 @@
-using Backend.Common.Application;
 using Backend.Domain.Sessions;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Repositories;
@@ -17,7 +16,7 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
             cancellationToken);
 
         if (hasOverlap)
-            throw new ConflictException("The requested time slot overlaps with another session in the same room.");
+            throw new SessionTimeSlotOverlapException();
 
         var session = new Session
         {
@@ -67,7 +66,7 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
             cancellationToken);
 
         if (hasOverlap)
-            throw new ConflictException("The requested time slot overlaps with another session in the same room.");
+            throw new SessionTimeSlotOverlapException();
 
         existingSession.Title = request.Title.Trim();
         existingSession.Description = request.Description?.Trim();

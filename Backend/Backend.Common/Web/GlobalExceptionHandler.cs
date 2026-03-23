@@ -1,4 +1,3 @@
-using Backend.Common.Application;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -17,17 +16,6 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
                 .ToDictionary(g => g.Key, g => g.Select(x => x.ErrorMessage).ToArray());
 
             await Results.ValidationProblem(errors).ExecuteAsync(httpContext);
-            return true;
-        }
-
-        if (exception is ConflictException conflictException)
-        {
-            await Results.Problem(
-                    statusCode: StatusCodes.Status409Conflict,
-                    title: "Conflict",
-                    detail: conflictException.Message)
-                .ExecuteAsync(httpContext);
-
             return true;
         }
 
