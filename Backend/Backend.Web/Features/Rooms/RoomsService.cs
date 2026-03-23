@@ -3,21 +3,12 @@ using Backend.Web.Features.Rooms.Dtos;
 using Backend.Web.Features.Rooms.Repositories;
 using FluentValidation;
 
-namespace Backend.Web.Features.Rooms.Services;
-
-public interface IRoomsService
-{
-    Task<RoomRo> CreateAsync(CreateRoomDto request, CancellationToken cancellationToken);
-    Task<List<RoomRo>> GetAllAsync(CancellationToken cancellationToken);
-    Task<RoomRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-    Task<RoomRo?> UpdateAsync(Guid id, UpdateRoomDto request, CancellationToken cancellationToken);
-    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
-}
+namespace Backend.Web.Features.Rooms;
 
 public sealed class RoomsService(
     IRoomRepository roomRepository,
     IValidator<CreateRoomDto> createRoomValidator,
-    IValidator<UpdateRoomDto> updateRoomValidator) : IRoomsService
+    IValidator<UpdateRoomDto> updateRoomValidator)
 {
     public async Task<RoomRo> CreateAsync(CreateRoomDto request, CancellationToken cancellationToken)
     {

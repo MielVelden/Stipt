@@ -1,12 +1,11 @@
 using Backend.Web.Features.Sessions.Dtos;
-using Backend.Web.Features.Sessions.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Web.Controllers;
+namespace Backend.Web.Features.Sessions;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SessionsController(ISessionsService sessionsService) : ControllerBase
+public class SessionsController(SessionsService sessionsService) : ControllerBase
 {
     [HttpPost]
     public async Task<CreatedAtActionResult> CreateSession(CreateSessionDto request, CancellationToken ct)

@@ -1,22 +1,19 @@
 using Backend.Domain.Events;
 using Backend.Web.Features.Events.Dtos;
 using Backend.Web.Features.Events.Repositories;
+using FluentValidation;
 
-namespace Backend.Web.Features.Events.Services;
+namespace Backend.Web.Features.Events;
 
-public interface IEventsService
-{
-    Task<EventRo> CreateAsync(CreateEventDto request, CancellationToken cancellationToken);
-    Task<EventRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-    Task<List<EventRo>> GetAllAsync(CancellationToken cancellationToken);
-    Task<EventRo?> UpdateAsync(Guid id, UpdateEventDto request, CancellationToken cancellationToken);
-    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
-}
-
-public sealed class EventsService(IEventRepository eventRepository) : IEventsService
+public sealed class EventsService(
+    IEventRepository eventRepository,
+    IValidator<CreateEventDto> createEventValidator,
+    IValidator<UpdateEventDto> updateEventValidator)
 {
     public async Task<EventRo> CreateAsync(CreateEventDto request, CancellationToken cancellationToken)
     {
+        await createEventValidator.ValidateAndThrowAsync(request, cancellationToken);
+
         var eventItem = new Event
         {
             Id = Guid.NewGuid(),
@@ -100,6 +97,8 @@ public sealed class EventsService(IEventRepository eventRepository) : IEventsSer
 
     public async Task<EventRo?> UpdateAsync(Guid id, UpdateEventDto request, CancellationToken cancellationToken)
     {
+        await updateEventValidator.ValidateAndThrowAsync(request, cancellationToken);
+
         var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
         if (eventItem is null)
             return null;

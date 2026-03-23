@@ -1,12 +1,11 @@
 using Backend.Web.Features.Rooms.Dtos;
-using Backend.Web.Features.Rooms.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Web.Controllers;
+namespace Backend.Web.Features.Rooms;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RoomsController(IRoomsService roomsService) : ControllerBase
+public class RoomsController(RoomsService roomsService) : ControllerBase
 {
     [HttpPost]
     public async Task<CreatedAtActionResult> CreateRoom(CreateRoomDto request, CancellationToken ct)

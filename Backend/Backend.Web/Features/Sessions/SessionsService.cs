@@ -4,21 +4,12 @@ using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Repositories;
 using FluentValidation;
 
-namespace Backend.Web.Features.Sessions.Services;
-
-public interface ISessionsService
-{
-    Task<SessionRo> CreateAsync(CreateSessionDto request, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<SessionRo>> GetAllAsync(CancellationToken cancellationToken);
-    Task<SessionRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-    Task<SessionRo?> UpdateAsync(Guid id, UpdateSessionDto request, CancellationToken cancellationToken);
-    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
-}
+namespace Backend.Web.Features.Sessions;
 
 public sealed class SessionsService(
     ISessionRepository sessionRepository,
     IValidator<CreateSessionDto> createSessionValidator,
-    IValidator<UpdateSessionDto> updateSessionValidator) : ISessionsService
+    IValidator<UpdateSessionDto> updateSessionValidator)
 {
     public async Task<SessionRo> CreateAsync(CreateSessionDto request, CancellationToken cancellationToken)
     {

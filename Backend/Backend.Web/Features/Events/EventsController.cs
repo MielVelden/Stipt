@@ -1,12 +1,11 @@
 using Backend.Web.Features.Events.Dtos;
-using Backend.Web.Features.Events.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Web.Features.Events;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EventsController(IEventsService eventsService) : ControllerBase
+public class EventsController(EventsService eventsService) : ControllerBase
 {
     [HttpPost]
     public async Task<CreatedAtActionResult> CreateEvent(CreateEventDto request, CancellationToken ct)
