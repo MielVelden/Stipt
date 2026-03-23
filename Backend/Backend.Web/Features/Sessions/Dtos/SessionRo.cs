@@ -12,4 +12,3 @@ public sealed record SessionRo(
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);
-

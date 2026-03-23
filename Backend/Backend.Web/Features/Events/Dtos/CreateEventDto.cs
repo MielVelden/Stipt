@@ -13,4 +13,3 @@ public sealed record CreateEventStyleDto(
     string PrimaryForegroundColor,
     string? LogoImageUrl
 );
-

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 namespace Backend.Web.Features.Sessions.Dtos;
 
@@ -11,4 +12,14 @@ public sealed record CreateSessionDto(
     [param: Required] DateTimeOffset EndTime,
     [param: Range(1, int.MaxValue)] int? Capacity,
     [param: Required] List<string> Labels);
+
+public sealed class CreateSessionDtoValidator : AbstractValidator<CreateSessionDto>
+{
+    public CreateSessionDtoValidator()
+    {
+        RuleFor(x => x.StartTime)
+            .LessThan(x => x.EndTime)
+            .WithMessage("Start time must be before end time.");
+    }
+}
 

@@ -16,4 +16,3 @@ public sealed record UpdateEventStyleDto(
     Optional<string> PrimaryForegroundColor,
     Optional<string?> LogoImageUrl
 );
-

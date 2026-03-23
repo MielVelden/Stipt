@@ -17,4 +17,3 @@ public sealed record EventStyleRo(
     string PrimaryForegroundColor,
     string? LogoImageUrl
 );
-
