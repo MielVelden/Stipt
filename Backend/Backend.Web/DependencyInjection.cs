@@ -1,6 +1,7 @@
-using Backend.Common.Application.Behaviors;
 using FluentValidation;
-using MediatR;
+using Backend.Web.Features.Events.Services;
+using Backend.Web.Features.Rooms.Services;
+using Backend.Web.Features.Sessions.Services;
 
 namespace Backend.Web;
 
@@ -8,12 +9,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddMediatR(config =>
-            config.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
-
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
-
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddScoped<IEventsService, EventsService>();
+        services.AddScoped<IRoomsService, RoomsService>();
+        services.AddScoped<ISessionsService, SessionsService>();
 
         return services;
     }

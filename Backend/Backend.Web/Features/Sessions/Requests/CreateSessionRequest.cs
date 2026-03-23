@@ -1,6 +1,3 @@
-using Backend.Web.Features.Sessions.Responses;
-using MediatR;
-
 namespace Backend.Web.Features.Sessions.Requests;
 
 public sealed record CreateSessionRequest(
@@ -11,4 +8,4 @@ public sealed record CreateSessionRequest(
     DateTimeOffset StartTime,
     DateTimeOffset EndTime,
     int? Capacity,
-    List<string> Labels) : IRequest<CreateSessionResponse>;
+    List<string> Labels);

@@ -1,6 +1,3 @@
-using Backend.Web.Features.Events.Responses;
-using MediatR;
-
 namespace Backend.Web.Features.Events.Requests;
 
 public sealed record CreateEventRequest(
@@ -9,7 +6,7 @@ public sealed record CreateEventRequest(
     DateTimeOffset StartDate,
     DateTimeOffset EndDate,
     CreateEventStyleRequest Style
-) : IRequest<CreateEventResponse>;
+);
 
 public sealed record CreateEventStyleRequest(
     string PrimaryBackgroundColor,

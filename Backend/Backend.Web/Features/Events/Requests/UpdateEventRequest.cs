@@ -1,6 +1,4 @@
-using Backend.Web.Features.Events.Responses;
 using Backend.Common.Application.Models;
-using MediatR;
 
 namespace Backend.Web.Features.Events.Requests;
 
@@ -19,7 +17,3 @@ public sealed record UpdateEventStyleRequest(
     Optional<string?> LogoImageUrl
 );
 
-public sealed record UpdateEventCommand(
-    Guid Id,
-    UpdateEventRequest Request
-) : IRequest<UpdateEventResponse?>;
