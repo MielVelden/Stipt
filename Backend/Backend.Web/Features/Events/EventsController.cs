@@ -35,6 +35,20 @@ public class EventsController(EventsService eventsService) : ControllerBase
         return response is null ? NotFound() : Ok(response);
     }
 
+    [HttpPatch("{id:guid}/archive")]
+    public async Task<IActionResult> ArchiveEvent(Guid id, CancellationToken ct)
+    {
+        var archived = await eventsService.ArchiveAsync(id, ct);
+        return archived ? NoContent() : NotFound();
+    }
+
+    [HttpPatch("{id:guid}/unarchive")]
+    public async Task<IActionResult> UnarchiveEvent(Guid id, CancellationToken ct)
+    {
+        var unarchived = await eventsService.UnarchiveAsync(id, ct);
+        return unarchived ? NoContent() : NotFound();
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteEvent(Guid id, CancellationToken ct)
     {

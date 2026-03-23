@@ -1,23 +1,15 @@
 using Backend.Web.Configuration;
 
-namespace Backend.Web;
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
+builder.Services.AddWebApi(builder.Configuration);
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-
-        builder.Services.AddWebApi(builder.Configuration);
-
-        var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
-
-        app.UseWebApi();
-        app.Run();
-    }
+    app.MapOpenApi();
 }
+
+app.UseWebApi();
+app.Run();

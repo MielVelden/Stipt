@@ -49,23 +49,17 @@ public sealed class EventsService(IEventRepository eventRepository)
 
     public async Task<EventRo?> UpdateAsync(Guid id, UpdateEventDto request, CancellationToken cancellationToken)
     {
-
         var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
         if (eventItem is null)
             return null;
 
-        request.Name.IfPresent(value => eventItem.Name = value.Trim());
-        request.Location.IfPresent(value => eventItem.Location = value.Trim());
-        request.IsArchived.IfPresent(value => eventItem.IsArchived = value);
-        request.StartDate.IfPresent(value => eventItem.StartDate = value);
-        request.EndDate.IfPresent(value => eventItem.EndDate = value);
-
-        request.Style.IfPresent(value =>
-        {
-            value.PrimaryBackgroundColor.IfPresent(bg => eventItem.Style.PrimaryBackgroundColor = bg.Trim());
-            value.PrimaryForegroundColor.IfPresent(fg => eventItem.Style.PrimaryForegroundColor = fg.Trim());
-            value.LogoImageUrl.IfPresent(img => eventItem.Style.LogoImageUrl = img?.Trim());
-        });
+        eventItem.Name = request.Name.Trim();
+        eventItem.Location = request.Location.Trim();
+        eventItem.StartDate = request.StartDate;
+        eventItem.EndDate = request.EndDate;
+        eventItem.Style.PrimaryBackgroundColor = request.Style.PrimaryBackgroundColor.Trim();
+        eventItem.Style.PrimaryForegroundColor = request.Style.PrimaryForegroundColor.Trim();
+        eventItem.Style.LogoImageUrl = request.Style.LogoImageUrl?.Trim();
         eventItem.UpdatedAtUtc = DateTime.UtcNow;
 
         var updated = await eventRepository.UpdateAsync(eventItem, cancellationToken);
@@ -75,9 +69,31 @@ public sealed class EventsService(IEventRepository eventRepository)
         return eventItem.ToRo();
     }
 
+    public async Task<bool> ArchiveAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await SetArchivedStatusAsync(id, true, cancellationToken);
+    }
+
+    public async Task<bool> UnarchiveAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await SetArchivedStatusAsync(id, false, cancellationToken);
+    }
+
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         return await eventRepository.DeleteAsync(id, cancellationToken);
+    }
+
+    private async Task<bool> SetArchivedStatusAsync(Guid id, bool isArchived, CancellationToken cancellationToken)
+    {
+        var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
+        if (eventItem is null)
+            return false;
+
+        eventItem.IsArchived = isArchived;
+        eventItem.UpdatedAtUtc = DateTime.UtcNow;
+
+        return await eventRepository.UpdateAsync(eventItem, cancellationToken);
     }
 }
 

@@ -29,7 +29,7 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Capacity = request.Capacity,
-            Labels = request.Labels?.Select(label => label.Trim()).ToList() ?? [],
+            Labels = request.Labels.Select(label => label.Trim()).ToList(),
             CreatedAtUtc = DateTime.UtcNow
         };
 
@@ -76,7 +76,7 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
         existingSession.StartTime = request.StartTime;
         existingSession.EndTime = request.EndTime;
         existingSession.Capacity = request.Capacity;
-        existingSession.Labels = request.Labels?.Select(label => label.Trim()).ToList() ?? [];
+        existingSession.Labels = request.Labels.Select(label => label.Trim()).ToList();
         existingSession.UpdatedAtUtc = DateTime.UtcNow;
 
         var updated = await sessionRepository.UpdateAsync(existingSession, cancellationToken);

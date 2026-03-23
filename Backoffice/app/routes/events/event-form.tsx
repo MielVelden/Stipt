@@ -161,9 +161,11 @@ function EditEventForm({ event }: { event: Event }) {
 
   async function onArchiveToggle() {
     try {
-      await apiClient.put(`/events/${event.id}`, {
-        isArchived: !event.isArchived,
-      })
+      const archivePath = event.isArchived
+        ? `/events/${event.id}/unarchive`
+        : `/events/${event.id}/archive`
+
+      await apiClient.patch(archivePath)
       toast.success(
         event.isArchived
           ? "Het evenement is gedearchiveerd."
