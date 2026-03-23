@@ -1,5 +1,3 @@
-using Backend.Common.Web;
-
 namespace Backend.Web.Configuration;
 
 public static class ApplicationBuilderExtensions
@@ -14,7 +12,7 @@ public static class ApplicationBuilderExtensions
 
         app.UseAuthorization();
 
-        app.MapEndpointDefinitions();
+        app.MapControllers();
 
         return app;
     }

@@ -30,7 +30,7 @@ public static class DependencyInjection
         services.AddDatabase(configuration);
         services.AddOpenApi();
         services.AddAuthorization();
-        services.AddEndpointDefinitions(typeof(Program).Assembly);
+        services.AddControllers();
 
         // TODO
         services.AddCors(options =>
