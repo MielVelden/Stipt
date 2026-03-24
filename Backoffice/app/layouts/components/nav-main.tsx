@@ -8,39 +8,48 @@ import {
 } from "~/components/ui/sidebar"
 import { LayoutDashboardIcon, SplitIcon, DoorOpenIcon } from "lucide-react"
 import { Link } from "react-router"
+import { useAppContext } from "~/contexts/app-context"
 
-const items = [
+const eventBasedItems = [
   {
     title: "Dashboard",
-    url: "/app",
+    url: "/",
     icon: <LayoutDashboardIcon />,
   },
   {
     title: "Sessies",
-    url: "/app/sessies",
+    url: `/sessies`,
     icon: <SplitIcon />,
   },
   {
     title: "Ruimtes",
-    url: "/app/ruimtes",
+    url: `/ruimtes`,
     icon: <DoorOpenIcon />,
   },
 ]
 
 export function NavMain() {
+  const { selectedEventId, eventBaseUrl } = useAppContext()
+  if (!selectedEventId) return null
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Menu</SidebarGroupLabel>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          {items.map((item) => (
+          {eventBasedItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                isActive={window.location.pathname === item.url}
+                isActive={
+                  window.location.pathname === `${eventBaseUrl}${item.url}`
+                }
               >
-                <Link to={item.url} className="flex items-center gap-2">
+                <Link
+                  to={`${eventBaseUrl}${item.url}`}
+                  className="flex items-center gap-2"
+                >
                   {item.icon}
                   <span>{item.title}</span>
                 </Link>

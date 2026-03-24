@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { redirect, useNavigate } from "react-router"
+import { useNavigate, useRevalidator } from "react-router"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Loader2 } from "lucide-react"
@@ -54,6 +54,7 @@ export function EventForm(props: EventFormProps) {
 
 function CreateEventForm() {
   const navigate = useNavigate()
+  const { revalidate } = useRevalidator()
 
   const form = useForm<EventCreateFormValues>({
     resolver: zodResolver(eventCreateSchema),
@@ -82,8 +83,10 @@ function CreateEventForm() {
         },
       })
       if (response.status !== 201) throw new Error("Aanmaken mislukt")
+      revalidate() // Reload loaders to fetch the new event
       toast.success("Het evenement is succesvol aangemaakt.")
-      if (response.data?.id) return navigate(`/app/evenementen/${response.data.id}`)
+      if (response.data?.id)
+        return navigate(`/app/evenementen/${response.data.id}`)
       navigate("/app/evenementen")
     } catch {
       toast.error("Aanmaken mislukt.")
@@ -92,7 +95,10 @@ function CreateEventForm() {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} id="form-event-create">
-      <FieldSet className="max-w-2xl gap-6" disabled={form.formState.isSubmitting}>
+      <FieldSet
+        className="max-w-2xl gap-6"
+        disabled={form.formState.isSubmitting}
+      >
         <FormGroups
           mode="edit"
           control={form.control}
@@ -123,6 +129,7 @@ function CreateEventForm() {
 
 function EditEventForm({ event }: { event: Event }) {
   const navigate = useNavigate()
+  const { revalidate } = useRevalidator()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const form = useForm<EventEditFormValues>({
@@ -153,6 +160,7 @@ function EditEventForm({ event }: { event: Event }) {
         },
       })
       if (response.status !== 200) throw new Error("Bijwerken mislukt")
+      revalidate() // Reload loaders to fetch the updated event name/data
       toast.success("Het evenement is succesvol bijgewerkt.")
     } catch {
       toast.error("Opslaan mislukt.")
@@ -166,6 +174,7 @@ function EditEventForm({ event }: { event: Event }) {
         : `/events/${event.id}/archive`
 
       await apiClient.patch(archivePath)
+      revalidate()
       toast.success(
         event.isArchived
           ? "Het evenement is gedearchiveerd."
@@ -180,8 +189,9 @@ function EditEventForm({ event }: { event: Event }) {
   async function onDelete() {
     try {
       await apiClient.delete(`/events/${event.id}`)
+      revalidate()
       toast.success("Het evenement is succesvol verwijderd.")
-      return redirect("/app/evenementen")
+      navigate("/app/evenementen")
     } catch {
       toast.error("Verwijderen mislukt.")
     }

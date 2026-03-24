@@ -44,6 +44,7 @@ import FetchError from "~/components/fetch-error"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
+import { useAppContext } from "~/contexts/app-context"
 
 const formSchema = z
   .object({
@@ -98,6 +99,7 @@ export default function Page({
 }: Route.ComponentProps) {
   const navigate = useNavigate()
   const [newLabel, setNewLabel] = useState("")
+  const { eventBaseUrl } = useAppContext()
 
   const form = useForm<SessionFormValues>({
     resolver: zodResolver(formSchema),
@@ -399,7 +401,7 @@ export default function Page({
                 disabled={form.formState.isSubmitting}
                 asChild
               >
-                <Link to={`/app/sessies/`}>Annuleren</Link>
+                <Link to={`${eventBaseUrl}/sessies/`}>Annuleren</Link>
               </Button>
               <Button
                 type="submit"

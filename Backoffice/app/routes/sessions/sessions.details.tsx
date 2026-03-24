@@ -15,6 +15,7 @@ import { isRouteErrorResponse, Link, useRouteError } from "react-router"
 import apiClient from "~/lib/api-client"
 import FetchError from "~/components/fetch-error"
 import { formatDate, formatTime } from "~/lib/utils"
+import { useAppContext } from "~/contexts/app-context"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
@@ -28,6 +29,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
 }
 
 export default function Page({ loaderData: session }: Route.ComponentProps) {
+  const { eventBaseUrl } = useAppContext()
   return (
     <>
       <PageHeader title="Sessie details" />
@@ -35,7 +37,9 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
         <div className="flex items-center justify-between gap-4">
           <h2 className="mb-2 text-2xl font-bold">{session.title}</h2>
           <Button asChild>
-            <Link to={`/app/sessies/${session.id}/bewerken`}>Bewerken</Link>
+            <Link to={`${eventBaseUrl}/sessies/${session.id}/bewerken`}>
+              Bewerken
+            </Link>
           </Button>
         </div>
 

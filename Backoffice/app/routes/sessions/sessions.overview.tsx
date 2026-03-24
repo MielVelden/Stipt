@@ -42,6 +42,7 @@ import apiClient from "~/lib/api-client"
 import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
 import { formatDateRange } from "~/lib/utils"
+import { useAppContext } from "~/contexts/app-context"
 
 export async function clientLoader() {
   try {
@@ -75,6 +76,8 @@ export async function clientAction({ request }: { request: Request }) {
 }
 
 export default function Page({ loaderData: sessions }: Route.ComponentProps) {
+  const { eventBaseUrl } = useAppContext()
+
   const columns: ColumnDef<Session>[] = [
     {
       accessorKey: "title",
@@ -82,7 +85,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       cell: ({ row }) => {
         return (
           <Link
-            to={`/app/sessies/${row.original.id}`}
+            to={`${eventBaseUrl}/sessies/${row.original.id}`}
             className="hover:underline"
           >
             {row.getValue("title")}
@@ -136,12 +139,12 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
             {
               label: "Bekijk",
               icon: <EyeIcon />,
-              linkTo: `/app/sessies/${row.original.id}`,
+              linkTo: `${eventBaseUrl}/sessies/${row.original.id}`,
             },
             {
               label: "Bewerk",
               icon: <EditIcon />,
-              linkTo: `/app/sessies/${row.original.id}/bewerken`,
+              linkTo: `${eventBaseUrl}/sessies/${row.original.id}/bewerken`,
             },
             {
               label: "Verwijder",
@@ -203,7 +206,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
           </InputGroup>
 
           <Button asChild>
-            <Link to="/app/sessies/nieuw">
+            <Link to={`${eventBaseUrl}/sessies/nieuw`}>
               <PlusIcon />
               Nieuwe sessie
             </Link>
