@@ -1,7 +1,6 @@
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import type { Route } from "./+types/sessions.details"
-import type { Session } from "./types"
 import {
   Field,
   FieldContent,
@@ -16,12 +15,11 @@ import apiClient from "~/lib/api-client"
 import FetchError from "~/components/fetch-error"
 import { formatDate, formatTime } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
+import type { Session } from "~/types"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
-    const response = await apiClient.get<Session>(
-      "/sessions/" + (params.id as string)
-    )
+    const response = await apiClient.get<Session>(`/sessions/${params.id}`)
     return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -55,6 +53,10 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
             </FieldContent>
           </Field>
           <Field>
+            <FieldLabel>Type</FieldLabel>
+            <FieldContent>{session.type}</FieldContent>
+          </Field>
+          <Field>
             <FieldLabel>Spreker</FieldLabel>
             <FieldContent>{session.speaker}</FieldContent>
           </Field>
@@ -62,13 +64,12 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <FieldGroup className="flex flex-row gap-12">
             <Field className="w-fit">
               <FieldLabel>Ruimte</FieldLabel>
-              <FieldContent>{session.room}</FieldContent>
+              <FieldContent>{session.room.name}</FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Capaciteit</FieldLabel>
               <FieldContent>
-                {/* // TODO implement when rooms are implemented {session.capacity ?? session.room.capacity ?? "-"} */}
-                {session.capacity ?? "-"}
+                {session.capacity ?? session.room.capacity ?? "-"}
               </FieldContent>
             </Field>
           </FieldGroup>
@@ -76,15 +77,21 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <FieldGroup className="flex flex-row gap-12">
             <Field className="w-fit">
               <FieldLabel>Startdatum</FieldLabel>
-              <FieldContent>{formatDate(session.startTime)}</FieldContent>
+              <FieldContent>{formatDate(session.startDateTime)}</FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Starttijd</FieldLabel>
-              <FieldContent>{formatTime(session.startTime)}</FieldContent>
+              <FieldContent>{formatTime(session.startDateTime)}</FieldContent>
+            </Field>
+          </FieldGroup>
+          <FieldGroup className="flex flex-row gap-12">
+            <Field className="w-fit">
+              <FieldLabel>Einddatum</FieldLabel>
+              <FieldContent>{formatDate(session.endDateTime)}</FieldContent>
             </Field>
             <Field className="w-fit">
               <FieldLabel>Eindtijd</FieldLabel>
-              <FieldContent>{formatTime(session.endTime)}</FieldContent>
+              <FieldContent>{formatTime(session.endDateTime)}</FieldContent>
             </Field>
           </FieldGroup>
 

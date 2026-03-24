@@ -1,43 +1,38 @@
 import * as z from "zod"
 
-const sessionBaseObjectSchema = z.object({
-  title: z.string().min(1, "Dit veld is verplicht"),
-  description: z.string().min(1, "Dit veld is verplicht"),
-  speaker: z.string().min(1, "Dit veld is verplicht"),
-  room: z.string().min(1, "Selecteer een ruimte"),
-  capacity: z
-    .string()
-    .optional()
-    .refine((val) => !val || Number(val) > 0, {
-      message: "Capaciteit moet een positief getal zijn",
-    }),
-  date: z.string().min(1, "Dit veld is verplicht"),
-  startedAt: z.string().min(1, "Dit veld is verplicht"),
-  endedAt: z.string().min(1, "Dit veld is verplicht"),
-  labels: z
-    .array(z.string())
-    .default([])
-    .optional()
-    .refine((labels) => new Set(labels).size === labels?.length, {
-      message: "Labels moeten uniek zijn",
-    }),
-})
+export const sessionFormSchema = z
+  .object({
+    title: z.string().min(1, "Dit veld is verplicht"),
+    description: z.string().min(1, "Dit veld is verplicht"),
+    type: z.enum(["keynote", "breakout"], "Selecteer een sessietype"),
+    speaker: z.string().min(1, "Dit veld is verplicht"),
+    room: z.string().min(1, "Selecteer een ruimte"),
+    capacity: z
+      .string()
+      .optional()
+      .refine((val) => !val || Number(val) > 0, {
+        message: "Capaciteit moet een positief getal zijn",
+      }),
+    startDate: z.string().min(1, "Dit veld is verplicht"),
+    startTime: z.string().min(1, "Dit veld is verplicht"),
+    endDate: z.string().min(1, "Dit veld is verplicht"),
+    endTime: z.string().min(1, "Dit veld is verplicht"),
+    labels: z
+      .array(z.string())
+      .default([])
+      .optional()
+      .refine((labels) => new Set(labels).size === labels?.length, {
+        message: "Labels moeten uniek zijn",
+      }),
+  })
+  .refine(
+    (data) =>
+      data.endDate > data.startDate ||
+      (data.endDate == data.startDate && data.endTime > data.startTime),
+    {
+      message: "De sessie moet eindigen na dat deze is begonnen",
+      path: ["endDate"],
+    }
+  )
 
-const timeRefine = {
-  fn: (data: { startedAt: string; endedAt: string }) =>
-    data.endedAt > data.startedAt,
-  opts: { message: "Eindtijd moet na starttijd zijn", path: ["endedAt"] as PropertyKey[] },
-} as const
-
-export const sessionCreateSchema = sessionBaseObjectSchema.refine(
-  timeRefine.fn,
-  timeRefine.opts
-)
-
-export const sessionEditSchema = sessionBaseObjectSchema
-  .extend({ id: z.string().min(1, "Deze sessie kan niet worden gevonden") })
-  .refine(timeRefine.fn, timeRefine.opts)
-
-export type SessionBaseFormValues = z.infer<typeof sessionBaseObjectSchema>
-export type SessionCreateFormValues = z.infer<typeof sessionCreateSchema>
-export type SessionEditFormValues = z.infer<typeof sessionEditSchema>
+export type SessionFormValues = z.infer<typeof sessionFormSchema>

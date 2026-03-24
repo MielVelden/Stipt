@@ -1,11 +1,5 @@
 // TODO: implement using TypeGen
 
-export type EventStyle = {
-  primaryBackgroundColor: string
-  primaryForegroundColor: string
-  logoImageUrl?: string
-}
-
 export type Event = {
   id: string
   name: string
@@ -16,23 +10,37 @@ export type Event = {
   isArchived: boolean
 }
 
+export type EventStyle = {
+  primaryBackgroundColor: string
+  primaryForegroundColor: string
+  logoImageUrl?: string
+}
+
 export type Session = {
   id: string
   title: string
   description: string
+  type: "keynote" | "breakout"
   speaker: string
-  room: string
-  startTime: string
-  endTime: string
+  room: Room
+  startDateTime: string
+  endDateTime: string
   capacity?: number
   labels: string[]
+  eventId: string
 }
-
-export type CreateSession = Omit<Session, "id">
 
 export type Room = {
   id: string
-  eventId: string
   name: string
   capacity: number
+  eventId: string
 }
+
+export type CreateEvent = Omit<Event, "id">
+export type CreateSession = Omit<Session, "id">
+export type CreateRoom = Omit<Room, "id">
+
+export type UpdateEvent = Partial<CreateEvent>
+export type UpdateSession = Partial<CreateSession>
+export type UpdateRoom = Partial<CreateRoom>

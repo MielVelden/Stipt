@@ -21,9 +21,13 @@ export function formatTime(dateString: string) {
 }
 
 export function formatDateRange(startDateTime: string, endDateTime: string) {
-  const date = formatDate(startDateTime)
+  const startDate = formatDate(startDateTime)
   const startTime = formatTime(startDateTime)
+  const endDate = formatDate(endDateTime)
   const endTime = formatTime(endDateTime)
 
-  return `${date}, ${startTime} - ${endTime}`
+  if (startDate === endDate) {
+    return `${startDate}, ${startTime} - ${endTime}`
+  }
+  return `${startDate}, ${startTime} - ${endDate}, ${endTime}`
 }

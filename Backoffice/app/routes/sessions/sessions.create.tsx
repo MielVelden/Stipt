@@ -43,38 +43,14 @@ import FetchError from "~/components/fetch-error"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
-import type { CreateSession, Room, Session } from "./types"
 import { useAppContext } from "~/contexts/app-context"
-
-const formSchema = z
-  .object({
-    title: z.string().min(1, "Dit veld is verplicht"),
-    description: z.string().min(1, "Dit veld is verplicht"),
-    speaker: z.string().min(1, "Dit veld is verplicht"),
-    room: z.string().min(1, "Selecteer een ruimte"),
-    capacity: z
-      .string()
-      .optional()
-      .refine((val) => !val || Number(val) > 0, {
-        message: "Capaciteit moet een positief getal zijn",
-      }),
-    date: z.string().min(1, "Dit veld is verplicht"),
-    startedAt: z.string().min(1, "Dit veld is verplicht"),
-    endedAt: z.string().min(1, "Dit veld is verplicht"),
-    labels: z
-      .array(z.string())
-      .default([])
-      .optional()
-      .refine((labels) => new Set(labels).size === labels?.length, {
-        message: "Labels moeten uniek zijn",
-      }),
-  })
-  .refine((data) => data.endedAt > data.startedAt, {
-    message: "Eindtijd moet na starttijd zijn",
-    path: ["endedAt"],
-  })
-
-type SessionFormValues = z.infer<typeof formSchema>
+import {
+  sessionFormSchema,
+  type SessionFormValues,
+} from "./session-form.schema"
+import type { CreateSession } from "~/types"
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
+import { Label } from "~/components/ui/label"
 
 export async function clientLoader() {
   try {
@@ -87,21 +63,23 @@ export async function clientLoader() {
 }
 
 export default function Page({ loaderData: rooms }: Route.ComponentProps) {
-  const { eventBaseUrl } = useAppContext()
+  const { eventBaseUrl, selectedEventId } = useAppContext()
   const navigate = useNavigate()
   const [newLabel, setNewLabel] = useState("")
 
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(sessionFormSchema),
     defaultValues: {
       title: "",
       description: "",
+      type: "breakout",
       speaker: "",
       room: "",
       capacity: undefined,
-      date: "",
-      startedAt: "",
-      endedAt: "",
+      startDate: "",
+      startTime: "",
+      endDate: "",
+      endTime: "",
       labels: [],
     },
   })
@@ -110,12 +88,14 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
     const session: CreateSession = {
       title: data.title,
       description: data.description,
+      type: data.type,
       speaker: data.speaker,
-      room: data.room,
-      startTime: `${data.date}T${data.startedAt}:00Z`,
-      endTime: `${data.date}T${data.endedAt}:00Z`,
+      room: data.room, // TODO
+      startDateTime: `${data.startDate}T${data.startTime}:00Z`,
+      endDateTime: `${data.endDate}T${data.endTime}:00Z`,
       capacity: data.capacity ? Number(data.capacity) : undefined,
       labels: data.labels ?? [],
+      eventId: selectedEventId ?? "",
     }
 
     try {
@@ -133,6 +113,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
     }
   }
 
+  // TODO: move to component?
   // Helper for labels
   const currentLabels = form.watch("labels") ?? []
   const addLabel = () => {
@@ -179,7 +160,6 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 </Field>
               )}
             />
-
             <Controller
               name="description"
               control={form.control}
@@ -199,7 +179,42 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 </Field>
               )}
             />
-
+            <FieldGroup>
+              <Controller
+                name="type"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <FieldSet data-invalid={fieldState.invalid}>
+                    <RadioGroup
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      aria-invalid={fieldState.invalid}
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem
+                          value="keynote"
+                          id="option-keynote"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <Label htmlFor="option-keynote">Keynote</Label>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem
+                          value="breakout"
+                          id="option-breakout"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <Label htmlFor="option-breakout">Breakout sessie</Label>
+                      </div>
+                    </RadioGroup>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </FieldSet>
+                )}
+              />
+            </FieldGroup>
             <Controller
               name="speaker"
               control={form.control}
@@ -218,7 +233,6 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 </Field>
               )}
             />
-
             <FieldGroup className="flex flex-row gap-4">
               <Controller
                 name="room"
@@ -278,17 +292,17 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 )}
               />
             </FieldGroup>
-
+            {/* // TODO: use shadcn date and time pickers */}
             <FieldGroup className="flex flex-row gap-4">
               <Controller
-                name="date"
+                name="startDate"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="date">Datum</FieldLabel>
+                    <FieldLabel htmlFor="startDate">Startdatum</FieldLabel>
                     <Input
                       {...field}
-                      id="date"
+                      id="startDate"
                       type="date"
                       aria-invalid={fieldState.invalid}
                     />
@@ -299,14 +313,14 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 )}
               />
               <Controller
-                name="startedAt"
+                name="startTime"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="startedAt">Start</FieldLabel>
+                    <FieldLabel htmlFor="startTime">Starttijd</FieldLabel>
                     <Input
                       {...field}
-                      id="startedAt"
+                      id="startTime"
                       type="time"
                       aria-invalid={fieldState.invalid}
                     />
@@ -317,14 +331,32 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 )}
               />
               <Controller
-                name="endedAt"
+                name="endDate"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="endedAt">Eind</FieldLabel>
+                    <FieldLabel htmlFor="endDate">Einddatum</FieldLabel>
                     <Input
                       {...field}
-                      id="endedAt"
+                      id="endDate"
+                      type="date"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="endTime"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field className="flex-1" data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="endTime">Eindtijd</FieldLabel>
+                    <Input
+                      {...field}
+                      id="endTime"
                       type="time"
                       aria-invalid={fieldState.invalid}
                     />
@@ -335,7 +367,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 )}
               />
             </FieldGroup>
-
+            {/* // TODO: move to component? */}
             <Field>
               <FieldLabel htmlFor="labels">Labels</FieldLabel>
               <InputGroup className="mb-2 max-w-xs">
@@ -383,7 +415,6 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 ))}
               </FieldContent>
             </Field>
-
             <div className="flex justify-end gap-3 border-t pt-4">
               <Button
                 variant="outline"
