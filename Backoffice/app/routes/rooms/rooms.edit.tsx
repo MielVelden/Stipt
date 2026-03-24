@@ -10,7 +10,7 @@ import { useAppContext } from "~/contexts/app-context"
 
 export default function Page() {
   const { id } = useParams()
-  const { rooms, updateRoom, deleteRoom } = useAppContext()
+  const { rooms, updateRoom, deleteRoom, eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
 
   const room = rooms.find((r) => r.id === id)
@@ -25,7 +25,7 @@ export default function Page() {
         <PageHeader title="Ruimte bewerken" />
         <PageContainer>
           <p className="text-muted-foreground">Ruimte niet gevonden.</p>
-          <Link to="/app/ruimtes" className="text-sm text-primary">
+          <Link to={`${eventBaseUrl}/ruimtes`} className="text-sm text-primary">
             Terug naar ruimtes
           </Link>
         </PageContainer>
@@ -42,19 +42,19 @@ export default function Page() {
     }
 
     updateRoom(room!.id, name.trim(), Number(capacity))
-    navigate("/app/ruimtes")
+    navigate(`${eventBaseUrl}/ruimtes`)
   }
 
   function handleDelete() {
     deleteRoom(room!.id)
-    navigate("/app/ruimtes")
+    navigate(`${eventBaseUrl}/ruimtes`)
   }
 
   return (
     <>
       <PageHeader title="Ruimte bewerken" />
       <PageContainer>
-        <Link to="/app/ruimtes" className="flex items-center gap-1 text-sm text-primary mb-6">
+        <Link to={`${eventBaseUrl}/ruimtes`} className="flex items-center gap-1 text-sm text-primary mb-6">
           <ArrowLeftIcon className="size-4" /> Terug
         </Link>
 
@@ -93,7 +93,7 @@ export default function Page() {
             </Button>
             <div className="flex gap-2">
               <Button variant="outline" type="button" asChild>
-                <Link to="/app/ruimtes">Annuleren</Link>
+                <Link to={`${eventBaseUrl}/ruimtes`}>Annuleren</Link>
               </Button>
               <Button type="submit">Opslaan</Button>
             </div>

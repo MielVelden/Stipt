@@ -9,7 +9,7 @@ import { Label } from "~/components/ui/label"
 import { useAppContext } from "~/contexts/app-context"
 
 export default function Page() {
-  const { selectedEventId, addRoom } = useAppContext()
+  const { selectedEventId, addRoom, eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
 
   const [name, setName] = useState("")
@@ -27,14 +27,14 @@ export default function Page() {
     if (!selectedEventId) return
 
     addRoom(selectedEventId, name.trim(), Number(capacity))
-    navigate("/app/ruimtes")
+    navigate(`${eventBaseUrl}/ruimtes`)
   }
 
   return (
     <>
       <PageHeader title="Ruimte aanmaken" />
       <PageContainer>
-        <Link to="/app/ruimtes" className="flex items-center gap-1 text-sm text-primary mb-6">
+        <Link to={`${eventBaseUrl}/ruimtes`} className="flex items-center gap-1 text-sm text-primary mb-6">
           <ArrowLeftIcon className="size-4" /> Terug
         </Link>
 
@@ -69,7 +69,7 @@ export default function Page() {
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" type="button" asChild>
-              <Link to="/app/ruimtes">Annuleren</Link>
+              <Link to={`${eventBaseUrl}/ruimtes`}>Annuleren</Link>
             </Button>
             <Button type="submit" disabled={!selectedEventId}>
               Opslaan

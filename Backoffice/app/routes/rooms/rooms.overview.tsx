@@ -11,7 +11,7 @@ import { Input } from "~/components/ui/input"
 import { useAppContext, type Room } from "~/contexts/app-context"
 
 export default function Page() {
-  const { selectedEventId, rooms, deleteRoom, events } = useAppContext()
+  const { selectedEventId, rooms, deleteRoom, events, eventBaseUrl } = useAppContext()
   const [search, setSearch] = useState("")
 
   const selectedEvent = events.find((e) => e.id === selectedEventId)
@@ -38,7 +38,7 @@ export default function Page() {
               {
                 label: "Bewerken",
                 icon: <PencilIcon className="size-4" />,
-                linkTo: `/app/ruimtes/${row.original.id}/bewerken`,
+                linkTo: `${eventBaseUrl}/ruimtes/${row.original.id}/bewerken`,
               },
               {
                 label: "Verwijderen",
@@ -66,7 +66,7 @@ export default function Page() {
             className="max-w-sm"
           />
           <Button asChild>
-            <Link to="/app/ruimtes/nieuw">
+            <Link to={`${eventBaseUrl}/ruimtes/nieuw`}>
               <PlusIcon /> Nieuwe ruimte
             </Link>
           </Button>

@@ -7,7 +7,8 @@ import {
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
 import { ArrowRight, Plus } from "lucide-react"
-import { Link } from "react-router"
+import { Link, useNavigate, useLocation } from "react-router"
+import { useEffect } from "react"
 import {
   Select,
   SelectContent,
@@ -18,10 +19,36 @@ import {
 } from "~/components/ui/select"
 import { Button } from "~/components/ui/button"
 import { useAppContext } from "~/contexts/app-context"
-import type { Event } from "~/routes/events/types"
+import type { Event } from "~/types"
 
 export function NavEventSelect({ events }: { events: Event[] }) {
   const { selectedEventId, setSelectedEventId } = useAppContext()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const match = location.pathname.match(/\/app\/event\/([^/]+)/)
+    if (match) {
+      const idFromUrl = match[1]
+      if (idFromUrl !== selectedEventId) {
+        setSelectedEventId(idFromUrl)
+      }
+    }
+  }, [location.pathname, selectedEventId, setSelectedEventId])
+
+  const handleEventChange = (id: string) => {
+    setSelectedEventId(id)
+
+    if (location.pathname.includes("/app/event/")) {
+      const newPath = location.pathname.replace(
+        /\/app\/event\/[^/]+/,
+        `/app/event/${id}`
+      )
+      navigate(newPath)
+    } else {
+      navigate(`/app/event/${id}/`)
+    }
+  }
 
   return (
     <SidebarGroup>
@@ -47,16 +74,22 @@ export function NavEventSelect({ events }: { events: Event[] }) {
               <div className="flex items-center gap-1">
                 <Select
                   value={selectedEventId ?? undefined}
-                  onValueChange={setSelectedEventId}
+                  onValueChange={handleEventChange}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecteer een evenement" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
-                      {events.map((event) => (
+                      {!events?.length && (
+                        <SelectItem value="null" disabled>
+                          Geen event beschikbaar
+                        </SelectItem>
+                      )}
+                      {events?.map((event) => (
                         <SelectItem key={event.id} value={event.id}>
                           {event.name}
+                          {event.isArchived && " (Gearchiveerd)"}
                         </SelectItem>
                       ))}
                     </SelectGroup>

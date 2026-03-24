@@ -26,11 +26,14 @@ import {
 } from "./session-form.schema"
 import { SessionFields } from "./session-form.config"
 import type { Session } from "./types"
+import { useAppContext } from "~/contexts/app-context"
 
 type SessionFormProps =
   | { mode: "create"; rooms: string[] }
   | { mode: "edit"; session: Session; rooms: string[] }
   | { mode: "readonly"; session: Session }
+
+const { eventBaseUrl } = useAppContext()
 
 export function SessionForm(props: SessionFormProps) {
   if (props.mode === "readonly") {
@@ -87,8 +90,9 @@ function CreateSessionForm({ rooms }: { rooms: string[] }) {
       const response = await apiClient.post("/sessions", session)
       if (response.status !== 201) throw new Error("Aanmaken mislukt")
       toast.success("De sessie is succesvol aangemaakt.")
-      if (response.data?.id) return navigate(`/app/sessies/${response.data.id}`)
-      navigate("/app/sessies")
+      if (response.data?.id)
+        return navigate(`${eventBaseUrl}/sessies/${response.data.id}`)
+      navigate(`${eventBaseUrl}/sessies`)
     } catch {
       toast.error("Aanmaken mislukt.")
     }
@@ -112,7 +116,7 @@ function CreateSessionForm({ rooms }: { rooms: string[] }) {
           <Button
             variant="outline"
             type="button"
-            onClick={() => navigate("/app/sessies")}
+            onClick={() => navigate(`${eventBaseUrl}/sessies`)}
             disabled={form.formState.isSubmitting}
           >
             Annuleren
@@ -182,7 +186,7 @@ function EditSessionForm({
     try {
       await apiClient.delete(`/sessions/${session.id}`)
       toast.success("De sessie is succesvol verwijderd.")
-      return redirect("/app/sessies")
+      return redirect(`${eventBaseUrl}/sessies`)
     } catch {
       toast.error("Verwijderen mislukt.")
     }
@@ -219,7 +223,7 @@ function EditSessionForm({
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => navigate("/app/sessies")}
+                onClick={() => navigate(`${eventBaseUrl}/sessies`)}
                 disabled={form.formState.isSubmitting}
               >
                 Annuleren

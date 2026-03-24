@@ -44,6 +44,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import * as z from "zod"
 import type { CreateSession, Room, Session } from "./types"
+import { useAppContext } from "~/contexts/app-context"
 
 const formSchema = z
   .object({
@@ -86,6 +87,7 @@ export async function clientLoader() {
 }
 
 export default function Page({ loaderData: rooms }: Route.ComponentProps) {
+  const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
   const [newLabel, setNewLabel] = useState("")
 
@@ -121,9 +123,9 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
       toast.success("De sessie is succesvol aangemaakt.")
 
       if (response.data?.id) {
-        navigate(`/app/sessies/${response.data.id}`)
+        navigate(`${eventBaseUrl}/sessies/${response.data.id}`)
       } else {
-        navigate("/app/sessies")
+        navigate(`${eventBaseUrl}/sessies`)
       }
     } catch (error) {
       toast.error("Aanmaken mislukt.")
@@ -389,7 +391,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 disabled={form.formState.isSubmitting}
                 asChild
               >
-                <Link to={`/app/sessies/`}>Annuleren</Link>
+                <Link to={`${eventBaseUrl}/sessies/`}>Annuleren</Link>
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting && (
