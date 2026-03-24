@@ -39,10 +39,10 @@ import {
 } from "lucide-react"
 
 import apiClient from "~/lib/api-client"
-import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
 import { formatDateRange } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
+import type { Session } from "~/types"
 
 export async function clientLoader() {
   try {
@@ -51,8 +51,8 @@ export async function clientLoader() {
 
     return rawSessions.map((session) => ({
       ...session,
-      "date-time": formatDateRange(session.startTime, session.endTime),
-      // "capacity-display": session.capacity ?? session.room.capacity ?? "-", // TODO implement when rooms are implemented
+      "date-time": formatDateRange(session.startDateTime, session.endDateTime),
+      "capacity-display": session.capacity ?? session.room.capacity ?? "-",
     }))
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -94,11 +94,15 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       },
     },
     {
+      accessorKey: "type",
+      header: "Type",
+    },
+    {
       accessorKey: "speaker",
       header: "Spreker",
     },
     {
-      accessorKey: "room",
+      accessorKey: "room.name",
       header: "Ruimte",
     },
     {
@@ -106,7 +110,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       header: "Datum & tijd",
     },
     {
-      accessorKey: "capacity",
+      accessorKey: "capacity-display",
       header: "Capaciteit",
     },
     {
