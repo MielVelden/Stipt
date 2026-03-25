@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react"
+import { useNavigate } from "react-router"
 
 type AppContextType = {
   selectedEventId: string | null
@@ -14,6 +15,8 @@ const getEventIdFromPathname = (pathname: string): string | null => {
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate()
+
   const [selectedEventId, setSelectedEventId] = useState<string | null>(() => {
     if (typeof window === "undefined") return null
     return getEventIdFromPathname(window.location.pathname)
@@ -21,6 +24,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const handleSetSelectedEventId = (id: string) => {
     setSelectedEventId(id)
+    navigate("/app")
   }
 
   const eventBaseUrl = selectedEventId

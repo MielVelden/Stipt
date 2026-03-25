@@ -3,7 +3,7 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-import { EventStyleRo } from './event-style-ro';
+import type { EventStyleRo } from './event-style-ro';
 
 export interface EventRo {
   id: string;
