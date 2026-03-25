@@ -3,7 +3,7 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-import { SessionRoomRo } from './session-room-ro';
+import type { SessionRoomRo } from './session-room-ro';
 
 export interface SessionRo {
   id: string;

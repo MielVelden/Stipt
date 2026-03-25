@@ -3,7 +3,7 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-import { UpdateEventStyleDto } from './update-event-style-dto';
+import type { UpdateEventStyleDto } from './update-event-style-dto';
 
 export interface UpdateEventDto {
   name: string;
