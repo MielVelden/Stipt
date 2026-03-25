@@ -1,17 +1,27 @@
+using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.Events;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
 
 namespace Backend.Web.Features.Sessions;
 
-public sealed class SessionsService(ISessionRepository sessionRepository)
+public sealed class SessionsService(
+    ISessionRepository sessionRepository,
+    IRoomRepository roomRepository,
+    IEventRepository eventRepository)
 {
-    public async Task<SessionRo> CreateAsync(CreateSessionDto request, CancellationToken cancellationToken)
+    public async Task<SessionRo> CreateAsync(Guid eventId, CreateSessionDto request, CancellationToken cancellationToken)
     {
+        var eventItem = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new BadHttpRequestException("Event does not exist.", StatusCodes.Status400BadRequest);
+        EnsureWithinEventPeriod(request.StartDateTime, request.EndDateTime, eventItem);
+
+        var room = await roomRepository.GetByIdAsync(eventId, request.RoomId, cancellationToken) ?? throw new BadHttpRequestException("Room does not exist for this event.", StatusCodes.Status400BadRequest);
         var hasOverlap = await sessionRepository.HasOverlapAsync(
-            request.Room,
-            request.StartTime,
-            request.EndTime,
+            eventId,
+            request.RoomId,
+            request.StartDateTime,
+            request.EndDateTime,
             excludedSessionId: null,
             cancellationToken);
 
@@ -23,10 +33,12 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
             Id = Guid.NewGuid(),
             Title = request.Title.Trim(),
             Description = request.Description?.Trim(),
+            Type = request.Type,
             Speaker = request.Speaker.Trim(),
-            Room = request.Room.Trim(),
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
+            RoomId = request.RoomId,
+            EventId = eventId,
+            StartDateTime = request.StartDateTime,
+            EndDateTime = request.EndDateTime,
             Capacity = request.Capacity,
             Labels = request.Labels.Select(label => label.Trim()).ToList(),
             CreatedAtUtc = DateTime.UtcNow
@@ -34,34 +46,40 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
 
         await sessionRepository.AddAsync(session, cancellationToken);
 
+        session.Room = room;
+
         return session.ToRo();
     }
 
-    public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(Guid eventId, CancellationToken cancellationToken)
     {
-        var sessions = await sessionRepository.GetAllAsync(cancellationToken);
+        var sessions = await sessionRepository.GetAllAsync(eventId, cancellationToken);
         return sessions
             .Select(session => session.ToRo())
             .ToArray();
     }
 
-    public async Task<SessionRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
-        var session = await sessionRepository.GetByIdAsync(id, cancellationToken);
+        var session = await sessionRepository.GetByIdAsync(eventId, id, cancellationToken);
         return session?.ToRo();
     }
 
-    public async Task<SessionRo?> UpdateAsync(Guid id, UpdateSessionDto request, CancellationToken cancellationToken)
+    public async Task<SessionRo?> UpdateAsync(Guid eventId, Guid id, UpdateSessionDto request, CancellationToken cancellationToken)
     {
-
-        var existingSession = await sessionRepository.GetByIdAsync(id, cancellationToken);
+        var existingSession = await sessionRepository.GetByIdAsync(eventId, id, cancellationToken);
         if (existingSession is null)
             return null;
 
+        var eventItem = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new BadHttpRequestException("Event does not exist.", StatusCodes.Status400BadRequest);
+        EnsureWithinEventPeriod(request.StartDateTime, request.EndDateTime, eventItem);
+
+        var room = await roomRepository.GetByIdAsync(eventId, request.RoomId, cancellationToken) ?? throw new BadHttpRequestException("Room does not exist for this event.", StatusCodes.Status400BadRequest);
         var hasOverlap = await sessionRepository.HasOverlapAsync(
-            request.Room,
-            request.StartTime,
-            request.EndTime,
+            eventId,
+            request.RoomId,
+            request.StartDateTime,
+            request.EndDateTime,
             id,
             cancellationToken);
 
@@ -70,10 +88,12 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
 
         existingSession.Title = request.Title.Trim();
         existingSession.Description = request.Description?.Trim();
+        existingSession.Type = request.Type;
         existingSession.Speaker = request.Speaker.Trim();
-        existingSession.Room = request.Room.Trim();
-        existingSession.StartTime = request.StartTime;
-        existingSession.EndTime = request.EndTime;
+        existingSession.RoomId = request.RoomId;
+        existingSession.EventId = eventId;
+        existingSession.StartDateTime = request.StartDateTime;
+        existingSession.EndDateTime = request.EndDateTime;
         existingSession.Capacity = request.Capacity;
         existingSession.Labels = request.Labels.Select(label => label.Trim()).ToList();
         existingSession.UpdatedAtUtc = DateTime.UtcNow;
@@ -82,12 +102,24 @@ public sealed class SessionsService(ISessionRepository sessionRepository)
         if (!updated)
             return null;
 
+        existingSession.Room = room;
+
         return existingSession.ToRo();
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
-        return await sessionRepository.DeleteAsync(id, cancellationToken);
+        return await sessionRepository.DeleteAsync(eventId, id, cancellationToken);
+    }
+
+    private static void EnsureWithinEventPeriod(DateTime startDateTime, DateTime endDateTime, Event eventItem)
+    {
+        if (startDateTime < eventItem.StartDate || endDateTime > eventItem.EndDate)
+        {
+            throw new BadHttpRequestException(
+                "Session start and end must be within the event period.",
+                StatusCodes.Status400BadRequest);
+        }
     }
 }
 

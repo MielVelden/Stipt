@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Events;
+using Backend.Database.Entities.Sessions;
 
 namespace Backend.Database.Entities.Rooms;
 
@@ -10,5 +11,6 @@ public sealed class Room
     
     public Guid EventId { get; set; }
     public Event Event { get; set; } = null!;
+    public ICollection<Session> Sessions { get; set; } = new List<Session>();
 }
 

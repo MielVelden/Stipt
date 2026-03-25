@@ -16,6 +16,14 @@ public sealed class CreateEventDtoValidator : AbstractValidator<CreateEventDto>
             .MaximumLength(500);
 
         RuleFor(x => x.StartDate)
+            .Must(x => x.Kind == DateTimeKind.Utc)
+            .WithMessage("StartDate must be in UTC.");
+
+        RuleFor(x => x.EndDate)
+            .Must(x => x.Kind == DateTimeKind.Utc)
+            .WithMessage("EndDate must be in UTC.");
+
+        RuleFor(x => x.StartDate)
             .LessThan(x => x.EndDate)
             .WithMessage("Start date must be before end date.");
 
