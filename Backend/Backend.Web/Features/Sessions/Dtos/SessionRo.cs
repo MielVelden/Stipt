@@ -1,12 +1,14 @@
 using Backend.Database.Entities.Sessions;
+using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;
 
+[ExportTsInterface]
 public sealed record SessionRo(
     Guid Id,
     string Title,
     string? Description,
-    SessionType Type,
+    [property: TsType("\"keynote\" | \"breakout\"")] SessionType Type,
     string Speaker,
     Guid RoomId,
     SessionRoomRo Room,
@@ -18,6 +20,7 @@ public sealed record SessionRo(
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc);
 
+[ExportTsInterface]
 public sealed record SessionRoomRo(
     Guid Id,
     string Name,

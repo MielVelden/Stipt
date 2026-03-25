@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateFrontendTypesOnBuild>true</GenerateFrontendTypesOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,10 +16,26 @@
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
         <PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.3.0" />
+        <PackageReference Include="TypeGen" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Backend.Database\Backend.Database.csproj" />
     </ItemGroup>
+
+    <Target Name="GenerateFrontendTypes" AfterTargets="Build" Condition="'$(GenerateFrontendTypesOnBuild)' == 'true'">
+        <Message Text="Generating TypeScript types from DTOs..." Importance="high" />
+        <Exec
+            Command="dotnet tool restore"
+            WorkingDirectory="$(MSBuildProjectDirectory)\.."
+            ContinueOnError="WarnAndContinue" />
+        <Exec
+            Command="dotnet tool run dotnet-typegen -- generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)\tgconfig.json&quot;"
+            WorkingDirectory="$(MSBuildProjectDirectory)\.."
+            ContinueOnError="WarnAndContinue" />
+        <Exec
+            Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sync-FrontendTypes.ps1&quot;"
+            ContinueOnError="WarnAndContinue" />
+    </Target>
 
 </Project>

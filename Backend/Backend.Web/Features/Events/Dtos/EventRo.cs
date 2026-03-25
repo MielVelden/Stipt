@@ -1,5 +1,8 @@
+using TypeGen.Core.TypeAnnotations;
+
 namespace Backend.Web.Features.Events.Dtos;
 
+[ExportTsInterface]
 public sealed record EventRo(
     Guid Id,
     string Name,
@@ -12,6 +15,7 @@ public sealed record EventRo(
     DateTime? UpdatedAtUtc
 );
 
+[ExportTsInterface]
 public sealed record EventStyleRo(
     string PrimaryBackgroundColor,
     string PrimaryForegroundColor,
