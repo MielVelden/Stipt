@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
@@ -24,5 +25,15 @@ public static class DependencyInjection
         services.AddScoped<IRoomRepository, RoomRepository>();
 
         return services;
+    }
+
+    public static async Task MigrateAndSeedDatabaseAsync(this IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        await dbContext.Database.MigrateAsync(cancellationToken);
+        await InitialDataSeeder.SeedAsync(dbContext, cancellationToken);
     }
 }
