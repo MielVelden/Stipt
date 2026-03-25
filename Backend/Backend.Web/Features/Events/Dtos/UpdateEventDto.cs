@@ -1,5 +1,8 @@
+using TypeGen.Core.TypeAnnotations;
+
 namespace Backend.Web.Features.Events.Dtos;
 
+[ExportTsInterface]
 public sealed record UpdateEventDto(
     string Name,
     string Location,
@@ -8,6 +11,7 @@ public sealed record UpdateEventDto(
     UpdateEventStyleDto Style
 );
 
+[ExportTsInterface]
 public sealed record UpdateEventStyleDto(
     string PrimaryBackgroundColor,
     string PrimaryForegroundColor,
