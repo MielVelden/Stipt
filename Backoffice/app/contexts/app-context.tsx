@@ -8,20 +8,19 @@ type AppContextType = {
 
 const AppContext = createContext<AppContextType | null>(null)
 
+const getEventIdFromPathname = (pathname: string): string | null => {
+  const match = pathname.match(/^\/app\/event\/([^/]+)(?:\/|$)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("selectedEventId")
-    }
-    return null
+    if (typeof window === "undefined") return null
+    return getEventIdFromPathname(window.location.pathname)
   })
 
-  // Sync to localStorage
   const handleSetSelectedEventId = (id: string) => {
     setSelectedEventId(id)
-    if (typeof window !== "undefined") {
-      localStorage.setItem("selectedEventId", id)
-    }
   }
 
   const eventBaseUrl = selectedEventId
