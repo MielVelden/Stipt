@@ -1,3 +1,5 @@
+using Backend.Database.Entities.Rooms;
+
 namespace Backend.Database.Entities.Events;
 
 public sealed class Event
@@ -11,5 +13,7 @@ public sealed class Event
     public bool IsArchived { get; set; }
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
+    
+    public ICollection<Room> Rooms { get; set; } = new List<Room>();
 }
 
