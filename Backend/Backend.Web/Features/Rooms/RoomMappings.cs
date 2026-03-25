@@ -7,7 +7,7 @@ public static class RoomMappings
 {
     public static RoomRo ToRo(this Room room)
     {
-        return new RoomRo(room.Id, room.Name, room.Capacity);
+        return new RoomRo(room.Id, room.Name, room.Capacity, room.EventId);
     }
 }
 
