@@ -25,7 +25,7 @@ internal static class InitialDataSeeder
             Name = "Stipt Summit 2026",
             Location = "'s-Hertogenbosch, Onderwijsboulevard",
             StartDate = new DateTime(2026, 4, 20, 8, 0, 0, DateTimeKind.Utc),
-            EndDate = new DateTime(2026, 4, 20, 18, 0, 0, DateTimeKind.Utc),
+            EndDate = new DateTime(2026, 4, 30, 18, 0, 0, DateTimeKind.Utc),
             Style = new EventStyle
             {
                 PrimaryBackgroundColor = "#111827",

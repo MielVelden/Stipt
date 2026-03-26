@@ -6,6 +6,7 @@ import {
   FieldContent,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
   FieldSet,
 } from "~/components/ui/field"
 import { Badge } from "~/components/ui/badge"
@@ -16,6 +17,7 @@ import FetchError from "~/components/fetch-error"
 import { formatDate, formatTime } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
 import type { Session } from "~/types"
+import { ArrowLeft } from "lucide-react"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
@@ -33,7 +35,16 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
       <PageHeader title="Sessie details" />
       <PageContainer>
         <div className="flex items-center justify-between gap-4">
-          <h2 className="mb-2 text-2xl font-bold">{session.title}</h2>
+          <div>
+            <Link
+              to={`${eventBaseUrl}/sessies`}
+              className="text-sm font-medium text-muted-foreground hover:underline"
+            >
+              <ArrowLeft className="mr-1 inline-block h-5 w-5" />
+              Terug
+            </Link>
+            <h2 className="mb-2 text-2xl font-bold">{session.title}</h2>
+          </div>
           <Button asChild>
             <Link to={`${eventBaseUrl}/sessies/${session.id}/bewerken`}>
               Bewerken
@@ -53,13 +64,19 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
             </FieldContent>
           </Field>
           <Field>
-            <FieldLabel>Type</FieldLabel>
-            <FieldContent>{session.type}</FieldContent>
-          </Field>
-          <Field>
             <FieldLabel>Spreker</FieldLabel>
             <FieldContent>{session.speaker}</FieldContent>
           </Field>
+          <Field>
+            <FieldLabel>Type</FieldLabel>
+            <FieldContent>
+              <Badge variant="outline" className="capitalize">
+                {session.type}
+              </Badge>
+            </FieldContent>
+          </Field>
+
+          <FieldSeparator />
 
           <FieldGroup className="flex flex-row gap-12">
             <Field className="w-fit">
@@ -83,8 +100,6 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
               <FieldLabel>Starttijd</FieldLabel>
               <FieldContent>{formatTime(session.startDateTime)}</FieldContent>
             </Field>
-          </FieldGroup>
-          <FieldGroup className="flex flex-row gap-12">
             <Field className="w-fit">
               <FieldLabel>Einddatum</FieldLabel>
               <FieldContent>{formatDate(session.endDateTime)}</FieldContent>
@@ -94,6 +109,8 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
               <FieldContent>{formatTime(session.endDateTime)}</FieldContent>
             </Field>
           </FieldGroup>
+
+          <FieldSeparator />
 
           <Field>
             <FieldLabel>Labels</FieldLabel>
