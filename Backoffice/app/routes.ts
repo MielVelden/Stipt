@@ -35,7 +35,8 @@ export default [
 
         ...prefix("ruimtes", [
           route("", "routes/rooms/rooms.overview.tsx"),
-          route("nieuw", "routes/rooms/rooms.new.tsx"),
+          route("nieuw", "routes/rooms/rooms.create.tsx"),
+          route(":id", "routes/rooms/rooms.details.tsx"),
           route(":id/bewerken", "routes/rooms/rooms.edit.tsx"),
         ]),
       ]),
