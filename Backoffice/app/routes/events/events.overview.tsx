@@ -38,7 +38,7 @@ import {
   TrashIcon,
 } from "lucide-react"
 import apiClient from "~/lib/api-client"
-import type { Event } from "~/routes/events/types"
+import type { Event } from "~/types"
 import type { Route } from "./+types/events.overview"
 import { nameofFactory } from "~/lib/fields"
 
