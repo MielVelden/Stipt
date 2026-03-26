@@ -40,8 +40,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <SettingsIcon color={color} size={size} />,
         }}
       />
-      <Tabs.Screen name="events/[id]" options={{ href: null }} />
-      <Tabs.Screen name="sessions/[id]" options={{ href: null }} />
     </Tabs>
   )
 }
