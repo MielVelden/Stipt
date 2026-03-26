@@ -96,6 +96,13 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
     {
       accessorKey: "type",
       header: "Type",
+      cell: ({ row }) => {
+        return (
+          <Badge variant="outline" className="capitalize">
+            {row.original.type}
+          </Badge>
+        )
+      },
     },
     {
       accessorKey: "speaker",

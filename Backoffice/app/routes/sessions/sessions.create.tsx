@@ -15,6 +15,7 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
   FieldSet,
 } from "~/components/ui/field"
 import { Badge } from "~/components/ui/badge"
@@ -39,31 +40,31 @@ import { XIcon, Loader2 } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import FetchError from "~/components/fetch-error"
+import { DatePicker } from "~/components/ui/date-picker"
+import { TimeField } from "~/components/ui/time-field"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-import * as z from "zod"
 import { useAppContext } from "~/contexts/app-context"
 import {
   sessionFormSchema,
   type SessionFormValues,
 } from "./session-form.schema"
-import type { CreateSession } from "~/types"
+import type { CreateSession, Room } from "~/types"
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { Label } from "~/components/ui/label"
 
 export async function clientLoader() {
   try {
-    return ["Zaal 1", "Zaal 2", "Zaal 3"] // TODO remove Mock data for rooms
-    // const response = await apiClient.get<Room[]>("/rooms")
-    // return response.data
+    const response = await apiClient.get<Room[]>("/rooms")
+    return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
 }
 
 export default function Page({ loaderData: rooms }: Route.ComponentProps) {
-  const { eventBaseUrl, selectedEventId } = useAppContext()
+  const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
   const [newLabel, setNewLabel] = useState("")
 
@@ -74,7 +75,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
       description: "",
       type: "breakout",
       speaker: "",
-      room: "",
+      roomId: "",
       capacity: undefined,
       startDate: "",
       startTime: "",
@@ -90,12 +91,11 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
       description: data.description,
       type: data.type,
       speaker: data.speaker,
-      room: data.room, // TODO
+      roomId: data.roomId,
       startDateTime: `${data.startDate}T${data.startTime}:00Z`,
       endDateTime: `${data.endDate}T${data.endTime}:00Z`,
       capacity: data.capacity ? Number(data.capacity) : undefined,
       labels: data.labels ?? [],
-      eventId: selectedEventId ?? "",
     }
 
     try {
@@ -113,7 +113,6 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
     }
   }
 
-  // TODO: move to component?
   // Helper for labels
   const currentLabels = form.watch("labels") ?? []
   const addLabel = () => {
@@ -235,7 +234,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
             />
             <FieldGroup className="flex flex-row gap-4">
               <Controller
-                name="room"
+                name="roomId"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
@@ -250,8 +249,13 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                       <SelectContent position="popper">
                         <SelectGroup>
                           {rooms?.map((room) => (
-                            <SelectItem key={room} value={room}>
-                              {room}
+                            <SelectItem key={room.id} value={room.id}>
+                              <div className="flex items-center gap-2">
+                                <span>{room.name}</span>
+                                <span className="block text-xs text-muted-foreground!">
+                                  (Capaciteit {room.capacity})
+                                </span>
+                              </div>
                             </SelectItem>
                           ))}
                           {!rooms?.length && (
@@ -292,7 +296,6 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 )}
               />
             </FieldGroup>
-            {/* // TODO: use shadcn date and time pickers */}
             <FieldGroup className="flex flex-row gap-4">
               <Controller
                 name="startDate"
@@ -300,10 +303,12 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="startDate">Startdatum</FieldLabel>
-                    <Input
-                      {...field}
+                    <DatePicker
                       id="startDate"
-                      type="date"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={field.disabled}
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.error && (
@@ -318,10 +323,12 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="startTime">Starttijd</FieldLabel>
-                    <Input
-                      {...field}
+                    <TimeField
                       id="startTime"
-                      type="time"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={field.disabled}
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.error && (
@@ -336,10 +343,12 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="endDate">Einddatum</FieldLabel>
-                    <Input
-                      {...field}
+                    <DatePicker
                       id="endDate"
-                      type="date"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={field.disabled}
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.error && (
@@ -354,10 +363,12 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 render={({ field, fieldState }) => (
                   <Field className="flex-1" data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="endTime">Eindtijd</FieldLabel>
-                    <Input
-                      {...field}
+                    <TimeField
                       id="endTime"
-                      type="time"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      disabled={field.disabled}
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.error && (
@@ -367,7 +378,6 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
                 )}
               />
             </FieldGroup>
-            {/* // TODO: move to component? */}
             <Field>
               <FieldLabel htmlFor="labels">Labels</FieldLabel>
               <InputGroup className="mb-2 max-w-xs">

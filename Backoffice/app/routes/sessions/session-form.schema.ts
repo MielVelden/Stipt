@@ -6,7 +6,7 @@ export const sessionFormSchema = z
     description: z.string().min(1, "Dit veld is verplicht"),
     type: z.enum(["keynote", "breakout"], "Selecteer een sessietype"),
     speaker: z.string().min(1, "Dit veld is verplicht"),
-    room: z.string().min(1, "Selecteer een ruimte"),
+    roomId: z.string().min(1, "Selecteer een ruimte"),
     capacity: z
       .string()
       .optional()
