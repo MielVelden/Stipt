@@ -81,12 +81,12 @@ export async function clientAction({ request }: { request: Request }) {
     }
     
     if (intent === "archive" && id) {
-      await apiClient.put(`/events/${id}`, { isArchived: true })
+      await apiClient.patch(`/events/${id}/archive`)
       return { success: true }
     }
 
     if (intent === "unarchive" && id) {
-      await apiClient.put(`/events/${id}`, { isArchived: false })
+      await apiClient.patch(`/events/${id}/unarchive`)
       return { success: true }
     }
   } catch {

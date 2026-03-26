@@ -1,4 +1,4 @@
-using Backend.Domain.Sessions;
+using Backend.Database.Entities.Sessions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
