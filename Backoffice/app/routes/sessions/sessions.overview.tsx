@@ -44,9 +44,16 @@ import { formatDateRange } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
 import type { Session } from "~/types"
 
-export async function clientLoader() {
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId) {
+    throw new Response("Kan geen geselecteerd event vinden.", { status: 400 })
+  }
+
   try {
-    const response = await apiClient.get<Session[]>("/sessions")
+    const response = await apiClient.get<Session[]>(
+      `/events/${eventId}/sessions`
+    )
     const rawSessions = response.data
 
     return rawSessions.map((session) => ({
@@ -59,14 +66,19 @@ export async function clientLoader() {
   }
 }
 
-export async function clientAction({ request }: { request: Request }) {
+export async function clientAction({ request, params }: Route.ActionArgs) {
   const formData = await request.formData()
   const id = formData.get("id")
   const intent = formData.get("intent")
+  const eventId = params.eventId
 
-  if (intent === "delete" && id) {
+  if (!eventId) {
+    return { error: "Kan geen geselecteerd event vinden." }
+  }
+
+  if (intent === "delete" && typeof id === "string") {
     try {
-      await apiClient.delete(`/sessions/${id}`)
+      await apiClient.delete(`/events/${eventId}/sessions/${id}`)
       return { success: true }
     } catch (error) {
       return { error: "Verwijderen mislukt." }

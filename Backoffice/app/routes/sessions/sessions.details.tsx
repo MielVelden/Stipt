@@ -20,8 +20,17 @@ import type { Session } from "~/types"
 import { ArrowLeft } from "lucide-react"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId || !params.id) {
+    throw new Response("Kan geen geselecteerd event of sessie vinden.", {
+      status: 400,
+    })
+  }
+
   try {
-    const response = await apiClient.get<Session>(`/sessions/${params.id}`)
+    const response = await apiClient.get<Session>(
+      `/events/${eventId}/sessions/${params.id}`
+    )
     return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })

@@ -1,5 +1,5 @@
 import { isRouteErrorResponse, useRouteError } from "react-router"
-import { useNavigate } from "react-router"
+import { useNavigate, useParams } from "react-router"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import FetchError from "~/components/fetch-error"
@@ -18,12 +18,18 @@ import type { CreateRoom } from "~/types"
 export default function Page() {
   const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
+  const { eventId } = useParams()
 
   async function onSubmit(data: RoomCreateFormValues) {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
+    }
+
     const room: CreateRoom = mapFormValuesToRoomPayload(data)
 
     try {
-      const response = await apiClient.post("/rooms", room)
+      const response = await apiClient.post(`/events/${eventId}/rooms`, room)
       toast.success("De ruimte is succesvol aangemaakt.")
 
       if (response.data?.id) {

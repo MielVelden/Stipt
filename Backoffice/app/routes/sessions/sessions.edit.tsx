@@ -1,6 +1,11 @@
 import { useState } from "react"
 import { isAxiosError } from "axios"
-import { isRouteErrorResponse, useRouteError, useNavigate } from "react-router"
+import {
+  isRouteErrorResponse,
+  useRouteError,
+  useNavigate,
+  useParams,
+} from "react-router"
 import type { Route } from "./+types/sessions.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
@@ -29,11 +34,20 @@ import {
 import { getApiErrorDetail } from "~/lib/utils"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId || !params.id) {
+    throw new Response("Kan geen geselecteerd event of sessie vinden.", {
+      status: 400,
+    })
+  }
+
   try {
     const sessionResponse = await apiClient.get<Session>(
-      "/sessions/" + (params.id as string)
+      `/events/${eventId}/sessions/${params.id}`
     )
-    const roomsResponse = await apiClient.get<Room[]>("/rooms")
+    const roomsResponse = await apiClient.get<Room[]>(
+      `/events/${eventId}/rooms`
+    )
 
     return {
       session: sessionResponse.data,
@@ -48,17 +62,23 @@ export default function Page({
   loaderData: { session, rooms },
 }: Route.ComponentProps) {
   const navigate = useNavigate()
+  const { eventId } = useParams()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { eventBaseUrl } = useAppContext()
 
   const defaultValues = mapSessionToEditFormValues(session)
 
   async function onSubmit(data: SessionEditFormValues) {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
+    }
+
     const updatedSession: UpdateSession = mapFormValuesToSessionPayload(data)
 
     try {
       const response = await apiClient.put(
-        `/sessions/${session.id}`,
+        `/events/${eventId}/sessions/${session.id}`,
         updatedSession
       )
       toast.success("De sessie is succesvol bijgewerkt.")
@@ -74,8 +94,13 @@ export default function Page({
   }
 
   async function onDelete() {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
+    }
+
     try {
-      await apiClient.delete(`/sessions/${session.id}`)
+      await apiClient.delete(`/events/${eventId}/sessions/${session.id}`)
       toast.success("De sessie is succesvol verwijderd.")
       navigate(`${eventBaseUrl}/sessies`)
     } catch (error) {

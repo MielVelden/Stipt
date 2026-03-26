@@ -1,5 +1,10 @@
 import { useState } from "react"
-import { isRouteErrorResponse, useRouteError, useNavigate } from "react-router"
+import {
+  isRouteErrorResponse,
+  useRouteError,
+  useNavigate,
+  useParams,
+} from "react-router"
 import type { Route } from "./+types/rooms.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
@@ -28,8 +33,17 @@ import {
 } from "~/components/ui/alert-dialog"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId || !params.id) {
+    throw new Response("Kan geen geselecteerd event of ruimte vinden.", {
+      status: 400,
+    })
+  }
+
   try {
-    const response = await apiClient.get<Room>(`/rooms/${params.id}`)
+    const response = await apiClient.get<Room>(
+      `/events/${eventId}/rooms/${params.id}`
+    )
     return response.data
   } catch {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -39,15 +53,24 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
 export default function Page({ loaderData: room }: Route.ComponentProps) {
   const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
+  const { eventId } = useParams()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const defaultValues = mapRoomToEditFormValues(room)
 
   async function onSubmit(data: RoomEditFormValues) {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
+    }
+
     const updatedRoom: UpdateRoom = mapFormValuesToRoomPayload(data)
 
     try {
-      const response = await apiClient.put(`/rooms/${room.id}`, updatedRoom)
+      const response = await apiClient.put(
+        `/events/${eventId}/rooms/${room.id}`,
+        updatedRoom
+      )
       toast.success("De ruimte is succesvol bijgewerkt.")
 
       if (response.data?.id) {
@@ -61,8 +84,13 @@ export default function Page({ loaderData: room }: Route.ComponentProps) {
   }
 
   async function onDelete() {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
+    }
+
     try {
-      await apiClient.delete(`/rooms/${room.id}`)
+      await apiClient.delete(`/events/${eventId}/rooms/${room.id}`)
       toast.success("De ruimte is succesvol verwijderd.")
       navigate(`${eventBaseUrl}/ruimtes`)
     } catch (error) {
