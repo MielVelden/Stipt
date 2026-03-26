@@ -1,4 +1,9 @@
-import { useNavigate, useRouteError, isRouteErrorResponse } from "react-router"
+import {
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+  useParams,
+} from "react-router"
 import { isAxiosError } from "axios"
 import type { Route } from "./+types/sessions.create"
 import { PageHeader } from "~/layouts/components/page-header"
@@ -16,9 +21,14 @@ import type { CreateSession, Room } from "~/types"
 import { SessionForm } from "./session-form"
 import { getApiErrorDetail } from "~/lib/utils"
 
-export async function clientLoader() {
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId) {
+    throw new Response("Kan geen geselecteerd event vinden.", { status: 400 })
+  }
+
   try {
-    const response = await apiClient.get<Room[]>("/rooms")
+    const response = await apiClient.get<Room[]>(`/events/${eventId}/rooms`)
     return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -28,12 +38,21 @@ export async function clientLoader() {
 export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
+  const { eventId } = useParams()
 
   async function onSubmit(data: SessionCreateFormValues) {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
+    }
+
     const session: CreateSession = mapFormValuesToSessionPayload(data)
 
     try {
-      const response = await apiClient.post("/sessions", session)
+      const response = await apiClient.post(
+        `/events/${eventId}/sessions`,
+        session
+      )
       toast.success("De sessie is succesvol aangemaakt.")
 
       if (response.data?.id) {

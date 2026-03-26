@@ -8,7 +8,6 @@ import {
 } from "~/components/ui/sidebar"
 import { ArrowRight, Plus } from "lucide-react"
 import { Link, useNavigate, useLocation } from "react-router"
-import { useEffect } from "react"
 import {
   Select,
   SelectContent,
@@ -26,28 +25,14 @@ export function NavEventSelect({ events }: { events: Event[] }) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  useEffect(() => {
-    const match = location.pathname.match(/\/app\/event\/([^/]+)/)
-    if (match) {
-      const idFromUrl = match[1]
-      if (idFromUrl !== selectedEventId) {
-        setSelectedEventId(idFromUrl)
-      }
-    }
-  }, [location.pathname, selectedEventId, setSelectedEventId])
-
   const handleEventChange = (id: string) => {
     setSelectedEventId(id)
 
-    if (location.pathname.includes("/app/event/")) {
-      const newPath = location.pathname.replace(
-        /\/app\/event\/[^/]+/,
-        `/app/event/${id}`
-      )
-      navigate(newPath)
-    } else {
-      navigate(`/app/event/${id}/`)
-    }
+    const newPath = location.pathname.includes("/app/event/")
+      ? location.pathname.replace(/\/app\/event\/[^/]+/, `/app/event/${id}`)
+      : `/app/event/${id}/`
+
+    navigate(`${newPath}${location.search}${location.hash}`)
   }
 
   return (

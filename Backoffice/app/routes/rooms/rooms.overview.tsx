@@ -39,23 +39,33 @@ import apiClient from "~/lib/api-client"
 import type { Room } from "~/types"
 import type { Route } from "./+types/rooms.overview"
 
-export async function clientLoader() {
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId) {
+    throw new Response("Kan geen geselecteerd event vinden.", { status: 400 })
+  }
+
   try {
-    const response = await apiClient.get<Room[]>("/rooms")
+    const response = await apiClient.get<Room[]>(`/events/${eventId}/rooms`)
     return response.data
   } catch {
     throw new Response("Kon data niet laden", { status: 500 })
   }
 }
 
-export async function clientAction({ request }: { request: Request }) {
+export async function clientAction({ request, params }: Route.ActionArgs) {
   const formData = await request.formData()
   const id = formData.get("id")
   const intent = formData.get("intent")
+  const eventId = params.eventId
+
+  if (!eventId) {
+    return { error: "Kan geen geselecteerd event vinden." }
+  }
 
   try {
-    if (intent === "delete" && id) {
-      await apiClient.delete(`/rooms/${id}`)
+    if (intent === "delete" && typeof id === "string") {
+      await apiClient.delete(`/events/${eventId}/rooms/${id}`)
       return { success: true }
     }
   } catch {
