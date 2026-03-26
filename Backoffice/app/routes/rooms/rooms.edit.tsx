@@ -1,105 +1,119 @@
 import { useState } from "react"
-import { Link, useNavigate, useParams } from "react-router"
-import { ArrowLeftIcon } from "lucide-react"
+import { isRouteErrorResponse, useRouteError, useNavigate } from "react-router"
+import type { Route } from "./+types/rooms.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
-import { Label } from "~/components/ui/label"
+import FetchError from "~/components/fetch-error"
 import { useAppContext } from "~/contexts/app-context"
+import apiClient from "~/lib/api-client"
+import type { Room, UpdateRoom } from "~/types"
+import {
+  mapFormValuesToRoomPayload,
+  mapRoomToEditFormValues,
+  type RoomEditFormValues,
+} from "./room-form.schema"
+import { RoomForm } from "./room-form"
+import { toast } from "sonner"
+import { getApiErrorDetail } from "~/lib/utils"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog"
 
-export default function Page() {
-  const { id } = useParams()
-  const { rooms, updateRoom, deleteRoom, eventBaseUrl } = useAppContext()
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  try {
+    const response = await apiClient.get<Room>(`/rooms/${params.id}`)
+    return response.data
+  } catch {
+    throw new Response("Kon data niet laden", { status: 500 })
+  }
+}
+
+export default function Page({ loaderData: room }: Route.ComponentProps) {
+  const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  const room = rooms.find((r) => r.id === id)
+  const defaultValues = mapRoomToEditFormValues(room)
 
-  const [name, setName] = useState(room?.name ?? "")
-  const [capacity, setCapacity] = useState(String(room?.capacity ?? ""))
-  const [nameError, setNameError] = useState("")
+  async function onSubmit(data: RoomEditFormValues) {
+    const updatedRoom: UpdateRoom = mapFormValuesToRoomPayload(data)
 
-  if (!room) {
-    return (
-      <>
-        <PageHeader title="Ruimte bewerken" />
-        <PageContainer>
-          <p className="text-muted-foreground">Ruimte niet gevonden.</p>
-          <Link to={`${eventBaseUrl}/ruimtes`} className="text-sm text-primary">
-            Terug naar ruimtes
-          </Link>
-        </PageContainer>
-      </>
-    )
-  }
+    try {
+      const response = await apiClient.put(`/rooms/${room.id}`, updatedRoom)
+      toast.success("De ruimte is succesvol bijgewerkt.")
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-
-    if (name.trim().length < 6) {
-      setNameError("Must be atleast 6 characters.")
-      return
+      if (response.data?.id) {
+        navigate(`${eventBaseUrl}/ruimtes/${response.data.id}`)
+      } else {
+        navigate(`${eventBaseUrl}/ruimtes/${room.id}`)
+      }
+    } catch (error) {
+      toast.error(getApiErrorDetail(error, "Opslaan mislukt."))
     }
-
-    updateRoom(room!.id, name.trim(), Number(capacity))
-    navigate(`${eventBaseUrl}/ruimtes`)
   }
 
-  function handleDelete() {
-    deleteRoom(room!.id)
-    navigate(`${eventBaseUrl}/ruimtes`)
+  async function onDelete() {
+    try {
+      await apiClient.delete(`/rooms/${room.id}`)
+      toast.success("De ruimte is succesvol verwijderd.")
+      navigate(`${eventBaseUrl}/ruimtes`)
+    } catch (error) {
+      toast.error(getApiErrorDetail(error, "Verwijderen mislukt."))
+    }
   }
 
   return (
     <>
       <PageHeader title="Ruimte bewerken" />
       <PageContainer>
-        <Link to={`${eventBaseUrl}/ruimtes`} className="flex items-center gap-1 text-sm text-primary mb-6">
-          <ArrowLeftIcon className="size-4" /> Terug
-        </Link>
-
-        <h1 className="text-2xl font-semibold mb-6">Ruimte bewerken</h1>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-md">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Naam</Label>
-            <Input
-              id="name"
-              placeholder="Placeholder Text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                setNameError("")
-              }}
-            />
-            {nameError && <p className="text-sm text-destructive">{nameError}</p>}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="capacity">Capaciteit</Label>
-            <Input
-              id="capacity"
-              type="number"
-              placeholder="Placeholder Text"
-              value={capacity}
-              onChange={(e) => setCapacity(e.target.value)}
-              min={1}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Button variant="destructive" type="button" onClick={handleDelete}>
+        <RoomForm
+          mode="edit"
+          formId="form-room-edit"
+          defaultValues={defaultValues}
+          cancelTo={`${eventBaseUrl}/ruimtes/${room.id}`}
+          onSubmit={onSubmit}
+          leadingAction={
+            <Button
+              variant="destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+              type="button"
+            >
               Verwijderen
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" type="button" asChild>
-                <Link to={`${eventBaseUrl}/ruimtes`}>Annuleren</Link>
-              </Button>
-              <Button type="submit">Opslaan</Button>
-            </div>
-          </div>
-        </form>
+          }
+        />
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Weet je het zeker?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Je staat op het punt om de ruimte <strong>{room.name}</strong>{" "}
+                te verwijderen. Dit kan niet ongedaan worden gemaakt.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuleren</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={onDelete}>
+                Verwijderen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </PageContainer>
     </>
   )
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError()
+  return <FetchError isRouteError={isRouteErrorResponse(error)} />
 }
