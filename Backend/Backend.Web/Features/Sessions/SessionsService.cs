@@ -13,10 +13,10 @@ public sealed class SessionsService(
 {
     public async Task<SessionRo> CreateAsync(Guid eventId, CreateSessionDto request, CancellationToken cancellationToken)
     {
-        var eventItem = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new BadHttpRequestException("Event does not exist.", StatusCodes.Status400BadRequest);
+        var eventItem = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new BadHttpRequestException("Het evenement bestaat niet.", StatusCodes.Status400BadRequest);
         EnsureWithinEventPeriod(request.StartDateTime, request.EndDateTime, eventItem);
 
-        var room = await roomRepository.GetByIdAsync(eventId, request.RoomId, cancellationToken) ?? throw new BadHttpRequestException("Room does not exist for this event.", StatusCodes.Status400BadRequest);
+        var room = await roomRepository.GetByIdAsync(eventId, request.RoomId, cancellationToken) ?? throw new BadHttpRequestException("De ruimte bestaat niet voor dit evenement.", StatusCodes.Status400BadRequest);
         var hasOverlap = await sessionRepository.HasOverlapAsync(
             eventId,
             request.RoomId,
@@ -71,10 +71,10 @@ public sealed class SessionsService(
         if (existingSession is null)
             return null;
 
-        var eventItem = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new BadHttpRequestException("Event does not exist.", StatusCodes.Status400BadRequest);
+        var eventItem = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new BadHttpRequestException("Het evenement bestaat niet.", StatusCodes.Status400BadRequest);
         EnsureWithinEventPeriod(request.StartDateTime, request.EndDateTime, eventItem);
 
-        var room = await roomRepository.GetByIdAsync(eventId, request.RoomId, cancellationToken) ?? throw new BadHttpRequestException("Room does not exist for this event.", StatusCodes.Status400BadRequest);
+        var room = await roomRepository.GetByIdAsync(eventId, request.RoomId, cancellationToken) ?? throw new BadHttpRequestException("De ruimte bestaat niet voor dit evenement.", StatusCodes.Status400BadRequest);
         var hasOverlap = await sessionRepository.HasOverlapAsync(
             eventId,
             request.RoomId,
@@ -117,7 +117,7 @@ public sealed class SessionsService(
         if (startDateTime < eventItem.StartDate || endDateTime > eventItem.EndDate)
         {
             throw new BadHttpRequestException(
-                "Session start and end must be within the event period.",
+                "De sessie moet starten en eindigen binnen de eventperiode.",
                 StatusCodes.Status400BadRequest);
         }
     }
