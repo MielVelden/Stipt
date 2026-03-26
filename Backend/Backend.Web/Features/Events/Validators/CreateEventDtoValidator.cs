@@ -24,8 +24,8 @@ public sealed class CreateEventDtoValidator : AbstractValidator<CreateEventDto>
             .WithMessage("EndDate must be in UTC.");
 
         RuleFor(x => x.StartDate)
-            .LessThan(x => x.EndDate)
-            .WithMessage("Start date must be before end date.");
+            .LessThanOrEqualTo(x => x.EndDate)
+            .WithMessage("Start date must be before or equal to end date.");
 
         RuleFor(x => x.Style)
             .NotNull()
