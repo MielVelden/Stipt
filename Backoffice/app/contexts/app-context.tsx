@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { useLocation } from "react-router"
+import { useMatch } from "react-router"
 
 type AppContextType = {
   selectedEventId: string | null
@@ -9,26 +9,21 @@ type AppContextType = {
 
 const AppContext = createContext<AppContextType | null>(null)
 
-const getEventIdFromPathname = (pathname: string): string | null => {
-  const match = pathname.match(/^\/app\/event\/([^/]+)(?:\/|$)/)
-  return match ? decodeURIComponent(match[1]) : null
-}
-
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const location = useLocation()
+  const eventMatch = useMatch("/app/event/:eventId/*")
+  const eventIdFromUrl = eventMatch?.params.eventId ?? null
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(() => {
-    return getEventIdFromPathname(location.pathname)
+    return eventIdFromUrl
   })
 
   useEffect(() => {
-    const eventIdFromUrl = getEventIdFromPathname(location.pathname)
     if (eventIdFromUrl) {
       setSelectedEventId((current) =>
         current === eventIdFromUrl ? current : eventIdFromUrl
       )
     }
-  }, [location.pathname])
+  }, [eventIdFromUrl])
 
   const eventBaseUrl = selectedEventId
     ? `/app/event/${selectedEventId}`

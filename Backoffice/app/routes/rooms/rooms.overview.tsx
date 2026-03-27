@@ -146,8 +146,8 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
     <>
       <PageHeader title="Ruimtes" />
       <PageContainer>
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <InputGroup className="max-w-sm">
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <InputGroup className="max-w-64">
             <InputGroupInput
               placeholder="Zoek op naam"
               value={search}
