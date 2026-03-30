@@ -2,5 +2,5 @@ namespace Backend.Web.Features.Sessions.Exceptions;
 
 public sealed class SessionTimeSlotOverlapException()
     : BadHttpRequestException(
-        "The requested time slot overlaps with another session in the same room.",
+        "Het tijdslot overlapt met een ander sessie in dezelfde ruimte.",
         statusCode: StatusCodes.Status409Conflict);

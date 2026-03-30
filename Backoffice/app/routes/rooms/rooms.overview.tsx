@@ -1,29 +1,112 @@
 import { useState } from "react"
 import { type ColumnDef } from "@tanstack/react-table"
-import { PencilIcon, Trash2Icon, PlusIcon } from "lucide-react"
-import { Link } from "react-router"
+import {
+  PencilIcon,
+  Trash2Icon,
+  PlusIcon,
+  SearchIcon,
+  EyeIcon,
+} from "lucide-react"
+import {
+  Link,
+  isRouteErrorResponse,
+  useRouteError,
+  useFetcher,
+} from "react-router"
 import { DataTable } from "~/components/data-table"
 import { ActionsDropdown } from "~/components/actions-dropdown"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
-import { useAppContext, type Room } from "~/contexts/app-context"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "~/components/ui/input-group"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog"
+import FetchError from "~/components/fetch-error"
+import { useAppContext } from "~/contexts/app-context"
+import apiClient from "~/lib/api-client"
+import type { RoomRo } from "~/generated-types/room-ro"
+import type { Route } from "./+types/rooms.overview"
 
-export default function Page() {
-  const { selectedEventId, rooms, deleteRoom, events } = useAppContext()
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId) {
+    throw new Response("Kan geen geselecteerd event vinden.", { status: 400 })
+  }
+
+  try {
+    const response = await apiClient.get<RoomRo[]>(`/events/${eventId}/rooms`)
+    return response.data
+  } catch {
+    throw new Response("Kon data niet laden", { status: 500 })
+  }
+}
+
+export async function clientAction({ request, params }: Route.ActionArgs) {
+  const formData = await request.formData()
+  const id = formData.get("id")
+  const intent = formData.get("intent")
+  const eventId = params.eventId
+
+  if (!eventId) {
+    return { error: "Kan geen geselecteerd event vinden." }
+  }
+
+  try {
+    if (intent === "delete" && typeof id === "string") {
+      await apiClient.delete(`/events/${eventId}/rooms/${id}`)
+      return { success: true }
+    }
+  } catch {
+    return { error: "Verwijderen mislukt." }
+  }
+
+  return null
+}
+
+export default function Page({ loaderData: rooms }: Route.ComponentProps) {
+  const fetcher = useFetcher()
+  const { eventBaseUrl } = useAppContext()
   const [search, setSearch] = useState("")
+  const [roomToDelete, setRoomToDelete] = useState<RoomRo | null>(null)
 
-  const selectedEvent = events.find((e) => e.id === selectedEventId)
+  const filteredRooms = rooms.filter((room) =>
+    room.name.toLowerCase().includes(search.toLowerCase())
+  )
 
-  const filteredRooms = rooms
-    .filter((r) => r.eventId === selectedEventId)
-    .filter((r) => r.name.toLowerCase().includes(search.toLowerCase()))
+  const confirmDelete = () => {
+    if (roomToDelete) {
+      fetcher.submit(
+        { id: roomToDelete.id, intent: "delete" },
+        { method: "post" }
+      )
+      setRoomToDelete(null)
+    }
+  }
 
-  const columns: ColumnDef<Room>[] = [
+  const columns: ColumnDef<RoomRo>[] = [
     {
       accessorKey: "name",
       header: "Naam",
+      cell: ({ row }) => (
+        <Link
+          to={`${eventBaseUrl}/ruimtes/${row.original.id}`}
+          className="hover:underline"
+        >
+          {row.getValue("name")}
+        </Link>
+      ),
     },
     {
       accessorKey: "capacity",
@@ -36,16 +119,21 @@ export default function Page() {
           <ActionsDropdown
             actions={[
               {
+                label: "Bekijken",
+                icon: <EyeIcon className="size-4" />,
+                linkTo: `${eventBaseUrl}/ruimtes/${row.original.id}`,
+              },
+              {
                 label: "Bewerken",
                 icon: <PencilIcon className="size-4" />,
-                linkTo: `/app/ruimtes/${row.original.id}/bewerken`,
+                linkTo: `${eventBaseUrl}/ruimtes/${row.original.id}/bewerken`,
               },
               {
                 label: "Verwijderen",
                 icon: <Trash2Icon className="size-4" />,
                 variant: "destructive",
                 separatorBefore: true,
-                onClick: () => deleteRoom(row.original.id),
+                onClick: () => setRoomToDelete(row.original),
               },
             ]}
           />
@@ -58,26 +146,58 @@ export default function Page() {
     <>
       <PageHeader title="Ruimtes" />
       <PageContainer>
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <Input
-            placeholder="Zoeken..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-sm"
-          />
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <InputGroup className="max-w-64">
+            <InputGroupInput
+              placeholder="Zoek op naam"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <InputGroupAddon>
+              <SearchIcon className="size-4" />
+            </InputGroupAddon>
+          </InputGroup>
+
           <Button asChild>
-            <Link to="/app/ruimtes/nieuw">
+            <Link to={`${eventBaseUrl}/ruimtes/nieuw`}>
               <PlusIcon /> Nieuwe ruimte
             </Link>
           </Button>
         </div>
 
-        {!selectedEventId ? (
-          <p className="text-muted-foreground text-sm">Selecteer een evenement om ruimtes te bekijken.</p>
-        ) : (
-          <DataTable columns={columns} data={filteredRooms} />
-        )}
+        <DataTable columns={columns} data={filteredRooms} />
       </PageContainer>
+
+      <AlertDialog
+        open={!!roomToDelete}
+        onOpenChange={() => setRoomToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Weet je het zeker?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Je staat op het punt om de ruimte{" "}
+              <strong>{roomToDelete?.name}</strong> te verwijderen. Dit kan niet
+              ongedaan worden gemaakt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              variant="destructive"
+              disabled={fetcher.state !== "idle"}
+            >
+              {fetcher.state !== "idle" ? "Bezig..." : "Verwijderen"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError()
+  return <FetchError isRouteError={isRouteErrorResponse(error)} />
 }

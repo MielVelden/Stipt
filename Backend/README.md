@@ -21,3 +21,9 @@ dotnet ef migrations add <MigrationName> --project Backend.Database --startup-pr
 # Migratie uitvoeren
 dotnet ef database update --project Backend.Database --startup-project Backend.Web
 ```
+
+## TypeGen generatie
+
+Bij het builden van de backend, worden automatisch de types gegenereerd voor de frontend. Deze types worden opgeslagen in `app/generated-types`. 
+
+Voor meer informatie over TypeGen, zie de [TypeGen documentatie](https://typegen.readthedocs.io/). Hierin staat ook uitgelegd hoe de [Enums](https://typegen.readthedocs.io/en/latest/attributes.html#tsstringinitializersattribute) etc. worden gegenereerd.

@@ -1,88 +1,55 @@
 import { useState } from "react"
+import { isAxiosError } from "axios"
 import {
   isRouteErrorResponse,
   useRouteError,
   useNavigate,
-  Link,
+  useParams,
 } from "react-router"
 import type { Route } from "./+types/sessions.edit"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
-import type { Room, Session } from "./types"
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-} from "~/components/ui/field"
-import { Badge } from "~/components/ui/badge"
-import { Input } from "~/components/ui/input"
-import { Textarea } from "~/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "~/components/ui/input-group"
 import { Button } from "~/components/ui/button"
-import { Loader2, XIcon } from "lucide-react"
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import FetchError from "~/components/fetch-error"
-
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
-import * as z from "zod"
-
-const formSchema = z
-  .object({
-    id: z.string().min(1, "Deze sessie kan niet worden gevonden"),
-    title: z.string().min(1, "Dit veld is verplicht"),
-    description: z.string().min(1, "Dit veld is verplicht"),
-    speaker: z.string().min(1, "Dit veld is verplicht"),
-    room: z.string().min(1, "Selecteer een ruimte"),
-    capacity: z
-      .string()
-      .optional()
-      .refine((val) => !val || Number(val) > 0, {
-        message: "Capaciteit moet een positief getal zijn",
-      }),
-    date: z.string().min(1, "Dit veld is verplicht"),
-    startedAt: z.string().min(1, "Dit veld is verplicht"),
-    endedAt: z.string().min(1, "Dit veld is verplicht"),
-    labels: z
-      .array(z.string())
-      .default([])
-      .optional()
-      .refine((labels) => new Set(labels).size === labels?.length, {
-        message: "Labels moeten uniek zijn",
-      }),
-  })
-  .refine((data) => data.endedAt > data.startedAt, {
-    message: "Eindtijd moet na starttijd zijn",
-    path: ["endedAt"],
-  })
-
-type SessionFormValues = z.infer<typeof formSchema>
+import { useAppContext } from "~/contexts/app-context"
+import type { RoomRo } from "~/generated-types/room-ro"
+import type { SessionRo } from "~/generated-types/session-ro"
+import type { UpdateSessionDto } from "~/generated-types/update-session-dto"
+import {
+  mapFormValuesToSessionPayload,
+  mapSessionToEditFormValues,
+  type SessionEditFormValues,
+} from "./session-form.schema"
+import { SessionForm } from "./session-form"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog"
+import { getApiErrorDetail } from "~/lib/utils"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId || !params.id) {
+    throw new Response("Kan geen geselecteerd event of sessie vinden.", {
+      status: 400,
+    })
+  }
+
   try {
-    const sessionResponse = await apiClient.get<Session>(
-      "/sessions/" + (params.id as string)
+    const sessionResponse = await apiClient.get<SessionRo>(
+      `/events/${eventId}/sessions/${params.id}`
     )
-    // const roomsResponse = await apiClient.get<Room[]>("/rooms")
-    const roomsResponse = { data: ["Zaal 1", "Zaal 2", "Zaal 3"] } // TODO remove Mock data for rooms
+    const roomsResponse = await apiClient.get<RoomRo[]>(
+      `/events/${eventId}/rooms`
+    )
 
     return {
       session: sessionResponse.data,
@@ -97,323 +64,92 @@ export default function Page({
   loaderData: { session, rooms },
 }: Route.ComponentProps) {
   const navigate = useNavigate()
-  const [newLabel, setNewLabel] = useState("")
+  const { eventId } = useParams()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const { eventBaseUrl } = useAppContext()
 
-  const form = useForm<SessionFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      id: session.id.toString(),
-      title: session.title,
-      description: session.description,
-      speaker: session.speaker,
-      room: session.room,
-      capacity: session.capacity?.toString(),
-      date: session.startTime.split("T")[0],
-      startedAt: session.startTime.split("T")[1].substring(0, 5),
-      endedAt: session.endTime.split("T")[1].substring(0, 5),
-      labels: session.labels || [],
-    },
-  })
+  const defaultValues = mapSessionToEditFormValues(session)
 
-  async function onSubmit(data: SessionFormValues) {
-    const session: Session = {
-      id: data.id,
-      title: data.title,
-      description: data.description,
-      speaker: data.speaker,
-      room: data.room,
-      startTime: `${data.date}T${data.startedAt}:00Z`,
-      endTime: `${data.date}T${data.endedAt}:00Z`,
-      capacity: data.capacity ? Number(data.capacity) : undefined,
-      labels: data.labels ?? [],
+  async function onSubmit(data: SessionEditFormValues) {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
+    }
+
+    const updatedSession: UpdateSessionDto = mapFormValuesToSessionPayload(data)
+
+    try {
+      const response = await apiClient.put(
+        `/events/${eventId}/sessions/${session.id}`,
+        updatedSession
+      )
+      toast.success("De sessie is succesvol bijgewerkt.")
+
+      if (response.data?.id) {
+        navigate(`${eventBaseUrl}/sessies/${response.data.id}`)
+      } else {
+        navigate(`${eventBaseUrl}/sessies/${session.id}`)
+      }
+    } catch (error) {
+      toast.error(getApiErrorDetail(error, "Opslaan mislukt."))
+    }
+  }
+
+  async function onDelete() {
+    if (!eventId) {
+      toast.error("Kan geen geselecteerd event vinden.")
+      return
     }
 
     try {
-      const response = await apiClient.put(`/sessions/${session.id}`, session)
-      toast.success("De sessie is succesvol bijgewerkt.")
-      return { success: true, session: response.data }
+      await apiClient.delete(`/events/${eventId}/sessions/${session.id}`)
+      toast.success("De sessie is succesvol verwijderd.")
+      navigate(`${eventBaseUrl}/sessies`)
     } catch (error) {
-      toast.error("Opslaan mislukt.")
-      return { error: "Opslaan mislukt." }
+      toast.error(getApiErrorDetail(error, "Verwijderen mislukt."))
     }
-  }
-
-  // Helper for labels
-  const currentLabels = form.watch("labels") ?? []
-  const addLabel = () => {
-    const trimmed = newLabel.trim()
-    if (trimmed && !currentLabels.includes(trimmed)) {
-      form.setValue("labels", [...currentLabels, trimmed], {
-        shouldValidate: true,
-      })
-      setNewLabel("")
-    }
-  }
-  const removeLabel = (labelToRemove: string) => {
-    form.setValue(
-      "labels",
-      currentLabels.filter((l) => l !== labelToRemove),
-      { shouldValidate: true }
-    )
   }
 
   return (
     <>
       <PageHeader title="Sessie bewerken" />
       <PageContainer>
-        <form onSubmit={form.handleSubmit(onSubmit)} id="form-session-edit">
-          <input type="hidden" name="id" value={session.id} />
+        <SessionForm
+          mode="edit"
+          formId="form-session-edit"
+          rooms={rooms}
+          defaultValues={defaultValues}
+          cancelTo={`${eventBaseUrl}/sessies/${session.id}`}
+          onSubmit={onSubmit}
+          leadingAction={
+            <Button
+              variant="destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+              type="button"
+            >
+              Verwijderen
+            </Button>
+          }
+        />
 
-          <FieldSet
-            className="max-w-2xl gap-6"
-            disabled={form.formState.isSubmitting}
-          >
-            <Controller
-              name="title"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="title">Titel</FieldLabel>
-                  <Input
-                    {...field}
-                    id="title"
-                    placeholder="Wat is de titel van de sessie?"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="description">Beschrijving</FieldLabel>
-                  <Textarea
-                    {...field}
-                    id="description"
-                    placeholder="Waar gaat de sessie over?"
-                    rows={4}
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="speaker"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
-                  <Input
-                    {...field}
-                    id="speaker"
-                    placeholder="Naam van de spreker"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.error && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <FieldGroup className="flex flex-row">
-              <Controller
-                name="room"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="room">Ruimte</FieldLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger
-                        id="room"
-                        aria-invalid={fieldState.invalid}
-                      >
-                        <SelectValue placeholder="Kies een ruimte" />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        <SelectGroup>
-                          {rooms?.map((room) => (
-                            <SelectItem key={room} value={room}>
-                              {room}
-                            </SelectItem>
-                          ))}
-                          {!rooms?.length && (
-                            <SelectItem value="null" disabled>
-                              Geen ruimtes beschikbaar
-                            </SelectItem>
-                          )}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.error && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="capacity"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="capacity">Capaciteit</FieldLabel>
-                    <Input
-                      {...field}
-                      id="capacity"
-                      type="number"
-                      placeholder="Capaciteit van de sessie"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    <FieldDescription className="text-xs">
-                      Laat leeg om de capaciteit van de ruimte te gebruiken
-                    </FieldDescription>
-                    {fieldState.error && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </FieldGroup>
-
-            <FieldGroup className="flex flex-row gap-4">
-              <Controller
-                name="date"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field className="flex-1" data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="date">Datum</FieldLabel>
-                    <Input
-                      {...field}
-                      id="date"
-                      type="date"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.error && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="startedAt"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field className="flex-1" data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="startedAt">Starttijd</FieldLabel>
-                    <Input
-                      {...field}
-                      id="startedAt"
-                      type="time"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.error && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              <Controller
-                name="endedAt"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field className="flex-1" data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="endedAt">Eindtijd</FieldLabel>
-                    <Input
-                      {...field}
-                      id="endedAt"
-                      type="time"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.error && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </FieldGroup>
-
-            <Field>
-              <FieldLabel>Labels</FieldLabel>
-              <InputGroup className="mb-2 max-w-xs">
-                <InputGroupInput
-                  placeholder="Typ een label..."
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      addLabel()
-                    }
-                  }}
-                />
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    variant={"link"}
-                    type="button"
-                    onClick={addLabel}
-                  >
-                    Toevoegen
-                  </InputGroupButton>
-                </InputGroupAddon>
-              </InputGroup>
-
-              <FieldContent className="flex flex-row flex-wrap gap-2">
-                {currentLabels.map((label) => (
-                  <Badge
-                    key={label}
-                    variant="secondary"
-                    className="py-1 pr-1 pl-2"
-                  >
-                    {label}
-                    <Button
-                      onClick={() => removeLabel(label)}
-                      variant="ghost"
-                      size="icon"
-                      className="ml-1 h-4 w-4 cursor-pointer rounded-full"
-                      type="button"
-                    >
-                      <XIcon className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                ))}
-              </FieldContent>
-            </Field>
-
-            <div className="flex justify-end gap-2 border-t pt-4">
-              <Button
-                variant="outline"
-                type="button"
-                disabled={form.formState.isSubmitting}
-                asChild
-              >
-                <Link to={`/app/sessies/`}>Annuleren</Link>
-              </Button>
-              <Button
-                type="submit"
-                form="form-session-edit"
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {form.formState.isSubmitting ? "Bezig..." : "Sessie opslaan"}
-              </Button>
-            </div>
-          </FieldSet>
-        </form>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Weet je het zeker?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Je staat op het punt om de sessie{" "}
+                <strong>{session.title}</strong> te verwijderen. Dit kan niet
+                ongedaan worden gemaakt.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuleren</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={onDelete}>
+                Verwijderen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </PageContainer>
     </>
   )

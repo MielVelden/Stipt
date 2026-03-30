@@ -14,13 +14,18 @@ internal static class InitialDataSeeder
             return;
         }
 
-        dbContext.Events.Add(new Event
+        var eventId = Guid.NewGuid();
+        var mainHallId = Guid.NewGuid();
+        var workshopARoomId = Guid.NewGuid();
+        var workshopBRoomId = Guid.NewGuid();
+
+        var eventEntity = new Event
         {
-            Id = Guid.NewGuid(),
+            Id = eventId,
             Name = "Stipt Summit 2026",
             Location = "'s-Hertogenbosch, Onderwijsboulevard",
-            StartDate = new DateTimeOffset(2026, 4, 20, 8, 0, 0, TimeSpan.Zero),
-            EndDate = new DateTimeOffset(2026, 4, 20, 18, 0, 0, TimeSpan.Zero),
+            StartDate = new DateTime(2026, 4, 20, 8, 0, 0, DateTimeKind.Utc),
+            EndDate = new DateTime(2026, 4, 30, 18, 0, 0, DateTimeKind.Utc),
             Style = new EventStyle
             {
                 PrimaryBackgroundColor = "#111827",
@@ -29,68 +34,81 @@ internal static class InitialDataSeeder
             },
             IsArchived = false,
             CreatedAtUtc = new DateTime(2026, 3, 20, 12, 0, 0, DateTimeKind.Utc)
-        });
+        };
 
-        dbContext.Rooms.AddRange(
-            new Room
-            {
-                Id = Guid.NewGuid(),
+        dbContext.Events.Add(eventEntity);
+
+        var rooms = new List<Room>
+        {
+            new() {
+                Id = mainHallId,
                 Name = "Main Hall",
-                Capacity = 180
+                Capacity = 180,
+                EventId = eventId
             },
-            new Room
-            {
-                Id = Guid.NewGuid(),
+            new() {
+                Id = workshopARoomId,
                 Name = "Workshop Room A",
-                Capacity = 60
+                Capacity = 60,
+                EventId = eventId
             },
-            new Room
-            {
-                Id = Guid.NewGuid(),
+            new() {
+                Id = workshopBRoomId,
                 Name = "Workshop Room B",
-                Capacity = 60
-        });
+                Capacity = 60,
+                EventId = eventId
+            }
+        };
 
-        dbContext.Sessions.AddRange(
-            new Session
-            {
+        dbContext.Rooms.AddRange(rooms);
+
+        var sessions = new List<Session>
+        {
+            new() {
                 Id = Guid.NewGuid(),
                 Title = "Keynote: Building Reliable APIs",
                 Description = "Patterns and trade-offs for resilient web APIs.",
+                Type = SessionType.Keynote,
                 Speaker = "Ava Thompson",
-                Room = "Main Hall",
-                StartTime = new DateTimeOffset(2026, 4, 20, 9, 0, 0, TimeSpan.Zero),
-                EndTime = new DateTimeOffset(2026, 4, 20, 10, 0, 0, TimeSpan.Zero),
+                RoomId = mainHallId,
+                EventId = eventId,
+                StartDateTime = new DateTime(2026, 4, 20, 9, 0, 0, DateTimeKind.Utc),
+                EndDateTime = new DateTime(2026, 4, 20, 10, 0, 0, DateTimeKind.Utc),
                 Capacity = 180,
                 Labels = ["keynote", "architecture"],
                 CreatedAtUtc = new DateTime(2026, 3, 20, 12, 5, 0, DateTimeKind.Utc)
             },
-            new Session
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Title = "Hands-on: EF Core 10",
                 Description = "Practical modeling, performance, and migrations.",
+                Type = SessionType.Breakout,
                 Speaker = "Liam Carter",
-                Room = "Workshop Room A",
-                StartTime = new DateTimeOffset(2026, 4, 20, 10, 30, 0, TimeSpan.Zero),
-                EndTime = new DateTimeOffset(2026, 4, 20, 11, 30, 0, TimeSpan.Zero),
+                RoomId = workshopARoomId,
+                EventId = eventId,
+                StartDateTime = new DateTime(2026, 4, 20, 10, 30, 0, DateTimeKind.Utc),
+                EndDateTime = new DateTime(2026, 4, 20, 11, 30, 0, DateTimeKind.Utc),
                 Capacity = 60,
                 Labels = ["dotnet", "database"],
                 CreatedAtUtc = new DateTime(2026, 3, 20, 12, 10, 0, DateTimeKind.Utc)
             },
-            new Session
-            {
+            new() {
                 Id = Guid.NewGuid(),
                 Title = "Workshop: React Router in Production",
                 Description = "Routing and data APIs for complex frontends.",
+                Type = SessionType.Breakout,
                 Speaker = "Noah de Vries",
-                Room = "Workshop Room B",
-                StartTime = new DateTimeOffset(2026, 4, 20, 13, 30, 0, TimeSpan.Zero),
-                EndTime = new DateTimeOffset(2026, 4, 20, 14, 30, 0, TimeSpan.Zero),
+                RoomId = workshopBRoomId,
+                EventId = eventId,
+                StartDateTime = new DateTime(2026, 4, 20, 13, 30, 0, DateTimeKind.Utc),
+                EndDateTime = new DateTime(2026, 4, 20, 14, 30, 0, DateTimeKind.Utc),
                 Capacity = 60,
                 Labels = ["frontend", "react"],
                 CreatedAtUtc = new DateTime(2026, 3, 20, 12, 15, 0, DateTimeKind.Utc)
-        });
+            }
+        };
+
+        dbContext.Sessions.AddRange(sessions);
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }

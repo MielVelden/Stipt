@@ -19,5 +19,11 @@ internal sealed class RoomConfiguration : IEntityTypeConfiguration<Room>
 
         builder.Property(x => x.Capacity)
             .IsRequired();
+
+        builder.HasOne(x => x.Event)
+            .WithMany(e => e.Rooms)
+            .HasForeignKey(x => x.EventId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

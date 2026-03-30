@@ -12,18 +12,19 @@ internal sealed class RoomRepository(ApplicationDbContext dbContext) : IRoomRepo
         return room.Id;
     }
 
-    public Task<List<Room>> GetAllAsync(CancellationToken ct)
+        public Task<List<Room>> GetAllAsync(Guid eventId, CancellationToken ct)
     {
         return dbContext.Rooms
             .AsNoTracking()
+            .Where(x => x.EventId == eventId)
             .ToListAsync(ct);
     }
 
-    public Task<Room?> GetByIdAsync(Guid id, CancellationToken ct)
+        public Task<Room?> GetByIdAsync(Guid eventId, Guid id, CancellationToken ct)
     {
         return dbContext.Rooms
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, ct);
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, ct);
     }
 
     public async Task UpdateAsync(Room room, CancellationToken ct)
@@ -32,9 +33,9 @@ internal sealed class RoomRepository(ApplicationDbContext dbContext) : IRoomRepo
         await dbContext.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken ct)
+    public async Task DeleteAsync(Guid eventId, Guid id, CancellationToken ct)
     {
-        var room = await dbContext.Rooms.FirstOrDefaultAsync(x => x.Id == id, ct);
+        var room = await dbContext.Rooms.FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, ct);
         if (room != null)
         {
             dbContext.Rooms.Remove(room);

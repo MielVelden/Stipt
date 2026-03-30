@@ -72,12 +72,17 @@ namespace Backend.Database.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EventId");
 
                     b.ToTable("rooms", (string)null);
                 });
@@ -97,30 +102,35 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<DateTimeOffset>("EndTime")
+                    b.Property<DateTime>("EndDateTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
 
                     b.PrimitiveCollection<List<string>>("Labels")
                         .IsRequired()
                         .HasColumnType("text[]");
 
-                    b.Property<string>("Room")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Speaker")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<DateTimeOffset>("StartTime")
+                    b.Property<DateTime>("StartDateTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -129,9 +139,11 @@ namespace Backend.Database.Migrations
 
                     b.HasIndex("CreatedAtUtc");
 
-                    b.HasIndex("Room");
+                    b.HasIndex("EventId");
 
-                    b.HasIndex("StartTime");
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("StartDateTime");
 
                     b.ToTable("sessions", (string)null);
                 });
@@ -170,6 +182,48 @@ namespace Backend.Database.Migrations
 
                     b.Navigation("Style")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Backend.Database.Entities.Rooms.Room", b =>
+                {
+                    b.HasOne("Backend.Database.Entities.Events.Event", "Event")
+                        .WithMany("Rooms")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("Backend.Database.Entities.Sessions.Session", b =>
+                {
+                    b.HasOne("Backend.Database.Entities.Events.Event", "Event")
+                        .WithMany("Sessions")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Database.Entities.Rooms.Room", "Room")
+                        .WithMany("Sessions")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("Backend.Database.Entities.Events.Event", b =>
+                {
+                    b.Navigation("Rooms");
+
+                    b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("Backend.Database.Entities.Rooms.Room", b =>
+                {
+                    b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618
         }

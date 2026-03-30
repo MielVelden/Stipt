@@ -39,33 +39,46 @@ import {
 } from "lucide-react"
 
 import apiClient from "~/lib/api-client"
-import type { Session } from "~/routes/sessions/types"
 import type { Route } from "./+types/sessions.overview"
 import { formatDateRange } from "~/lib/utils"
+import { useAppContext } from "~/contexts/app-context"
+import type { SessionRo } from "~/generated-types/session-ro"
 
-export async function clientLoader() {
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  const eventId = params.eventId
+  if (!eventId) {
+    throw new Response("Kan geen geselecteerd event vinden.", { status: 400 })
+  }
+
   try {
-    const response = await apiClient.get<Session[]>("/sessions")
+    const response = await apiClient.get<SessionRo[]>(
+      `/events/${eventId}/sessions`
+    )
     const rawSessions = response.data
 
     return rawSessions.map((session) => ({
       ...session,
-      "date-time": formatDateRange(session.startTime, session.endTime),
-      // "capacity-display": session.capacity ?? session.room.capacity ?? "-", // TODO implement when rooms are implemented
+      "date-time": formatDateRange(session.startDateTime, session.endDateTime),
+      "capacity-display": session.capacity ?? session.room.capacity ?? "-",
     }))
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
 }
 
-export async function clientAction({ request }: { request: Request }) {
+export async function clientAction({ request, params }: Route.ActionArgs) {
   const formData = await request.formData()
   const id = formData.get("id")
   const intent = formData.get("intent")
+  const eventId = params.eventId
 
-  if (intent === "delete" && id) {
+  if (!eventId) {
+    return { error: "Kan geen geselecteerd event vinden." }
+  }
+
+  if (intent === "delete" && typeof id === "string") {
     try {
-      await apiClient.delete(`/sessions/${id}`)
+      await apiClient.delete(`/events/${eventId}/sessions/${id}`)
       return { success: true }
     } catch (error) {
       return { error: "Verwijderen mislukt." }
@@ -75,14 +88,16 @@ export async function clientAction({ request }: { request: Request }) {
 }
 
 export default function Page({ loaderData: sessions }: Route.ComponentProps) {
-  const columns: ColumnDef<Session>[] = [
+  const { eventBaseUrl } = useAppContext()
+
+  const columns: ColumnDef<SessionRo>[] = [
     {
       accessorKey: "title",
       header: "Titel",
       cell: ({ row }) => {
         return (
           <Link
-            to={`/app/sessies/${row.original.id}`}
+            to={`${eventBaseUrl}/sessies/${row.original.id}`}
             className="hover:underline"
           >
             {row.getValue("title")}
@@ -91,11 +106,22 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       },
     },
     {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => {
+        return (
+          <Badge variant="outline" className="capitalize">
+            {row.original.type}
+          </Badge>
+        )
+      },
+    },
+    {
       accessorKey: "speaker",
       header: "Spreker",
     },
     {
-      accessorKey: "room",
+      accessorKey: "room.name",
       header: "Ruimte",
     },
     {
@@ -103,7 +129,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       header: "Datum & tijd",
     },
     {
-      accessorKey: "capacity",
+      accessorKey: "capacity-display",
       header: "Capaciteit",
     },
     {
@@ -136,12 +162,12 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
             {
               label: "Bekijk",
               icon: <EyeIcon />,
-              linkTo: `/app/sessies/${row.original.id}`,
+              linkTo: `${eventBaseUrl}/sessies/${row.original.id}`,
             },
             {
               label: "Bewerk",
               icon: <EditIcon />,
-              linkTo: `/app/sessies/${row.original.id}/bewerken`,
+              linkTo: `${eventBaseUrl}/sessies/${row.original.id}/bewerken`,
             },
             {
               label: "Verwijder",
@@ -173,7 +199,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
   }, [sessions, searchQuery])
 
   // Delete dialog
-  const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null)
+  const [sessionToDelete, setSessionToDelete] = useState<SessionRo | null>(null)
 
   const confirmDelete = () => {
     if (sessionToDelete) {
@@ -203,7 +229,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
           </InputGroup>
 
           <Button asChild>
-            <Link to="/app/sessies/nieuw">
+            <Link to={`${eventBaseUrl}/sessies/nieuw`}>
               <PlusIcon />
               Nieuwe sessie
             </Link>
