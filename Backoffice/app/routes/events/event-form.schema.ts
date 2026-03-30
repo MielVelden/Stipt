@@ -2,14 +2,15 @@ import * as z from "zod"
 import type { CreateEventDto } from "~/generated-types/create-event-dto"
 import type { EventRo } from "~/generated-types/event-ro"
 import type { UpdateEventDto } from "~/generated-types/update-event-dto"
+import { VALIDATION_MESSAGES } from "~/lib/validation-messages"
 
 const eventBaseObjectSchema = z.object({
-  name: z.string().min(1, "Dit veld is verplicht"),
-  location: z.string().min(1, "Dit veld is verplicht"),
-  startDate: z.string().min(1, "Dit veld is verplicht"),
-  endDate: z.string().min(1, "Dit veld is verplicht"),
-  primaryBackgroundColor: z.string().min(1, "Dit veld is verplicht"),
-  primaryForegroundColor: z.string().min(1, "Dit veld is verplicht"),
+  name: z.string().min(1, VALIDATION_MESSAGES.required),
+  location: z.string().min(1, VALIDATION_MESSAGES.required),
+  startDate: z.string().min(1, VALIDATION_MESSAGES.required),
+  endDate: z.string().min(1, VALIDATION_MESSAGES.required),
+  primaryBackgroundColor: z.string().min(1, VALIDATION_MESSAGES.required),
+  primaryForegroundColor: z.string().min(1, VALIDATION_MESSAGES.required),
   logoImageUrl: z.string().optional(),
 })
 
@@ -17,7 +18,7 @@ const dateRefine = {
   fn: (data: { startDate: string; endDate: string }) =>
     data.endDate >= data.startDate,
   opts: {
-    message: "Einddatum moet op of na startdatum zijn",
+    message: VALIDATION_MESSAGES.event.endDateAfterOrEqualStartDate,
     path: ["endDate"] as PropertyKey[],
   },
 } as const

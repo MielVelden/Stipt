@@ -4,36 +4,37 @@ import type { CreateSessionDto } from "~/generated-types/create-session-dto"
 import type { SessionRo } from "~/generated-types/session-ro"
 import type { UpdateSessionDto } from "~/generated-types/update-session-dto"
 import { SessionType } from "~/generated-types/session-type"
+import { VALIDATION_MESSAGES } from "~/lib/validation-messages"
 
 const sessionTypeSchema = z.union(
   [z.literal(SessionType.Keynote), z.literal(SessionType.Breakout)],
   {
-    message: "Selecteer een sessietype",
+    message: VALIDATION_MESSAGES.session.selectType,
   }
 )
 
 const sessionBaseObjectSchema = z.object({
-  title: z.string().min(1, "Dit veld is verplicht"),
-  description: z.string().min(1, "Dit veld is verplicht"),
+  title: z.string().min(1, VALIDATION_MESSAGES.required),
+  description: z.string().min(1, VALIDATION_MESSAGES.required),
   type: sessionTypeSchema,
-  speaker: z.string().min(1, "Dit veld is verplicht"),
-  roomId: z.string().min(1, "Selecteer een ruimte"),
+  speaker: z.string().min(1, VALIDATION_MESSAGES.required),
+  roomId: z.string().min(1, VALIDATION_MESSAGES.session.selectRoom),
   capacity: z
     .string()
     .optional()
     .refine((val) => !val || Number(val) > 0, {
-      message: "Capaciteit moet een positief getal zijn",
+      message: VALIDATION_MESSAGES.session.capacityPositiveNumber,
     }),
-  startDate: z.string().min(1, "Dit veld is verplicht"),
-  startTime: z.string().min(1, "Dit veld is verplicht"),
-  endDate: z.string().min(1, "Dit veld is verplicht"),
-  endTime: z.string().min(1, "Dit veld is verplicht"),
+  startDate: z.string().min(1, VALIDATION_MESSAGES.required),
+  startTime: z.string().min(1, VALIDATION_MESSAGES.required),
+  endDate: z.string().min(1, VALIDATION_MESSAGES.required),
+  endTime: z.string().min(1, VALIDATION_MESSAGES.required),
   labels: z
     .array(z.string())
     .default([])
     .optional()
     .refine((labels) => new Set(labels).size === labels?.length, {
-      message: "Labels moeten uniek zijn",
+      message: VALIDATION_MESSAGES.session.labelsUnique,
     }),
 })
 
@@ -47,7 +48,7 @@ const dateRefine = {
     data.endDate > data.startDate ||
     (data.endDate === data.startDate && data.endTime > data.startTime),
   opts: {
-    message: "De sessie moet eindigen na dat deze is begonnen",
+    message: VALIDATION_MESSAGES.session.endAfterStart,
     path: ["endDate"] as PropertyKey[],
   },
 } as const
@@ -58,7 +59,7 @@ export const sessionCreateSchema = sessionBaseObjectSchema.refine(
 )
 
 export const sessionEditSchema = sessionBaseObjectSchema
-  .extend({ id: z.string().min(1, "Deze sessie kan niet worden gevonden") })
+  .extend({ id: z.string().min(1, VALIDATION_MESSAGES.session.notFound) })
   .refine(dateRefine.fn, dateRefine.opts)
 
 export const sessionCreateDefaultValues: SessionCreateFormValues = {

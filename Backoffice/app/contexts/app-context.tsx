@@ -19,9 +19,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (eventIdFromUrl) {
-      setSelectedEventId((current) =>
-        current === eventIdFromUrl ? current : eventIdFromUrl
-      )
+      setSelectedEventId(eventIdFromUrl)
     }
   }, [eventIdFromUrl])
 

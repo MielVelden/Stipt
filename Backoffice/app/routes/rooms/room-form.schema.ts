@@ -2,24 +2,25 @@ import * as z from "zod"
 import type { CreateRoomDto } from "~/generated-types/create-room-dto"
 import type { RoomRo } from "~/generated-types/room-ro"
 import type { UpdateRoomDto } from "~/generated-types/update-room-dto"
+import { VALIDATION_MESSAGES } from "~/lib/validation-messages"
 
 const roomBaseObjectSchema = z.object({
   name: z
     .string()
-    .min(1, "Dit veld is verplicht")
-    .max(120, "Maximaal 120 karakters"),
+    .min(1, VALIDATION_MESSAGES.required)
+    .max(120, VALIDATION_MESSAGES.room.maxNameLength),
   capacity: z
     .string()
-    .min(1, "Dit veld is verplicht")
+    .min(1, VALIDATION_MESSAGES.required)
     .refine((val) => Number(val) > 0, {
-      message: "Capaciteit moet groter zijn dan 0",
+      message: VALIDATION_MESSAGES.room.capacityGreaterThanZero,
     }),
 })
 
 export const roomCreateSchema = roomBaseObjectSchema
 
 export const roomEditSchema = roomBaseObjectSchema.extend({
-  id: z.string().min(1, "Deze ruimte kan niet worden gevonden"),
+  id: z.string().min(1, VALIDATION_MESSAGES.room.notFound),
 })
 
 export const roomCreateDefaultValues: RoomCreateFormValues = {
