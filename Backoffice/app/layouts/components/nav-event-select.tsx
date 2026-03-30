@@ -32,7 +32,11 @@ export function NavEventSelect({ events }: { events: EventRo[] }) {
       ? location.pathname.replace(/\/app\/event\/[^/]+/, `/app/event/${id}`)
       : `/app/event/${id}/`
 
-    navigate(`${newPath}${location.search}${location.hash}`)
+    navigate({
+      pathname: newPath,
+      search: location.search,
+      hash: location.hash,
+    })
   }
 
   return (

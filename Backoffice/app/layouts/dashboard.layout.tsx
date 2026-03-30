@@ -5,12 +5,14 @@ import { AppProvider } from "~/contexts/app-context"
 import { EventGuard } from "~/components/event-guard"
 import apiClient from "~/lib/api-client"
 import type { EventRo } from "~/generated-types/event-ro"
+import { toast } from "sonner"
 
 export async function clientLoader() {
   try {
     const response = await apiClient.get<EventRo[]>("/events")
     return { events: response.data }
-  } catch {
+  } catch (error) {
+    toast.error("Er is een fout opgetreden bij het laden van de evenementen.")
     return { events: [] }
   }
 }

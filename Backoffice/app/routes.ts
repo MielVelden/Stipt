@@ -13,7 +13,7 @@ export default [
     "layouts/dashboard.layout.tsx",
 
     prefix("app", [
-      route("", "routes/home/home.tsx"),
+      route("", "routes/events/redirect-to-events.tsx"),
 
       ...prefix("evenementen", [
         route("", "routes/events/events.overview.tsx"),
