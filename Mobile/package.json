@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@rn-primitives/slot": "^1.4.0",
     "axios": "^1.13.6",
     "babel-preset-expo": "^55.0.12",
     "class-variance-authority": "^0.7.1",
@@ -20,7 +21,7 @@
     "expo-status-bar": "~55.0.4",
     "lucide-react-native": "^1.7.0",
     "nativewind": "^4.2.3",
-    "react": "19.2.0",
+    "react": "19.2.4",
     "react-dom": "^19.2.4",
     "react-native": "0.83.2",
     "react-native-reanimated": "^4.2.1",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "babel-plugin-module-resolver": "^5.0.3",
     "typescript": "~5.9.2"
   },
   "private": true

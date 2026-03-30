@@ -1,9 +1,10 @@
-import { Text, View } from "react-native"
+import { View } from "react-native"
+import { Text } from "@/components/ui/text"
 
 export default function EventsScreen() {
   return (
-    <View className="flex-1 items-center justify-center bg-gray-100">
-      <Text className="text-gray-400">Evenementen</Text>
+    <View className="flex-1 items-center justify-center bg-background">
+      <Text variant="muted">Evenementen</Text>
     </View>
   )
 }
