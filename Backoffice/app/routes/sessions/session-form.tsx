@@ -34,7 +34,8 @@ import { DatePicker } from "~/components/ui/date-picker"
 import { TimeField } from "~/components/ui/time-field"
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { Label } from "~/components/ui/label"
-import type { Room } from "~/types"
+import type { RoomRo } from "~/generated-types/room-ro"
+import { SessionType } from "~/generated-types/session-type"
 import {
   sessionCreateSchema,
   sessionEditSchema,
@@ -46,7 +47,7 @@ import {
 type CreateSessionFormProps = {
   mode: "create"
   formId: string
-  rooms: Room[]
+  rooms: RoomRo[]
   defaultValues: SessionCreateFormValues
   cancelTo: string
   submitLabel?: string
@@ -56,7 +57,7 @@ type CreateSessionFormProps = {
 type EditSessionFormProps = {
   mode: "edit"
   formId: string
-  rooms: Room[]
+  rooms: RoomRo[]
   defaultValues: SessionEditFormValues
   cancelTo: string
   submitLabel?: string
@@ -167,7 +168,7 @@ export function SessionForm(props: SessionFormProps) {
                 >
                   <div className="flex items-center gap-3">
                     <RadioGroupItem
-                      value="keynote"
+                      value={SessionType.Keynote}
                       id="option-keynote"
                       aria-invalid={fieldState.invalid}
                     />
@@ -175,7 +176,7 @@ export function SessionForm(props: SessionFormProps) {
                   </div>
                   <div className="flex items-center gap-3">
                     <RadioGroupItem
-                      value="breakout"
+                      value={SessionType.Breakout}
                       id="option-breakout"
                       aria-invalid={fieldState.invalid}
                     />

@@ -18,6 +18,7 @@
         <PackageReference Include="NodaTime" Version="3.3.1" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.0" />
+        <PackageReference Include="TypeGen" Version="7.0.0" />
     </ItemGroup>
 
 </Project>

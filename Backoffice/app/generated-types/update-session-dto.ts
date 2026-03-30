@@ -3,10 +3,12 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
+import type { SessionType } from './session-type';
+
 export interface UpdateSessionDto {
   title: string;
   description: string | undefined;
-  type: "keynote" | "breakout";
+  type: SessionType;
   speaker: string;
   roomId: string;
   startDateTime: string;

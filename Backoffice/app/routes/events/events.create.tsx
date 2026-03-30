@@ -12,14 +12,14 @@ import {
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import { getApiErrorDetail } from "~/lib/utils"
-import type { CreateEvent } from "~/types"
+import type { CreateEventDto } from "~/generated-types/create-event-dto"
 
 export default function Page() {
   const navigate = useNavigate()
   const { revalidate } = useRevalidator()
 
   async function onSubmit(data: EventCreateFormValues) {
-    const event: CreateEvent = mapFormValuesToEventPayload(data)
+    const event: CreateEventDto = mapFormValuesToEventPayload(data)
 
     try {
       const response = await apiClient.post("/events", event)

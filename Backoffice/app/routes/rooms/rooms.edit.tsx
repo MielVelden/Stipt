@@ -12,7 +12,8 @@ import { Button } from "~/components/ui/button"
 import FetchError from "~/components/fetch-error"
 import { useAppContext } from "~/contexts/app-context"
 import apiClient from "~/lib/api-client"
-import type { Room, UpdateRoom } from "~/types"
+import type { RoomRo } from "~/generated-types/room-ro"
+import type { UpdateRoomDto } from "~/generated-types/update-room-dto"
 import {
   mapFormValuesToRoomPayload,
   mapRoomToEditFormValues,
@@ -41,7 +42,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await apiClient.get<Room>(
+    const response = await apiClient.get<RoomRo>(
       `/events/${eventId}/rooms/${params.id}`
     )
     return response.data
@@ -64,7 +65,7 @@ export default function Page({ loaderData: room }: Route.ComponentProps) {
       return
     }
 
-    const updatedRoom: UpdateRoom = mapFormValuesToRoomPayload(data)
+    const updatedRoom: UpdateRoomDto = mapFormValuesToRoomPayload(data)
 
     try {
       const response = await apiClient.put(

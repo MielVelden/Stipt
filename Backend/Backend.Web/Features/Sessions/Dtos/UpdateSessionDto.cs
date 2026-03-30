@@ -7,7 +7,7 @@ namespace Backend.Web.Features.Sessions.Dtos;
 public sealed record UpdateSessionDto(
     string Title,
     string? Description,
-    [property: TsType("\"keynote\" | \"breakout\"")] SessionType Type,
+    SessionType Type,
     string Speaker,
     Guid RoomId,
     DateTime StartDateTime,

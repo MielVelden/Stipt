@@ -1,6 +1,6 @@
 import { isRouteErrorResponse, Link, useRouteError } from "react-router"
 import type { Route } from "./+types/events.details"
-import type { Event } from "~/types"
+import type { EventRo } from "~/generated-types/event-ro"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import { Button } from "~/components/ui/button"
@@ -19,7 +19,7 @@ import { ArrowLeft } from "lucide-react"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
-    const response = await apiClient.get<Event>("/events/" + params.id)
+    const response = await apiClient.get<EventRo>("/events/" + params.id)
     return response.data
   } catch {
     throw new Response("Kon data niet laden", { status: 500 })

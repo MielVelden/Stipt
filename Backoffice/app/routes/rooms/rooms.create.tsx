@@ -13,7 +13,7 @@ import {
 import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import { getApiErrorDetail } from "~/lib/utils"
-import type { CreateRoom } from "~/types"
+import type { CreateRoomDto } from "~/generated-types/create-room-dto"
 
 export default function Page() {
   const { eventBaseUrl } = useAppContext()
@@ -26,7 +26,7 @@ export default function Page() {
       return
     }
 
-    const room: CreateRoom = mapFormValuesToRoomPayload(data)
+    const room: CreateRoomDto = mapFormValuesToRoomPayload(data)
 
     try {
       const response = await apiClient.post(`/events/${eventId}/rooms`, room)

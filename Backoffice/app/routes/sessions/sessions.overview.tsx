@@ -42,7 +42,7 @@ import apiClient from "~/lib/api-client"
 import type { Route } from "./+types/sessions.overview"
 import { formatDateRange } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
-import type { Session } from "~/types"
+import type { SessionRo } from "~/generated-types/session-ro"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const eventId = params.eventId
@@ -51,7 +51,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await apiClient.get<Session[]>(
+    const response = await apiClient.get<SessionRo[]>(
       `/events/${eventId}/sessions`
     )
     const rawSessions = response.data
@@ -90,7 +90,7 @@ export async function clientAction({ request, params }: Route.ActionArgs) {
 export default function Page({ loaderData: sessions }: Route.ComponentProps) {
   const { eventBaseUrl } = useAppContext()
 
-  const columns: ColumnDef<Session>[] = [
+  const columns: ColumnDef<SessionRo>[] = [
     {
       accessorKey: "title",
       header: "Titel",
@@ -199,7 +199,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
   }, [sessions, searchQuery])
 
   // Delete dialog
-  const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null)
+  const [sessionToDelete, setSessionToDelete] = useState<SessionRo | null>(null)
 
   const confirmDelete = () => {
     if (sessionToDelete) {

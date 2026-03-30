@@ -14,7 +14,9 @@ import apiClient from "~/lib/api-client"
 import { toast } from "sonner"
 import FetchError from "~/components/fetch-error"
 import { useAppContext } from "~/contexts/app-context"
-import type { Room, Session, UpdateSession } from "~/types"
+import type { RoomRo } from "~/generated-types/room-ro"
+import type { SessionRo } from "~/generated-types/session-ro"
+import type { UpdateSessionDto } from "~/generated-types/update-session-dto"
 import {
   mapFormValuesToSessionPayload,
   mapSessionToEditFormValues,
@@ -42,10 +44,10 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const sessionResponse = await apiClient.get<Session>(
+    const sessionResponse = await apiClient.get<SessionRo>(
       `/events/${eventId}/sessions/${params.id}`
     )
-    const roomsResponse = await apiClient.get<Room[]>(
+    const roomsResponse = await apiClient.get<RoomRo[]>(
       `/events/${eventId}/rooms`
     )
 
@@ -74,7 +76,7 @@ export default function Page({
       return
     }
 
-    const updatedSession: UpdateSession = mapFormValuesToSessionPayload(data)
+    const updatedSession: UpdateSessionDto = mapFormValuesToSessionPayload(data)
 
     try {
       const response = await apiClient.put(

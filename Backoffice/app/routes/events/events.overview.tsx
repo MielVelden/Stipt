@@ -38,11 +38,11 @@ import {
   TrashIcon,
 } from "lucide-react"
 import apiClient from "~/lib/api-client"
-import type { Event } from "~/types"
+import type { EventRo } from "~/generated-types/event-ro"
 import type { Route } from "./+types/events.overview"
 import { nameofFactory } from "~/lib/fields"
 
-interface EventEx extends Event {
+interface EventEx extends EventRo {
   formattedStartDate: string
   formattedEndDate: string
 }
@@ -58,7 +58,7 @@ const formatDate = (iso: string) =>
 
 export async function clientLoader() {
   try {
-    const response = await apiClient.get<Event[]>("/events")
+    const response = await apiClient.get<EventRo[]>("/events")
     return response.data.map((event) => ({
       ...event,
       formattedStartDate: formatDate(event.startDate),
@@ -79,7 +79,7 @@ export async function clientAction({ request }: { request: Request }) {
       await apiClient.delete(`/events/${id}`)
       return { success: true }
     }
-    
+
     if (intent === "archive" && id) {
       await apiClient.patch(`/events/${id}/archive`)
       return { success: true }

@@ -2,7 +2,8 @@ import { isRouteErrorResponse, useRouteError } from "react-router"
 import { useNavigate, useRevalidator } from "react-router"
 import { useState } from "react"
 import type { Route } from "./+types/events.edit"
-import type { Event, UpdateEvent } from "~/types"
+import type { EventRo } from "~/generated-types/event-ro"
+import type { UpdateEventDto } from "~/generated-types/update-event-dto"
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import FetchError from "~/components/fetch-error"
@@ -29,7 +30,7 @@ import { getApiErrorDetail } from "~/lib/utils"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
-    const response = await apiClient.get<Event>("/events/" + params.id)
+    const response = await apiClient.get<EventRo>("/events/" + params.id)
     return response.data
   } catch {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -44,7 +45,7 @@ export default function Page({ loaderData: event }: Route.ComponentProps) {
   const defaultValues = mapEventToEditFormValues(event)
 
   async function onSubmit(data: EventEditFormValues) {
-    const updatedEvent: UpdateEvent = mapFormValuesToEventPayload(data)
+    const updatedEvent: UpdateEventDto = mapFormValuesToEventPayload(data)
 
     try {
       const response = await apiClient.put(`/events/${event.id}`, updatedEvent)

@@ -16,7 +16,7 @@ import apiClient from "~/lib/api-client"
 import FetchError from "~/components/fetch-error"
 import { formatDate, formatTime } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
-import type { Session } from "~/types"
+import type { SessionRo } from "~/generated-types/session-ro"
 import { ArrowLeft } from "lucide-react"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
@@ -28,7 +28,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await apiClient.get<Session>(
+    const response = await apiClient.get<SessionRo>(
       `/events/${eventId}/sessions/${params.id}`
     )
     return response.data

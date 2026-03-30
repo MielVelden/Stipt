@@ -17,7 +17,8 @@ import {
   sessionCreateDefaultValues,
   type SessionCreateFormValues,
 } from "./session-form.schema"
-import type { CreateSession, Room } from "~/types"
+import type { CreateSessionDto } from "~/generated-types/create-session-dto"
+import type { RoomRo } from "~/generated-types/room-ro"
 import { SessionForm } from "./session-form"
 import { getApiErrorDetail } from "~/lib/utils"
 
@@ -28,7 +29,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await apiClient.get<Room[]>(`/events/${eventId}/rooms`)
+    const response = await apiClient.get<RoomRo[]>(`/events/${eventId}/rooms`)
     return response.data
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -46,7 +47,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
       return
     }
 
-    const session: CreateSession = mapFormValuesToSessionPayload(data)
+    const session: CreateSessionDto = mapFormValuesToSessionPayload(data)
 
     try {
       const response = await apiClient.post(

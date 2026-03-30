@@ -1,11 +1,21 @@
 import * as z from "zod"
 import { splitIsoDateTime } from "~/lib/utils"
-import type { CreateSession, Session, UpdateSession } from "~/types"
+import type { CreateSessionDto } from "~/generated-types/create-session-dto"
+import type { SessionRo } from "~/generated-types/session-ro"
+import type { UpdateSessionDto } from "~/generated-types/update-session-dto"
+import { SessionType } from "~/generated-types/session-type"
+
+const sessionTypeSchema = z.union(
+  [z.literal(SessionType.Keynote), z.literal(SessionType.Breakout)],
+  {
+    message: "Selecteer een sessietype",
+  }
+)
 
 const sessionBaseObjectSchema = z.object({
   title: z.string().min(1, "Dit veld is verplicht"),
   description: z.string().min(1, "Dit veld is verplicht"),
-  type: z.enum(["keynote", "breakout"], "Selecteer een sessietype"),
+  type: sessionTypeSchema,
   speaker: z.string().min(1, "Dit veld is verplicht"),
   roomId: z.string().min(1, "Selecteer een ruimte"),
   capacity: z
@@ -54,7 +64,7 @@ export const sessionEditSchema = sessionBaseObjectSchema
 export const sessionCreateDefaultValues: SessionCreateFormValues = {
   title: "",
   description: "",
-  type: "breakout",
+  type: SessionType.Breakout,
   speaker: "",
   roomId: "",
   capacity: undefined,
@@ -66,7 +76,7 @@ export const sessionCreateDefaultValues: SessionCreateFormValues = {
 }
 
 export function mapSessionToEditFormValues(
-  session: Session
+  session: SessionRo
 ): SessionEditFormValues {
   const start = splitIsoDateTime(session.startDateTime)
   const end = splitIsoDateTime(session.endDateTime)
@@ -89,7 +99,7 @@ export function mapSessionToEditFormValues(
 
 export function mapFormValuesToSessionPayload(
   values: SessionBaseFormValues
-): CreateSession | UpdateSession {
+): CreateSessionDto | UpdateSessionDto {
   return {
     title: values.title,
     description: values.description,

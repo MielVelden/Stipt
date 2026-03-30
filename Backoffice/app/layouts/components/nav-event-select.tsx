@@ -18,9 +18,9 @@ import {
 } from "~/components/ui/select"
 import { Button } from "~/components/ui/button"
 import { useAppContext } from "~/contexts/app-context"
-import type { Event } from "~/types"
+import type { EventRo } from "~/generated-types/event-ro"
 
-export function NavEventSelect({ events }: { events: Event[] }) {
+export function NavEventSelect({ events }: { events: EventRo[] }) {
   const { selectedEventId, setSelectedEventId } = useAppContext()
   const navigate = useNavigate()
   const location = useLocation()

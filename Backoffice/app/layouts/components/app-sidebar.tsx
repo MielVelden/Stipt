@@ -13,11 +13,11 @@ import {
 import { Link } from "react-router"
 import logo from "~/assets/images/iO-logo.svg"
 import { NavEventSelect } from "./nav-event-select"
-import type { Event } from "~/types"
+import type { EventRo } from "~/generated-types/event-ro"
 import { useAppContext } from "~/contexts/app-context"
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
-  events: Event[]
+  events: EventRo[]
 }
 
 export function AppSidebar({ events, ...props }: AppSidebarProps) {

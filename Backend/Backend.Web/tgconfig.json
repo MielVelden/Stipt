@@ -4,6 +4,8 @@
     "buildProject": false,
     "tabLength": 2,
     "singleQuotes": true,
+    "enumStringInitializers": true,
+    "enumStringInitializersConverters": ["PascalCaseToCamelCaseConverter"],
     "customTypeMappings": {
         "System.Guid": "string",
         "System.DateTime": "string"

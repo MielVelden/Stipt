@@ -4,11 +4,11 @@ import { Outlet, useLoaderData } from "react-router"
 import { AppProvider } from "~/contexts/app-context"
 import { EventGuard } from "~/components/event-guard"
 import apiClient from "~/lib/api-client"
-import type { Event } from "~/types"
+import type { EventRo } from "~/generated-types/event-ro"
 
 export async function clientLoader() {
   try {
-    const response = await apiClient.get<Event[]>("/events")
+    const response = await apiClient.get<EventRo[]>("/events")
     return { events: response.data }
   } catch {
     return { events: [] }

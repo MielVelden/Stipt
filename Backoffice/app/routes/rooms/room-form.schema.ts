@@ -1,5 +1,7 @@
 import * as z from "zod"
-import type { CreateRoom, Room, UpdateRoom } from "~/types"
+import type { CreateRoomDto } from "~/generated-types/create-room-dto"
+import type { RoomRo } from "~/generated-types/room-ro"
+import type { UpdateRoomDto } from "~/generated-types/update-room-dto"
 
 const roomBaseObjectSchema = z.object({
   name: z
@@ -25,7 +27,7 @@ export const roomCreateDefaultValues: RoomCreateFormValues = {
   capacity: "",
 }
 
-export function mapRoomToEditFormValues(room: Room): RoomEditFormValues {
+export function mapRoomToEditFormValues(room: RoomRo): RoomEditFormValues {
   return {
     id: room.id,
     name: room.name,
@@ -35,7 +37,7 @@ export function mapRoomToEditFormValues(room: Room): RoomEditFormValues {
 
 export function mapFormValuesToRoomPayload(
   values: RoomBaseFormValues
-): CreateRoom | UpdateRoom {
+): CreateRoomDto | UpdateRoomDto {
   return {
     name: values.name,
     capacity: Number(values.capacity),

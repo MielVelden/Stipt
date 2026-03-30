@@ -8,7 +8,7 @@ public sealed record SessionRo(
     Guid Id,
     string Title,
     string? Description,
-    [property: TsType("\"keynote\" | \"breakout\"")] SessionType Type,
+    SessionType Type,
     string Speaker,
     Guid RoomId,
     SessionRoomRo Room,

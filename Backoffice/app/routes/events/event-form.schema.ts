@@ -1,5 +1,7 @@
 import * as z from "zod"
-import type { CreateEvent, Event, UpdateEvent } from "~/types"
+import type { CreateEventDto } from "~/generated-types/create-event-dto"
+import type { EventRo } from "~/generated-types/event-ro"
+import type { UpdateEventDto } from "~/generated-types/update-event-dto"
 
 const eventBaseObjectSchema = z.object({
   name: z.string().min(1, "Dit veld is verplicht"),
@@ -39,7 +41,7 @@ export const eventCreateDefaultValues: EventCreateFormValues = {
   logoImageUrl: "",
 }
 
-export function mapEventToEditFormValues(event: Event): EventEditFormValues {
+export function mapEventToEditFormValues(event: EventRo): EventEditFormValues {
   return {
     id: event.id,
     name: event.name,
@@ -54,7 +56,7 @@ export function mapEventToEditFormValues(event: Event): EventEditFormValues {
 
 export function mapFormValuesToEventPayload(
   values: EventBaseFormValues
-): CreateEvent | UpdateEvent {
+): CreateEventDto | UpdateEventDto {
   return {
     name: values.name,
     location: values.location,

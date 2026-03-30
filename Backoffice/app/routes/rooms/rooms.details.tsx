@@ -12,7 +12,7 @@ import { isRouteErrorResponse, Link, useRouteError } from "react-router"
 import apiClient from "~/lib/api-client"
 import FetchError from "~/components/fetch-error"
 import { useAppContext } from "~/contexts/app-context"
-import type { Room } from "~/types"
+import type { RoomRo } from "~/generated-types/room-ro"
 import { ArrowLeft } from "lucide-react"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
@@ -24,7 +24,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await apiClient.get<Room>(
+    const response = await apiClient.get<RoomRo>(
       `/events/${eventId}/rooms/${params.id}`
     )
     return response.data

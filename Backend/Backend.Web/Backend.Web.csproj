@@ -23,6 +23,54 @@
         <ProjectReference Include="..\Backend.Database\Backend.Database.csproj" />
     </ItemGroup>
 
+    <UsingTask
+        TaskName="SyncFrontendTypesTask"
+        TaskFactory="RoslynCodeTaskFactory"
+        AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <ParameterGroup>
+            <GeneratedRoot ParameterType="System.String" Required="true" />
+            <TypesFile ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Text" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Code Type="Fragment" Language="cs"><![CDATA[
+                if (!Directory.Exists(GeneratedRoot))
+                {
+                    Log.LogWarning($"TypeGen output directory not found: {GeneratedRoot}");
+                }
+                else
+                {
+                    if (File.Exists(TypesFile))
+                    {
+                        File.Delete(TypesFile);
+                        Log.LogMessage(MessageImportance.High, $"Removed legacy frontend types alias file at {TypesFile}");
+                    }
+
+                    var importRegex = new Regex(@"(?m)^import\s+\{", RegexOptions.Compiled);
+                    var generatedFiles = Directory.GetFiles(GeneratedRoot, "*.ts", SearchOption.TopDirectoryOnly);
+
+                    foreach (var filePath in generatedFiles)
+                    {
+                        var fileContent = File.ReadAllText(filePath, Encoding.UTF8);
+                        var normalizedContent = fileContent.TrimStart('\uFEFF');
+                        var updatedContent = importRegex.Replace(normalizedContent, "import type {");
+
+                        if (updatedContent == fileContent)
+                        {
+                            continue;
+                        }
+
+                        File.WriteAllText(filePath, updatedContent, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                        Log.LogMessage(MessageImportance.High, $"Updated type-only imports in {Path.GetFileName(filePath)}");
+                    }
+                }
+            ]]></Code>
+        </Task>
+    </UsingTask>
+
     <Target Name="GenerateFrontendTypes" AfterTargets="Build" Condition="'$(GenerateFrontendTypesOnBuild)' == 'true'">
         <Message Text="Generating TypeScript types from DTOs..." Importance="high" />
         <Exec
@@ -33,9 +81,9 @@
             Command="dotnet tool run dotnet-typegen -- generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)\tgconfig.json&quot;"
             WorkingDirectory="$(MSBuildProjectDirectory)\.."
             ContinueOnError="WarnAndContinue" />
-        <Exec
-            Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Scripts\Sync-FrontendTypes.ps1&quot;"
-            ContinueOnError="WarnAndContinue" />
+        <SyncFrontendTypesTask
+            GeneratedRoot="$(MSBuildProjectDirectory)\..\..\Backoffice\app\generated-types"
+            TypesFile="$(MSBuildProjectDirectory)\..\..\Backoffice\app\types.ts" />
     </Target>
 
 </Project>

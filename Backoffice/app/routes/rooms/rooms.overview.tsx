@@ -36,7 +36,7 @@ import {
 import FetchError from "~/components/fetch-error"
 import { useAppContext } from "~/contexts/app-context"
 import apiClient from "~/lib/api-client"
-import type { Room } from "~/types"
+import type { RoomRo } from "~/generated-types/room-ro"
 import type { Route } from "./+types/rooms.overview"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
@@ -46,7 +46,7 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await apiClient.get<Room[]>(`/events/${eventId}/rooms`)
+    const response = await apiClient.get<RoomRo[]>(`/events/${eventId}/rooms`)
     return response.data
   } catch {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -79,7 +79,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
   const fetcher = useFetcher()
   const { eventBaseUrl } = useAppContext()
   const [search, setSearch] = useState("")
-  const [roomToDelete, setRoomToDelete] = useState<Room | null>(null)
+  const [roomToDelete, setRoomToDelete] = useState<RoomRo | null>(null)
 
   const filteredRooms = rooms.filter((room) =>
     room.name.toLowerCase().includes(search.toLowerCase())
@@ -95,7 +95,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
     }
   }
 
-  const columns: ColumnDef<Room>[] = [
+  const columns: ColumnDef<RoomRo>[] = [
     {
       accessorKey: "name",
       header: "Naam",
