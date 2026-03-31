@@ -43,7 +43,7 @@ Mobile/
 │   └── (tabs)/
 │       ├── _layout.tsx           # Tab navigator (4 tabs)
 │       ├── index.tsx             # Evenementen overzicht
-│       ├── schedule.tsx          # Mijn agenda
+│       ├── schedule.tsx          # Mijn agenda -> prototype signalR ontvangen/verzenden
 │       ├── qr.tsx                # QR scanner
 │       ├── settings.tsx          # Instellingen
 │
@@ -57,9 +57,11 @@ Mobile/
 │   └── sessions/
 │       ├── types.ts
 │       └── api.ts                # API calls (getSessions, getSessionById)
+│       └── websocket.ts          # websocket methods voor zowel verzenden als ontvangen
 │
 ├── lib/
 │   ├── api-client.ts             # Axios HTTP client
+│   ├── signalr-client.ts         # connectiemanager voor SignalR
 │   └── utils.ts                  # cn() utility (clsx + tailwind-merge)
 │
 ├── components/
@@ -91,6 +93,9 @@ De app gebruikt [Expo Router](https://expo.github.io/router) voor file-based rou
   ├── settings        Instellingen
 ```
 
+## SignalR
+De app gebruikt SignalR voor realtime communicatie. In het voorbeeld wordt er simpel messages verstuurd. De mobiele app heeft een method om berichten te versturen(sendTestMessage) en een method om berichten te ontvangen (onReceiveMessage)
+verdere uitleg is te vinden in het backend project.
 
 ## Styling
 

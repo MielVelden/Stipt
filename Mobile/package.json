@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
     "axios": "^1.13.6",
     "babel-preset-expo": "^55.0.12",
     "class-variance-authority": "^0.7.1",

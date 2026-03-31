@@ -1,12 +1,14 @@
 using Backend.Web.Features.Sessions.Dtos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Backend.Web.Features.Sessions;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SessionsController(SessionsService sessionsService) : ControllerBase
+public class SessionsController(SessionsService sessionsService, IHubContext<SessionsHub> hubContext) : ControllerBase
 {
+    
     [HttpPost]
     public async Task<CreatedAtActionResult> CreateSession(CreateSessionDto request, CancellationToken ct)
     {
@@ -40,5 +42,13 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     {
         var deleted = await sessionsService.DeleteAsync(id, ct);
         return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpPost]
+    [Route("sendmessage")]
+    public async Task<IActionResult> SendMessage()
+    {
+        await hubContext.Clients.All.SendAsync("ReceiveMessage", "Test message");
+        return Ok();
     }
 }
