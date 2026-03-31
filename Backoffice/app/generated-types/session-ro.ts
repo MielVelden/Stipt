@@ -5,6 +5,7 @@
 
 import type { SessionType } from './session-type';
 import type { SessionRoomRo } from './session-room-ro';
+import type { SessionAvailability } from './session-availability';
 
 export interface SessionRo {
   id: string;
@@ -21,4 +22,6 @@ export interface SessionRo {
   labels: string[];
   createdAtUtc: string;
   updatedAtUtc: string | undefined;
+  availability: SessionAvailability;
+  currentAttendeeCount: number;
 }

@@ -2,6 +2,7 @@ using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.Events;
 using Backend.Web.Features.Sessions.Dtos;
+using Backend.Web.Features.Sessions.Enums;
 using Backend.Web.Features.Sessions.Exceptions;
 
 namespace Backend.Web.Features.Sessions;
@@ -51,12 +52,37 @@ public sealed class SessionsService(
         return session.ToRo();
     }
 
-    public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(Guid eventId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<SessionRo>> GetAllFilteredAsync(
+    Guid eventId,
+    SessionFilterDto filterDto,
+    CancellationToken cancellationToken)
     {
-        var sessions = await sessionRepository.GetAllAsync(eventId, cancellationToken);
-        return sessions
-            .Select(session => session.ToRo())
-            .ToArray();
+
+        var dbFilter = new SessionFilter(
+        Labels: filterDto.Labels,
+        AvailableOnly: filterDto.AvailableOnly
+        );
+
+        var sessions = await sessionRepository.GetFilteredAsync(eventId, dbFilter, cancellationToken);
+
+        var mappedSessions = sessions.Select(session =>
+        {
+            // TODO: Haal hier de ECHTE attendee count op uit de database. Nu een MOCK om de beschikbaarheid te kunnen tonen.
+            // Bijvoorbeeld: var count = await registrationRepo.GetCountForSessionAsync(session.Id);
+            int mockAttendeeCount = new Random().Next(0, 180);
+
+            return session.ToRo(mockAttendeeCount);
+        }).ToList();
+
+        // TODO: Filteren op beschikbaarheid moet in de database gebeuren, niet in het geheugen. Nu een MOCK implementatie.
+        if (filterDto.AvailableOnly == true)
+        {
+            mappedSessions = mappedSessions
+                .Where(s => s.Availability != SessionAvailability.Full)
+                .ToList();
+        }
+
+        return mappedSessions;
     }
 
     public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, CancellationToken cancellationToken)

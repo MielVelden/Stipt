@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Sessions;
+using Backend.Web.Features.Sessions.Enums;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;
@@ -18,7 +19,10 @@ public sealed record SessionRo(
     int? Capacity,
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc);
+    DateTime? UpdatedAtUtc,
+    SessionAvailability Availability,
+    int currentAttendeeCount);
+    
 
 [ExportTsInterface]
 public sealed record SessionRoomRo(
