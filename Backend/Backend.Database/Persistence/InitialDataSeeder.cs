@@ -1,7 +1,11 @@
+using Backend.Database.Entities;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Database.Persistence;
 
@@ -9,6 +13,34 @@ internal static class InitialDataSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext dbContext, CancellationToken cancellationToken = default)
     {
+        var userManager = dbContext.GetService<UserManager<ApplicationUser>>();
+        var roleManager = dbContext.GetService<RoleManager<IdentityRole>>();
+
+        const string participantRole = "deelnemer";
+        if (!await roleManager.RoleExistsAsync(participantRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(participantRole));
+        }
+
+        const string participantTestEmail = "deelnemer@test.nl";
+        if (await userManager.FindByEmailAsync(participantTestEmail) == null)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = participantTestEmail,
+                Email = participantTestEmail,
+                EmailConfirmed = true,
+                FirstName = "Jan",
+                LastName = "Jansen"
+            };
+
+            var result = await userManager.CreateAsync(user, "Wachtwoord123!");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, participantRole);
+            }
+        }
+
         if (await dbContext.Events.AnyAsync(cancellationToken))
         {
             return;
