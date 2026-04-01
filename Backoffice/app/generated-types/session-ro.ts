@@ -21,4 +21,5 @@ export interface SessionRo {
   labels: string[];
   createdAtUtc: string;
   updatedAtUtc: string | undefined;
+  registrationCount: number | undefined;
 }

@@ -5,8 +5,13 @@ namespace Backend.Web.Features.Sessions;
 
 public static class SessionMappings
 {
-    public static SessionRo ToRo(this Session session)
+    public static SessionRo ToRo(this Session session, SessionQueryOptions? options)
     {
+        options ??= new SessionQueryOptions { };
+
+        // Replace mock count with real registration count
+        var registrationCount = options.IncludeRegistrationCount ? (int?)0 : null;
+
         return new SessionRo(
             session.Id,
             session.Title,
@@ -24,7 +29,8 @@ public static class SessionMappings
             session.Capacity,
             session.Labels.AsReadOnly(),
             session.CreatedAtUtc,
-            session.UpdatedAtUtc
+            session.UpdatedAtUtc,
+            registrationCount
         );
     }
 }

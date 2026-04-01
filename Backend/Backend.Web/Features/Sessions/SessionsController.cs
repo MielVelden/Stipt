@@ -22,9 +22,9 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<SessionRo>> GetSessionById(Guid eventId, Guid id, CancellationToken ct)
+    public async Task<ActionResult<SessionRo>> GetSessionById(Guid eventId, Guid id, [FromQuery] SessionQueryOptions options, CancellationToken ct)
     {
-        var response = await sessionsService.GetByIdAsync(eventId, id, ct);
+        var response = await sessionsService.GetByIdAsync(eventId, id, options, ct);
         return response is null ? NotFound() : Ok(response);
     }
 
