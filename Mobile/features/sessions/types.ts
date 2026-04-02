@@ -21,7 +21,7 @@ export type Session = {
     capacity: number | null
     labels: string[]
     availability: SessionAvailability
-    registrationCount: number
+    registrationCount?: number | null
     createdAtUtc: string
     updatedAtUtc: string | null
 }

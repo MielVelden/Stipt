@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, MapPin, User, Users, Calendar } from 'lucide-react-native';
+import { ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { getSessionById } from '@/features/sessions/api';
@@ -24,14 +24,14 @@ export default function SessionDetailScreen() {
                 .then((data: any) => {
                     const sessionWithMock = { //TODO: Remove mock after merging with backend
                         ...data,
-                        registrationCount: 150,
-                        availability: 'Full' as const,
+                        registrationCount: data.registrationCount,
+                        availability: data.availability ?? "Full",
                         speaker: {
                             name: data.speaker,
                             role: "Senior Software Architect",
                             company: "Tech Solutions Inc.",
                             bio: "Expert in schaalbare cloud-architecturen en gepassioneerd door Open Source. Ava spreekt wereldwijd op conferenties over de toekomst van mobiele ontwikkeling.",
-                            imageUrl: "https://i.pravatar.cc/150?u=" + data.speaker 
+                            imageUrl: "https://i.pravatar.cc/150?u=" + data.speaker
                         }
                     };
 
@@ -99,7 +99,7 @@ export default function SessionDetailScreen() {
                         <View className="flex-row items-center gap-x-2">
                             <Icon as={Users} className={availabilityColors[session.availability]} size={18} />
                             <Text className="text-muted-foreground">
-                                {session.registrationCount}/{session.capacity ?? '/'} inschrijvingen
+                                {session.registrationCount}/{session.capacity} inschrijvingen
                             </Text>
                         </View>
                     </View>
@@ -142,7 +142,7 @@ export default function SessionDetailScreen() {
                         <Text variant="p" className="text-muted-foreground leading-relaxed">
                             {session.speaker.bio}
                         </Text>
-                                             
+
                     </View>
                 </View>
             </ScrollView>
