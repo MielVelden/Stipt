@@ -69,7 +69,7 @@ public sealed class SessionsService(
         {
             // TODO: Haal hier de ECHTE attendee count op uit de database. Nu een MOCK om de beschikbaarheid te kunnen tonen.
             // Bijvoorbeeld: var count = await registrationRepo.GetCountForSessionAsync(session.Id);
-            int mockAttendeeCount = new Random().Next(0, 180);
+            int mockAttendeeCount = Random.Shared.Next(0, 180);
 
             return session.ToRo(mockAttendeeCount);
         }).ToList();

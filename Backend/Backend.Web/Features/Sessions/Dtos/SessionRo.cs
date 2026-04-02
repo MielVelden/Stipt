@@ -21,7 +21,7 @@ public sealed record SessionRo(
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
     SessionAvailability Availability,
-    int currentAttendeeCount);
+    int CurrentAttendeeCount);
     
 
 [ExportTsInterface]
