@@ -36,6 +36,7 @@ export default function SessionDetailScreen() {
         Available: 'text-green-500',
         FillingUp: 'text-orange-500',
         Full: 'text-red-500',
+        Unavailable: 'text-gray-500'
     };
 
     return (
@@ -85,7 +86,10 @@ export default function SessionDetailScreen() {
                         <View className="flex-row items-center gap-x-2">
                             <Icon as={Users} className={availabilityColors[session.availability]} size={18} />
                             <Text className="text-muted-foreground">
-                                {session.registrationCount}/{session.capacity} inschrijvingen
+                                {session.registrationCount == null
+                                    ? '– inschrijvingen' : session.capacity == null
+                                        ? `${session.registrationCount}/– inschrijvingen`
+                                        : `${session.registrationCount}/${session.capacity} inschrijvingen`}
                             </Text>
                         </View>
                     </View>

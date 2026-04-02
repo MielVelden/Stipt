@@ -10,15 +10,18 @@ public static class SessionMappings
         options ??= new SessionQueryOptions { };
 
         // Replace mock count with real registration count
-        var registrationCount = options.IncludeRegistrationCount
-                ? (int?)Random.Shared.Next(1, 100)
-                : null;
+        var registrationCount = options.IncludeRegistrationCount ? (int?)0 : null;
 
-        string availability = "Available";
+        string availability = "Unavailable";
+
         if (registrationCount.HasValue && session.Capacity.HasValue)
         {
-            if (registrationCount >= session.Capacity) availability = "Full";
-            else if (registrationCount >= session.Capacity * 0.8) availability = "FillingUp";
+            if (registrationCount >= session.Capacity)
+                availability = "Full";
+            else if (registrationCount >= session.Capacity * 0.8)
+                availability = "FillingUp";
+            else
+                availability = "Available";
         }
 
         return new SessionRo(
