@@ -3,10 +3,7 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-import type { UserRo } from './user-ro';
-
-export interface LoginResponse {
+export interface RefreshResponse {
   accessToken: string;
   refreshToken: string;
-  user: UserRo;
 }

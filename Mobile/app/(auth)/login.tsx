@@ -7,8 +7,7 @@ import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
-import { login } from "@/features/auth/api"
-import { saveToken } from "@/lib/auth"
+import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 
 const loginSchema = z.object({
@@ -19,6 +18,8 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginScreen() {
+  const { login } = useAuth()
+
   const {
     control,
     handleSubmit,
@@ -30,17 +31,13 @@ export default function LoginScreen() {
 
   async function onSubmit(data: LoginFormData) {
     try {
-      const response = await login(data)
-      if (response.token) {
-        await saveToken(response.token)
-      }
+      await login(data.email, data.password)
       router.replace("/(tabs)/")
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      if (axios.isAxiosError(error) && error.response?.status === 401)
         setError("root", { message: "E-mailadres of wachtwoord is onjuist" })
-      } else {
+      else
         setError("root", { message: "Er is een fout opgetreden. Probeer het opnieuw." })
-      }
     }
   }
 

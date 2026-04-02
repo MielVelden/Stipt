@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Backend.Database.Entities.Auth;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
@@ -18,11 +19,15 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
-                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+            {
+                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                npgsql.UseNodaTime();
+            }));
 
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         return services;
     }

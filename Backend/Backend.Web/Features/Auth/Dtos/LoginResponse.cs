@@ -5,5 +5,6 @@ namespace Backend.Web.Features.Auth.Dtos;
 
 [ExportTsInterface]
 public sealed record LoginResponse(
-    string AccessToken, 
+    string AccessToken,
+    string RefreshToken,
     UserRo User);

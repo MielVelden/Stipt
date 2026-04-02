@@ -1,4 +1,5 @@
 using Backend.Database.Entities;
+using Backend.Database.Entities.Auth;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
@@ -12,6 +13,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Session> Sessions => Set<Session>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
