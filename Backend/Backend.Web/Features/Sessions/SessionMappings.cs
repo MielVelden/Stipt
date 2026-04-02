@@ -10,7 +10,16 @@ public static class SessionMappings
         options ??= new SessionQueryOptions { };
 
         // Replace mock count with real registration count
-        var registrationCount = options.IncludeRegistrationCount ? (int?)0 : null;
+        var registrationCount = options.IncludeRegistrationCount
+                ? (int?)Random.Shared.Next(1, 100)
+                : null;
+
+        string availability = "Available";
+        if (registrationCount.HasValue && session.Capacity.HasValue)
+        {
+            if (registrationCount >= session.Capacity) availability = "Full";
+            else if (registrationCount >= session.Capacity * 0.8) availability = "FillingUp";
+        }
 
         return new SessionRo(
             session.Id,
@@ -30,7 +39,8 @@ public static class SessionMappings
             session.Labels.AsReadOnly(),
             session.CreatedAtUtc,
             session.UpdatedAtUtc,
-            registrationCount
+            registrationCount,
+            availability
         );
     }
 }

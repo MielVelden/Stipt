@@ -1,13 +1,19 @@
+import { Room } from "../rooms/types";
+
+export type SessionAvailability = 'Available' | 'FillingUp' | 'Full';
+
 export type Session = {
-  id: string
-  title: string
-  description: string | null
-  speaker: string
-  room: string
-  startTime: string
-  endTime: string
-  capacity: number | null
-  labels: string[]
-  createdAtUtc: string
-  updatedAtUtc: string | null
+    id: string
+    title: string
+    description: string | null
+    speaker: string
+    room: Room
+    startDateTime: string
+    endDateTime: string
+    capacity: number | null
+    labels: string[]
+    availability: SessionAvailability
+    registrationCount?: number | null
+    createdAtUtc: string
+    updatedAtUtc: string | null
 }

@@ -22,4 +22,5 @@ export interface SessionRo {
   createdAtUtc: string;
   updatedAtUtc: string | undefined;
   registrationCount: number | undefined;
+  availability: string | undefined;
 }

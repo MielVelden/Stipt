@@ -19,7 +19,8 @@ public sealed record SessionRo(
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
-    int? RegistrationCount = null);
+    int? RegistrationCount = null,
+    string? Availability = null);
 
 [ExportTsInterface]
 public sealed record SessionRoomRo(
