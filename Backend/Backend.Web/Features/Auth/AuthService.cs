@@ -41,6 +41,15 @@ public sealed class AuthService(
         return new LoginResponse(accessToken, refreshToken, userRo);
     }
 
+    public async Task LogoutAsync(string userId, string refreshToken, CancellationToken ct)
+    {
+        var token = await refreshTokenRepository.GetByTokenAsync(refreshToken, ct);
+        if (token is null || token.UserId != userId || token.IsRevoked)
+            return;
+
+        await refreshTokenRepository.RevokeAsync(token, ct);
+    }
+
     public async Task<RefreshResponse?> RefreshAsync(string token, CancellationToken ct)
     {
         var refreshToken = await refreshTokenRepository.GetByTokenAsync(token, ct);
@@ -61,8 +70,11 @@ public sealed class AuthService(
 
     private string CreateAccessToken(ApplicationUser user, IList<string> roles)
     {
-        var signingKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!));
+        var secretKey = configuration["Jwt:SecretKey"];
+        if (string.IsNullOrEmpty(secretKey))
+            throw new InvalidOperationException("Jwt:SecretKey is not configured. Set it via user-secrets or environment variables.");
+
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
         List<Claim> claims = [

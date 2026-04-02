@@ -24,17 +24,18 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
+        var secretKey = builder.Configuration["Jwt:SecretKey"];
+        if (string.IsNullOrEmpty(secretKey))
+            throw new InvalidOperationException("Jwt:SecretKey is not configured. Set it via user-secrets or environment variables.");
+
         options.TokenValidationParameters.ValidIssuer = builder.Configuration["Jwt:Issuer"];
         options.TokenValidationParameters.ValidAudience = builder.Configuration["Jwt:Audience"];
-        options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!));
-
+        options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
     });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-
-app.MapIdentityApi<ApplicationUser>();
 
 await app.Services.MigrateAndSeedDatabaseAsync();
 

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { login as loginApi } from "@/features/auth/api"
-import { deleteTokens, getRefreshToken, saveTokens } from "@/lib/auth"
+import { loginAsync as loginApi } from "@/features/auth/api"
+import { deleteTokensAsync, getRefreshTokenAsync, saveTokensAsync } from "@/lib/auth"
 import { setAuthFailureListener } from "@/lib/auth-event"
 
 type AuthContextValue = {
@@ -18,13 +18,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setAuthFailureListener(async () => {
-      await deleteTokens()
+      await deleteTokensAsync()
       setIsAuthenticated(false)
     })
 
     async function checkStoredAuth() {
       try {
-        const refreshToken = await getRefreshToken()
+        const refreshToken = await getRefreshTokenAsync()
         setIsAuthenticated(refreshToken !== null)
       } finally {
         setIsLoading(false)
@@ -36,12 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string) {
     const response = await loginApi({ email, password })
-    await saveTokens(response.accessToken, response.refreshToken)
+    await saveTokensAsync(response.accessToken, response.refreshToken)
     setIsAuthenticated(true)
   }
 
   async function logout() {
-    await deleteTokens()
+    await deleteTokensAsync()
     setIsAuthenticated(false)
   }
 

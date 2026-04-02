@@ -1,16 +1,13 @@
-using Backend.Database.Entities;
+using System.Security.Claims;
 using Backend.Web.Features.Auth.Dtos;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Web.Features.Auth;
 
 [ApiController]
 [Route("api/[controller]")]
-public sealed class AuthController(
-    SignInManager<ApplicationUser> signInManager,
-    AuthService authService) : ControllerBase
+public sealed class AuthController(AuthService authService) : ControllerBase
 {
     [HttpPost("login")]
     [AllowAnonymous]
@@ -36,9 +33,13 @@ public sealed class AuthController(
 
     [HttpPost("logout")]
     [Authorize]
-    public async Task<ActionResult> Logout()
+    public async Task<ActionResult> Logout(LogoutRequest request, CancellationToken ct)
     {
-        await signInManager.SignOutAsync();
-        return Ok();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+
+        await authService.LogoutAsync(userId, request.RefreshToken, ct);
+        return NoContent();
     }
 }

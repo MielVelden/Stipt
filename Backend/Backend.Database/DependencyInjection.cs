@@ -37,8 +37,9 @@ public static class DependencyInjection
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
         await dbContext.Database.MigrateAsync(cancellationToken);
-        await InitialDataSeeder.SeedAsync(dbContext, cancellationToken);
+        await InitialDataSeeder.SeedAsync(dbContext, configuration, cancellationToken);
     }
 }

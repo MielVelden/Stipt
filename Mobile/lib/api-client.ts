@@ -1,7 +1,7 @@
 import axios from "axios"
 import { API_BASE_URL } from "@/constants/api"
-import { deleteTokens, getAccessToken, getRefreshToken, saveTokens } from "@/lib/auth"
-import { notifyAuthFailure } from "@/lib/auth-event"
+import { deleteTokensAsync, getAccessTokenAsync, getRefreshTokenAsync, saveTokensAsync } from "@/lib/auth"
+import { notifyAuthFailureAsync } from "@/lib/auth-event"
 import type { RefreshResponse } from "@/features/auth/types"
 
 const apiClient = axios.create({
@@ -12,7 +12,7 @@ const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use(async (config) => {
-  const token = await getAccessToken()
+  const token = await getAccessTokenAsync()
   if (token)
     config.headers.Authorization = `Bearer ${token}`;
   
@@ -28,10 +28,10 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        const refreshToken = await getRefreshToken()
+        const refreshToken = await getRefreshTokenAsync()
         if (!refreshToken) {
-          await deleteTokens()
-          notifyAuthFailure()
+          await deleteTokensAsync()
+          await notifyAuthFailureAsync()
           return Promise.reject(error)
         }
 
@@ -39,13 +39,13 @@ apiClient.interceptors.response.use(
           refreshToken,
         })
 
-        await saveTokens(data.accessToken, data.refreshToken)
+        await saveTokensAsync(data.accessToken, data.refreshToken)
 
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
         return apiClient(originalRequest)
       } catch {
-        await deleteTokens()
-        notifyAuthFailure()
+        await deleteTokensAsync()
+        notifyAuthFailureAsync()
         return Promise.reject(error)
       }
     }

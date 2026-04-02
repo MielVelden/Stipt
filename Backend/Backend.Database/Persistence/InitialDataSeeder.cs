@@ -5,13 +5,14 @@ using Backend.Database.Entities.Sessions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Database.Persistence;
 
 internal static class InitialDataSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext dbContext, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(ApplicationDbContext dbContext, IConfiguration configuration, CancellationToken cancellationToken = default)
     {
         var userManager = dbContext.GetService<UserManager<ApplicationUser>>();
         var roleManager = dbContext.GetService<RoleManager<IdentityRole>>();
@@ -25,6 +26,10 @@ internal static class InitialDataSeeder
         const string participantTestEmail = "deelnemer@test.nl";
         if (await userManager.FindByEmailAsync(participantTestEmail) == null)
         {
+            var seedPassword = configuration["Seeder:SeedUserPassword"];
+            if (string.IsNullOrEmpty(seedPassword))
+                throw new InvalidOperationException("Seeder:SeedUserPassword is not configured. Set it via user-secrets or environment variables.");
+
             var user = new ApplicationUser
             {
                 UserName = participantTestEmail,
@@ -34,7 +39,7 @@ internal static class InitialDataSeeder
                 LastName = "Jansen"
             };
 
-            var result = await userManager.CreateAsync(user, "Wachtwoord123!");
+            var result = await userManager.CreateAsync(user, seedPassword);
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user, participantRole);

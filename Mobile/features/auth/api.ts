@@ -1,22 +1,22 @@
 import apiClient from "@/lib/api-client"
 import type { LoginRequest, LoginResponse, RefreshResponse } from "./types"
 
-export async function login(data: LoginRequest): Promise<LoginResponse> {
+export async function loginAsync(data: LoginRequest): Promise<LoginResponse> {
   try {
     const response = await apiClient.post<LoginResponse>("/auth/login", data)
     return response.data
   } catch (error) {
-    console.log(error)
+    console.error('Auth error:', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }
 }
 
-export async function refreshTokens(refreshToken: string): Promise<RefreshResponse> {
+export async function refreshTokensAsync(refreshToken: string): Promise<RefreshResponse> {
   try {
     const response = await apiClient.post<RefreshResponse>("/auth/refresh", { refreshToken })
     return response.data
   } catch (error) {
-    console.log(error)
+    console.error('Auth error:', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }
 }

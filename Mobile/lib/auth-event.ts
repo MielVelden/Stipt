@@ -1,12 +1,12 @@
-type AuthFailureListener = () => void;
+type AuthFailureListener = () => void | Promise<void>;
 
-let authFailureListener: AuthFailureListener | null = null;
+let authFailureListenerAsync: AuthFailureListener | null = null;
 
 export function setAuthFailureListener(listener: AuthFailureListener): void {
-  authFailureListener = listener;
+  authFailureListenerAsync = listener;
 }
 
-export function notifyAuthFailure(): void {
-  if(authFailureListener)
-    authFailureListener();
+export async function notifyAuthFailureAsync(): Promise<void> {
+  if (authFailureListenerAsync)
+    await authFailureListenerAsync();
 }
