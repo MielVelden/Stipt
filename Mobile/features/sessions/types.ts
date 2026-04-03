@@ -1,6 +1,6 @@
 import { Room } from "../rooms/types";
 
-export type SessionAvailability = 'Available' | 'FillingUp' | 'Full';
+export type SessionAvailability = 'Unavailable' | 'Available' | 'FillingUp' | 'Full';
 
 export type Speaker = {
     name: string;
