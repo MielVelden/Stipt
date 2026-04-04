@@ -137,7 +137,7 @@ public sealed class SessionsService(
             cancellationToken);
 
         if (conflictingSessions.Count > 0)
-            throw new SessionEnrollmentConflictException(conflictingSessions.Select(ToConflictingSessionRo).ToArray());
+            throw new SessionEnrollmentConflictException(conflictingSessions.Select(item => item.ToConflictingSessionRo()).ToArray());
 
         var enrolledCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
         var status = HasAvailableSpots(session, enrolledCount)
@@ -202,7 +202,7 @@ public sealed class SessionsService(
 
         var remainingConflicts = conflicts.Where(x => x.Id != sessionIdToUnenroll).ToArray();
         if (remainingConflicts.Length > 0)
-            throw new SessionEnrollmentConflictException(remainingConflicts.Select(ToConflictingSessionRo).ToArray());
+            throw new SessionEnrollmentConflictException(remainingConflicts.Select(item => item.ToConflictingSessionRo()).ToArray());
 
         var unenrolled = await UnenrollAsync(eventId, sessionIdToUnenroll, participantId, cancellationToken);
         if (!unenrolled)
@@ -260,15 +260,5 @@ public sealed class SessionsService(
     {
         var effectiveCapacity = session.Capacity ?? session.Room.Capacity;
         return enrolledCount < effectiveCapacity;
-    }
-
-    private static ConflictingSessionRo ToConflictingSessionRo(Session session)
-    {
-        return new ConflictingSessionRo(
-            session.Id,
-            session.Title,
-            session.StartDateTime,
-            session.EndDateTime,
-            session.Room.Name);
     }
 }

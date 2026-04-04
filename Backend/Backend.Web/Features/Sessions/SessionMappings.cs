@@ -60,4 +60,14 @@ public static class SessionMappings
             myWaitlistPosition
         );
     }
+
+    public static ConflictingSessionRo ToConflictingSessionRo(this Session session)
+    {
+        return new ConflictingSessionRo(
+            session.Id,
+            session.Title,
+            session.StartDateTime,
+            session.EndDateTime,
+            session.Room.Name);
+    }
 }
