@@ -66,7 +66,8 @@ public sealed class SessionsServiceReplaceEnrollmentAsyncTests
             oldSessionId,
             CancellationToken.None);
 
-        Assert.Equal(SessionEnrollmentStatus.Enrolled, result.Status);
+        Assert.Equal(SessionEnrollmentStatus.Enrolled, result.MyEnrollmentStatus);
+        Assert.Null(result.MyWaitlistPosition);
         await enrollmentRepository.Received(1)
             .RemoveEnrollmentAsync(Arg.Is<SessionEnrollment>(x => x.SessionId == oldSessionId), Arg.Any<CancellationToken>());
         await enrollmentRepository.Received(1)

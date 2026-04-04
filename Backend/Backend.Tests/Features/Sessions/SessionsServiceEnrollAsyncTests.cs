@@ -38,7 +38,8 @@ public sealed class SessionsServiceEnrollAsyncTests
 
         var result = await service.EnrollAsync(eventId, sessionId, participantId, CancellationToken.None);
 
-        Assert.Equal(SessionEnrollmentStatus.Enrolled, result.Status);
+        Assert.Equal(SessionEnrollmentStatus.Enrolled, result.MyEnrollmentStatus);
+        Assert.Null(result.MyWaitlistPosition);
         Assert.Equal(1, result.EnrolledCount);
         Assert.Equal(0, result.WaitlistCount);
         Assert.True(result.HasAvailableSpots);
@@ -80,15 +81,13 @@ public sealed class SessionsServiceEnrollAsyncTests
         enrollmentRepository
             .When(x => x.AddEnrollmentAsync(Arg.Any<SessionEnrollment>(), Arg.Any<CancellationToken>()))
             .Do(callInfo => session.Enrollments.Add(callInfo.Arg<SessionEnrollment>()));
-        enrollmentRepository.GetWaitlistPositionAsync(sessionId, participantId, Arg.Any<CancellationToken>())
-            .Returns(1);
         sessionRepository.GetByIdAsync(eventId, sessionId, Arg.Any<CancellationToken>())
             .Returns(session);
 
         var result = await service.EnrollAsync(eventId, sessionId, participantId, CancellationToken.None);
 
-        Assert.Equal(SessionEnrollmentStatus.Waitlisted, result.Status);
-        Assert.Equal(1, result.WaitlistPosition);
+        Assert.Equal(SessionEnrollmentStatus.Waitlisted, result.MyEnrollmentStatus);
+        Assert.Equal(1, result.MyWaitlistPosition);
         Assert.Equal(1, result.EnrolledCount);
         Assert.Equal(1, result.WaitlistCount);
         Assert.False(result.HasAvailableSpots);

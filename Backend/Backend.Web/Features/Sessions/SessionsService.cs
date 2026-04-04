@@ -114,7 +114,7 @@ public sealed class SessionsService(
         return await sessionRepository.DeleteAsync(eventId, id, cancellationToken);
     }
 
-    public async Task<SessionEnrollmentResultRo> EnrollAsync(
+    public async Task<SessionRo> EnrollAsync(
         Guid eventId,
         Guid sessionId,
         Guid participantId,
@@ -126,7 +126,7 @@ public sealed class SessionsService(
 
         var existingEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId);
         if (existingEnrollment is not null)
-            return await BuildEnrollmentResultAsync(session, participantId, cancellationToken);
+            return session.ToRo(new SessionQueryOptions { ParticipantId = participantId });
 
         var conflictingSessions = await sessionEnrollmentRepository.GetOverlappingEnrolledSessionsAsync(
             eventId,
@@ -158,10 +158,10 @@ public sealed class SessionsService(
         var updatedSession = await sessionRepository.GetByIdAsync(eventId, sessionId, cancellationToken)
             ?? throw new BadHttpRequestException("De sessie bestaat niet.", StatusCodes.Status404NotFound);
 
-        return await BuildEnrollmentResultAsync(updatedSession, participantId, cancellationToken);
+        return updatedSession.ToRo(new SessionQueryOptions { ParticipantId = participantId });
     }
 
-    public async Task<SessionEnrollmentResultRo> ReplaceEnrollmentAsync(
+    public async Task<SessionRo> ReplaceEnrollmentAsync(
         Guid eventId,
         Guid sessionId,
         Guid participantId,
@@ -255,30 +255,6 @@ public sealed class SessionsService(
         await sessionEnrollmentRepository.UpdateEnrollmentAsync(nextWaitlisted, cancellationToken);
     }
 
-    private async Task<SessionEnrollmentResultRo> BuildEnrollmentResultAsync(
-        Session session,
-        Guid participantId,
-        CancellationToken cancellationToken)
-    {
-        var enrolledCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
-        var waitlistCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Waitlisted);
-        var hasAvailableSpots = HasAvailableSpots(session, enrolledCount);
-        var myEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId)
-            ?? throw new InvalidOperationException("Enrollment should exist for this participant.");
-
-        int? waitlistPosition = null;
-        if (myEnrollment.Status == SessionEnrollmentStatus.Waitlisted)
-            waitlistPosition = await sessionEnrollmentRepository.GetWaitlistPositionAsync(session.Id, participantId, cancellationToken);
-
-        return new SessionEnrollmentResultRo(
-            session.Id,
-            participantId,
-            myEnrollment.Status,
-            waitlistPosition,
-            enrolledCount,
-            waitlistCount,
-            hasAvailableSpots);
-    }
 
     private static bool HasAvailableSpots(Session session, int enrolledCount)
     {

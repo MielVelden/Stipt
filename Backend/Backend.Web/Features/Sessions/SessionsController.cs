@@ -43,14 +43,14 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpPost("{id:guid}/enrollments")]
-    public async Task<ActionResult<SessionEnrollmentResultRo>> EnrollInSession(Guid eventId, Guid id, EnrollSessionDto request, CancellationToken ct)
+    public async Task<ActionResult<SessionRo>> EnrollInSession(Guid eventId, Guid id, EnrollSessionDto request, CancellationToken ct)
     {
         var response = await sessionsService.EnrollAsync(eventId, id, request.ParticipantId, ct);
         return Ok(response);
     }
 
     [HttpPost("{id:guid}/enrollments/replace")]
-    public async Task<ActionResult<SessionEnrollmentResultRo>> ReplaceSessionEnrollment(
+    public async Task<ActionResult<SessionRo>> ReplaceSessionEnrollment(
         Guid eventId,
         Guid id,
         ReplaceSessionEnrollmentDto request,
