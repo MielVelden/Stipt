@@ -9,8 +9,30 @@ public static class SessionMappings
     {
         options ??= new SessionQueryOptions { };
 
-        // Replace mock count with real registration count
-        var registrationCount = options.IncludeRegistrationCount ? (int?)0 : null;
+        var enrolledCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
+        var waitlist = session.Enrollments
+            .Where(x => x.Status == SessionEnrollmentStatus.Waitlisted)
+            .OrderBy(x => x.CreatedAtUtc)
+            .ThenBy(x => x.Id)
+            .ToList();
+        var waitlistCount = waitlist.Count;
+
+        var effectiveCapacity = session.Capacity ?? session.Room.Capacity;
+        var hasAvailableSpots = enrolledCount < effectiveCapacity;
+
+        SessionEnrollmentStatus? myEnrollmentStatus = null;
+        int? myWaitlistPosition = null;
+
+        if (options.ParticipantId.HasValue)
+        {
+            var myEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == options.ParticipantId.Value);
+            myEnrollmentStatus = myEnrollment?.Status;
+            if (myEnrollmentStatus == SessionEnrollmentStatus.Waitlisted)
+            {
+                var index = waitlist.FindIndex(x => x.ParticipantId == options.ParticipantId.Value);
+                myWaitlistPosition = index >= 0 ? index + 1 : null;
+            }
+        }
 
         return new SessionRo(
             session.Id,
@@ -30,7 +52,11 @@ public static class SessionMappings
             session.Labels.AsReadOnly(),
             session.CreatedAtUtc,
             session.UpdatedAtUtc,
-            registrationCount
+            enrolledCount,
+            waitlistCount,
+            hasAvailableSpots,
+            myEnrollmentStatus,
+            myWaitlistPosition
         );
     }
 }

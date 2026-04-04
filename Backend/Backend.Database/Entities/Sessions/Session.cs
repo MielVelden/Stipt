@@ -18,6 +18,7 @@ public sealed class Session
     public DateTime EndDateTime { get; set; }
     public int? Capacity { get; set; }
     public List<string> Labels { get; set; } = [];
+    public ICollection<SessionEnrollment> Enrollments { get; set; } = new List<SessionEnrollment>();
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }

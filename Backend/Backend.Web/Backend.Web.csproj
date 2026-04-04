@@ -78,7 +78,7 @@
             WorkingDirectory="$(MSBuildProjectDirectory)\.."
             ContinueOnError="WarnAndContinue" />
         <Exec
-            Command="dotnet tool run dotnet-typegen -- generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)\tgconfig.json&quot;"
+            Command="dotnet tool run dotnet-typegen -- generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)/tgconfig.json&quot;"
             WorkingDirectory="$(MSBuildProjectDirectory)\.."
             ContinueOnError="WarnAndContinue" />
         <SyncFrontendTypesTask

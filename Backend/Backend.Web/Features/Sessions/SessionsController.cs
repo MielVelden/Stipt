@@ -15,9 +15,9 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, [FromQuery] SessionQueryOptions options, CancellationToken ct)
     {
-        var response = await sessionsService.GetAllAsync(eventId, ct);
+        var response = await sessionsService.GetAllAsync(eventId, options, ct);
         return Ok(response);
     }
 
@@ -40,5 +40,37 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     {
         var deleted = await sessionsService.DeleteAsync(eventId, id, ct);
         return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{id:guid}/enrollments")]
+    public async Task<ActionResult<SessionEnrollmentResultRo>> EnrollInSession(Guid eventId, Guid id, EnrollSessionDto request, CancellationToken ct)
+    {
+        var response = await sessionsService.EnrollAsync(eventId, id, request.ParticipantId, ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{id:guid}/enrollments/replace")]
+    public async Task<ActionResult<SessionEnrollmentResultRo>> ReplaceSessionEnrollment(
+        Guid eventId,
+        Guid id,
+        ReplaceSessionEnrollmentDto request,
+        CancellationToken ct)
+    {
+        var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, request.ParticipantId, request.SessionIdToUnenroll, ct);
+        return Ok(response);
+    }
+
+    [HttpDelete("{id:guid}/enrollments/{participantId:guid}")]
+    public async Task<IActionResult> UnenrollFromSession(Guid eventId, Guid id, Guid participantId, CancellationToken ct)
+    {
+        var deleted = await sessionsService.UnenrollAsync(eventId, id, participantId, ct);
+        return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpGet("/api/events/{eventId:guid}/agenda")]
+    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetMyAgenda(Guid eventId, [FromQuery] Guid participantId, CancellationToken ct)
+    {
+        var response = await sessionsService.GetAgendaAsync(eventId, participantId, ct);
+        return Ok(response);
     }
 }
