@@ -1,5 +1,6 @@
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.SessionEnrollments;
 
 namespace Backend.Database.Entities.Sessions;
 

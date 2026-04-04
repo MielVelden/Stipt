@@ -1,4 +1,4 @@
-using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.SessionEnrollments;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;

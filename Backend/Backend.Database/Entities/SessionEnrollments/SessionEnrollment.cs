@@ -1,4 +1,6 @@
-namespace Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.Sessions;
+
+namespace Backend.Database.Entities.SessionEnrollments;
 
 public sealed class SessionEnrollment
 {
@@ -10,3 +12,5 @@ public sealed class SessionEnrollment
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }
+
+

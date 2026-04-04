@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.Events;
 using Backend.Web.Features.Sessions.Dtos;
@@ -8,6 +9,7 @@ namespace Backend.Web.Features.Sessions;
 
 public sealed class SessionsService(
     ISessionRepository sessionRepository,
+    ISessionEnrollmentRepository sessionEnrollmentRepository,
     IRoomRepository roomRepository,
     IEventRepository eventRepository)
 {
@@ -126,7 +128,7 @@ public sealed class SessionsService(
         if (existingEnrollment is not null)
             return await BuildEnrollmentResultAsync(session, participantId, cancellationToken);
 
-        var conflictingSessions = await sessionRepository.GetOverlappingEnrolledSessionsAsync(
+        var conflictingSessions = await sessionEnrollmentRepository.GetOverlappingEnrolledSessionsAsync(
             eventId,
             participantId,
             session.StartDateTime,
@@ -151,7 +153,7 @@ public sealed class SessionsService(
             CreatedAtUtc = DateTime.UtcNow
         };
 
-        await sessionRepository.AddEnrollmentAsync(enrollment, cancellationToken);
+        await sessionEnrollmentRepository.AddEnrollmentAsync(enrollment, cancellationToken);
 
         var updatedSession = await sessionRepository.GetByIdAsync(eventId, sessionId, cancellationToken)
             ?? throw new BadHttpRequestException("De sessie bestaat niet.", StatusCodes.Status404NotFound);
@@ -186,7 +188,7 @@ public sealed class SessionsService(
         if (!overlaps)
             throw new BadHttpRequestException("De gekozen sessie overlapt niet met de nieuwe sessie.", StatusCodes.Status400BadRequest);
 
-        var conflicts = await sessionRepository.GetOverlappingEnrolledSessionsAsync(
+        var conflicts = await sessionEnrollmentRepository.GetOverlappingEnrolledSessionsAsync(
             eventId,
             participantId,
             targetSession.StartDateTime,
@@ -224,7 +226,7 @@ public sealed class SessionsService(
             return false;
 
         var wasEnrolled = enrollment.Status == SessionEnrollmentStatus.Enrolled;
-        await sessionRepository.RemoveEnrollmentAsync(enrollment, cancellationToken);
+        await sessionEnrollmentRepository.RemoveEnrollmentAsync(enrollment, cancellationToken);
 
         if (wasEnrolled)
             await PromoteFirstWaitlistedParticipantAsync(sessionId, cancellationToken);
@@ -237,7 +239,7 @@ public sealed class SessionsService(
         Guid participantId,
         CancellationToken cancellationToken)
     {
-        var sessions = await sessionRepository.GetAgendaAsync(eventId, participantId, cancellationToken);
+        var sessions = await sessionEnrollmentRepository.GetAgendaAsync(eventId, participantId, cancellationToken);
         var options = new SessionQueryOptions { ParticipantId = participantId };
         return sessions.Select(x => x.ToRo(options)).ToArray();
     }
@@ -254,13 +256,13 @@ public sealed class SessionsService(
 
     private async Task PromoteFirstWaitlistedParticipantAsync(Guid sessionId, CancellationToken cancellationToken)
     {
-        var nextWaitlisted = await sessionRepository.GetFirstWaitlistedEnrollmentAsync(sessionId, cancellationToken);
+        var nextWaitlisted = await sessionEnrollmentRepository.GetFirstWaitlistedEnrollmentAsync(sessionId, cancellationToken);
         if (nextWaitlisted is null)
             return;
 
         nextWaitlisted.Status = SessionEnrollmentStatus.Enrolled;
         nextWaitlisted.UpdatedAtUtc = DateTime.UtcNow;
-        await sessionRepository.UpdateEnrollmentAsync(nextWaitlisted, cancellationToken);
+        await sessionEnrollmentRepository.UpdateEnrollmentAsync(nextWaitlisted, cancellationToken);
     }
 
     private async Task<SessionEnrollmentResultRo> BuildEnrollmentResultAsync(
@@ -276,7 +278,7 @@ public sealed class SessionsService(
 
         int? waitlistPosition = null;
         if (myEnrollment.Status == SessionEnrollmentStatus.Waitlisted)
-            waitlistPosition = await sessionRepository.GetWaitlistPositionAsync(session.Id, participantId, cancellationToken);
+            waitlistPosition = await sessionEnrollmentRepository.GetWaitlistPositionAsync(session.Id, participantId, cancellationToken);
 
         return new SessionEnrollmentResultRo(
             session.Id,

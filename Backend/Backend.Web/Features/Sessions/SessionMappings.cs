@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.SessionEnrollments;
 using Backend.Web.Features.Sessions.Dtos;
 
 namespace Backend.Web.Features.Sessions;
