@@ -8,7 +8,7 @@ public static class SessionMappings
 {
     public static SessionRo ToRo(this Session session, SessionQueryOptions? options)
     {
-        options ??= new SessionQueryOptions { };
+        options ??= new SessionQueryOptions();
 
         var enrolledCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
         var waitlist = session.Enrollments
@@ -61,5 +61,3 @@ public static class SessionMappings
         );
     }
 }
-
-

@@ -6,14 +6,6 @@ namespace Backend.Database.Entities.SessionEnrollments;
 
 internal sealed class SessionEnrollmentRepository(ApplicationDbContext dbContext) : ISessionEnrollmentRepository
 {
-    public Task<SessionEnrollment?> GetEnrollmentAsync(Guid sessionId, Guid participantId, CancellationToken cancellationToken)
-    {
-        return dbContext.SessionEnrollments
-            .FirstOrDefaultAsync(
-                x => x.SessionId == sessionId && x.ParticipantId == participantId,
-                cancellationToken);
-    }
-
     public async Task AddEnrollmentAsync(SessionEnrollment enrollment, CancellationToken cancellationToken)
     {
         await dbContext.SessionEnrollments.AddAsync(enrollment, cancellationToken);
@@ -65,18 +57,6 @@ internal sealed class SessionEnrollmentRepository(ApplicationDbContext dbContext
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyCollection<Session>> GetAgendaAsync(Guid eventId, Guid participantId, CancellationToken cancellationToken)
-    {
-        return await dbContext.Sessions
-            .AsNoTracking()
-            .Include(x => x.Room)
-            .Include(x => x.Enrollments)
-            .Where(x => x.EventId == eventId)
-            .Where(x => x.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled))
-            .OrderBy(x => x.StartDateTime)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<int?> GetWaitlistPositionAsync(Guid sessionId, Guid participantId, CancellationToken cancellationToken)
     {
         var waitlistOrder = await dbContext.SessionEnrollments
@@ -91,6 +71,3 @@ internal sealed class SessionEnrollmentRepository(ApplicationDbContext dbContext
         return index >= 0 ? index + 1 : null;
     }
 }
-
-
-

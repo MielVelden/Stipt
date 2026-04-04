@@ -12,5 +12,3 @@ public sealed class SessionEnrollment
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }
-
-

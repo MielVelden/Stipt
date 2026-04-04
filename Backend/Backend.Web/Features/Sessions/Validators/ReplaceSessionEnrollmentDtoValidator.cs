@@ -14,8 +14,5 @@ public sealed class ReplaceSessionEnrollmentDtoValidator : AbstractValidator<Rep
         RuleFor(x => x.SessionIdToUnenroll)
             .NotEmpty()
             .WithMessage("SessionIdToUnenroll is required.");
-
     }
 }
-
-

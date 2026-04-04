@@ -4,7 +4,6 @@ namespace Backend.Database.Entities.SessionEnrollments;
 
 public interface ISessionEnrollmentRepository
 {
-    Task<SessionEnrollment?> GetEnrollmentAsync(Guid sessionId, Guid participantId, CancellationToken cancellationToken);
     Task AddEnrollmentAsync(SessionEnrollment enrollment, CancellationToken cancellationToken);
     Task UpdateEnrollmentAsync(SessionEnrollment enrollment, CancellationToken cancellationToken);
     Task RemoveEnrollmentAsync(SessionEnrollment enrollment, CancellationToken cancellationToken);
@@ -16,9 +15,5 @@ public interface ISessionEnrollmentRepository
         DateTime endDateTime,
         Guid? excludedSessionId,
         CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<Session>> GetAgendaAsync(Guid eventId, Guid participantId, CancellationToken cancellationToken);
     Task<int?> GetWaitlistPositionAsync(Guid sessionId, Guid participantId, CancellationToken cancellationToken);
 }
-
-
-

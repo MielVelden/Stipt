@@ -12,4 +12,3 @@ public sealed class EnrollSessionDtoValidator : AbstractValidator<EnrollSessionD
             .WithMessage("ParticipantId is required.");
     }
 }
-

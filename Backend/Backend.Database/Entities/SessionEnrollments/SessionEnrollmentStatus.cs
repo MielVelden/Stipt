@@ -5,6 +5,3 @@ public enum SessionEnrollmentStatus
     Enrolled = 1,
     Waitlisted = 2
 }
-
-
-
