@@ -36,20 +36,27 @@ internal sealed class SessionEnrollmentRepository(ApplicationDbContext dbContext
     public async Task<IReadOnlyCollection<Session>> GetOverlappingEnrolledSessionsAsync(
         Guid eventId,
         Guid participantId,
-        DateTime startDateTime,
-        DateTime endDateTime,
-        Guid? excludedSessionId,
+        Guid excludedSessionId,
         CancellationToken cancellationToken)
     {
+        var excludedSessionTimeSlot = await dbContext.Sessions
+            .AsNoTracking()
+            .Where(x => x.EventId == eventId && x.Id == excludedSessionId)
+            .Select(x => new { x.StartDateTime, x.EndDateTime })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (excludedSessionTimeSlot is null)
+            return [];
+
         return await dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
             .Include(x => x.Enrollments)
             .Where(
                 x => x.EventId == eventId
-                     && (!excludedSessionId.HasValue || x.Id != excludedSessionId.Value)
-                     && x.StartDateTime < endDateTime
-                     && x.EndDateTime > startDateTime
+                     && x.Id != excludedSessionId
+                     && x.StartDateTime < excludedSessionTimeSlot.EndDateTime
+                     && x.EndDateTime > excludedSessionTimeSlot.StartDateTime
                      && x.Enrollments.Any(e =>
                          e.ParticipantId == participantId
                          && e.Status == SessionEnrollmentStatus.Enrolled))

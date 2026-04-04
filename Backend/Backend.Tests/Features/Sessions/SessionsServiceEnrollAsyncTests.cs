@@ -25,8 +25,6 @@ public sealed class SessionsServiceEnrollAsyncTests
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(
                 eventId,
                 participantId,
-                session.StartDateTime,
-                session.EndDateTime,
                 session.Id,
                 Arg.Any<CancellationToken>())
             .Returns([]);
@@ -73,8 +71,6 @@ public sealed class SessionsServiceEnrollAsyncTests
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(
                 eventId,
                 participantId,
-                session.StartDateTime,
-                session.EndDateTime,
                 session.Id,
                 Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Session>());
@@ -112,8 +108,6 @@ public sealed class SessionsServiceEnrollAsyncTests
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(
                 eventId,
                 participantId,
-                session.StartDateTime,
-                session.EndDateTime,
                 session.Id,
                 Arg.Any<CancellationToken>())
             .Returns(new[] { conflicting });

@@ -5,7 +5,7 @@ namespace Backend.Web.Features.Sessions;
 
 [ApiController]
 [Route("api/events/{eventId:guid}/sessions")]
-public class SessionsController(SessionsService sessionsService) : ControllerBase
+public class SessionsController(SessionsService sessionsService, TemporaryHeaderUserContext participantContext) : ControllerBase
 {
     [HttpPost]
     public async Task<CreatedAtActionResult> CreateSession(Guid eventId, CreateSessionDto request, CancellationToken ct)
@@ -43,26 +43,29 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpPost("{id:guid}/enrollments")]
-    public async Task<ActionResult<SessionRo>> EnrollInSession(Guid eventId, Guid id, EnrollSessionDto request, CancellationToken ct)
+    public async Task<ActionResult<SessionRo>> EnrollInSession(Guid eventId, Guid id, CancellationToken ct)
     {
-        var response = await sessionsService.EnrollAsync(eventId, id, request.ParticipantId, ct);
+        var participantId = participantContext.GetUserId(HttpContext);
+        var response = await sessionsService.EnrollAsync(eventId, id, participantId, ct);
         return Ok(response);
     }
 
-    [HttpPost("{id:guid}/enrollments/replace")]
+    [HttpPost("{id:guid}/enrollments/replace/{sessionIdToUnenroll:guid}")]
     public async Task<ActionResult<SessionRo>> ReplaceSessionEnrollment(
         Guid eventId,
         Guid id,
-        ReplaceSessionEnrollmentDto request,
+        Guid sessionIdToUnenroll,
         CancellationToken ct)
     {
-        var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, request.ParticipantId, request.SessionIdToUnenroll, ct);
+        var participantId = participantContext.GetUserId(HttpContext);
+        var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, participantId, sessionIdToUnenroll, ct);
         return Ok(response);
     }
 
-    [HttpDelete("{id:guid}/enrollments/{participantId:guid}")]
-    public async Task<IActionResult> UnenrollFromSession(Guid eventId, Guid id, Guid participantId, CancellationToken ct)
+    [HttpDelete("{id:guid}/enrollments/me")]
+    public async Task<IActionResult> UnenrollFromSession(Guid eventId, Guid id, CancellationToken ct)
     {
+        var participantId = participantContext.GetUserId(HttpContext);
         var deleted = await sessionsService.UnenrollAsync(eventId, id, participantId, ct);
         return deleted ? NoContent() : NotFound();
     }

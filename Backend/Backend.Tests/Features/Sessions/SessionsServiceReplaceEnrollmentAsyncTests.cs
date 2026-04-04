@@ -43,8 +43,6 @@ public sealed class SessionsServiceReplaceEnrollmentAsyncTests
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(
                 eventId,
                 participantId,
-                targetSession.StartDateTime,
-                targetSession.EndDateTime,
                 targetSessionId,
                 Arg.Any<CancellationToken>())
             .Returns(

@@ -11,9 +11,7 @@ public interface ISessionEnrollmentRepository
     Task<IReadOnlyCollection<Session>> GetOverlappingEnrolledSessionsAsync(
         Guid eventId,
         Guid participantId,
-        DateTime startDateTime,
-        DateTime endDateTime,
-        Guid? excludedSessionId,
+        Guid excludedSessionId,
         CancellationToken cancellationToken);
     Task<int?> GetWaitlistPositionAsync(Guid sessionId, Guid participantId, CancellationToken cancellationToken);
 }

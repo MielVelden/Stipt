@@ -131,8 +131,6 @@ public sealed class SessionsService(
         var conflictingSessions = await sessionEnrollmentRepository.GetOverlappingEnrolledSessionsAsync(
             eventId,
             participantId,
-            session.StartDateTime,
-            session.EndDateTime,
             session.Id,
             cancellationToken);
 
@@ -191,8 +189,6 @@ public sealed class SessionsService(
         var conflicts = await sessionEnrollmentRepository.GetOverlappingEnrolledSessionsAsync(
             eventId,
             participantId,
-            targetSession.StartDateTime,
-            targetSession.EndDateTime,
             targetSession.Id,
             cancellationToken);
 
