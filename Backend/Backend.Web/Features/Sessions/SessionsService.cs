@@ -1,7 +1,7 @@
 using Backend.Database.Entities.Rooms;
-using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.Events;
+using Backend.Database.Entities.SessionEnrollments;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
 
@@ -232,16 +232,6 @@ public sealed class SessionsService(
             await PromoteFirstWaitlistedParticipantAsync(sessionId, cancellationToken);
 
         return true;
-    }
-
-    public async Task<IReadOnlyCollection<SessionRo>> GetAgendaAsync(
-        Guid eventId,
-        Guid participantId,
-        CancellationToken cancellationToken)
-    {
-        var sessions = await sessionEnrollmentRepository.GetAgendaAsync(eventId, participantId, cancellationToken);
-        var options = new SessionQueryOptions { ParticipantId = participantId };
-        return sessions.Select(x => x.ToRo(options)).ToArray();
     }
 
     private static void EnsureWithinEventPeriod(DateTime startDateTime, DateTime endDateTime, Event eventItem)

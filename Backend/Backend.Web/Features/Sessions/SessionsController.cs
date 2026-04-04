@@ -66,11 +66,4 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         var deleted = await sessionsService.UnenrollAsync(eventId, id, participantId, ct);
         return deleted ? NoContent() : NotFound();
     }
-
-    [HttpGet("/api/events/{eventId:guid}/agenda")]
-    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetMyAgenda(Guid eventId, [FromQuery] Guid participantId, CancellationToken ct)
-    {
-        var response = await sessionsService.GetAgendaAsync(eventId, participantId, ct);
-        return Ok(response);
-    }
 }
