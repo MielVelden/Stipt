@@ -15,6 +15,12 @@ export function formatDate(dateString: string) {
 }
 
 export function formatTime(dateString: string) {
+  const localTimeMatch = dateString
+    .trim()
+    .match(/^\d{4}-\d{2}-\d{2}[ T](\d{2}):(\d{2})/)
+
+  if (localTimeMatch) return `${localTimeMatch[1]}:${localTimeMatch[2]}`
+
   return Intl.DateTimeFormat("nl-NL", {
     hour: "2-digit",
     minute: "2-digit",

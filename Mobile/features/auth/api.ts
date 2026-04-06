@@ -1,5 +1,7 @@
 import apiClient from "@/lib/api-client"
-import type { LoginRequest, LoginResponse, RefreshResponse } from "./types"
+import type { LoginRequest } from '@/generated-types/login-request'
+import type { LoginResponse } from '@/generated-types/login-response'
+import type { RefreshResponse } from '@/generated-types/refresh-response'
 
 export async function loginAsync(data: LoginRequest): Promise<LoginResponse> {
   try {

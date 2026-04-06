@@ -18,7 +18,9 @@ public sealed record SessionRo(
     int? Capacity,
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc);
+    DateTime? UpdatedAtUtc,
+    int? RegistrationCount = null,
+    string? Availability = null);
 
 [ExportTsInterface]
 public sealed record SessionRoomRo(

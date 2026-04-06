@@ -4,23 +4,15 @@
  */
 
 import type { SessionType } from './session-type';
-import type { SessionRoomRo } from './session-room-ro';
 
-export interface SessionRo {
-  id: string;
+export interface CreateSessionDto {
   title: string;
   description: string | undefined;
   type: SessionType;
   speaker: string;
   roomId: string;
-  room: SessionRoomRo;
-  eventId: string;
   startDateTime: string;
   endDateTime: string;
   capacity: number | undefined;
   labels: string[];
-  createdAtUtc: string;
-  updatedAtUtc: string | undefined;
-  registrationCount: number | undefined;
-  availability: string | undefined;
 }

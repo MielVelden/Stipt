@@ -2,7 +2,7 @@ import axios from "axios"
 import { API_BASE_URL } from "@/constants/api"
 import { deleteTokensAsync, getAccessTokenAsync, getRefreshTokenAsync, saveTokensAsync } from "@/lib/auth"
 import { notifyAuthFailureAsync } from "@/lib/auth-event"
-import type { RefreshResponse } from "@/features/auth/types"
+import type { RefreshResponse } from '@/generated-types/refresh-response'
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

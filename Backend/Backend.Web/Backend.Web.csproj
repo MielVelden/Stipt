@@ -75,6 +75,11 @@
         <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)\.." ContinueOnError="WarnAndContinue" />
         <Exec Command="dotnet tool run dotnet-typegen -- generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)\tgconfig.json&quot;" WorkingDirectory="$(MSBuildProjectDirectory)\.." ContinueOnError="WarnAndContinue" />
         <SyncFrontendTypesTask GeneratedRoot="$(MSBuildProjectDirectory)\..\..\Backoffice\app\generated-types" TypesFile="$(MSBuildProjectDirectory)\..\..\Backoffice\app\types.ts" />
+        <ItemGroup>
+            <GeneratedTypeFiles Include="$(MSBuildProjectDirectory)\..\..\Backoffice\app\generated-types\*.ts" />
+        </ItemGroup>
+        <Copy SourceFiles="@(GeneratedTypeFiles)" DestinationFolder="$(MSBuildProjectDirectory)\..\..\Mobile\generated-types" />
+        <SyncFrontendTypesTask GeneratedRoot="$(MSBuildProjectDirectory)\..\..\Mobile\generated-types" TypesFile="$(MSBuildProjectDirectory)\..\..\Mobile\generated-types\_legacy.ts" />
     </Target>
 
 </Project>
