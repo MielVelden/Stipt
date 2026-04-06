@@ -54,6 +54,8 @@ export default function SessionDetailScreen() {
         setLoadingEnrollment(true);
         await unenrollSession(eventId, session.id);
         session.myEnrollmentStatus = undefined;
+        // TODO: Dit is niet meer nodig na de realtime functie
+        session.enrolledCount--;
         setLoadingEnrollment(false);
     }
 
