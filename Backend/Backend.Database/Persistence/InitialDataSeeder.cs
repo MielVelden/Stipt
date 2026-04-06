@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Database.Persistence;
 
@@ -43,6 +42,11 @@ internal static class InitialDataSeeder
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user, participantRole);
+            }
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to create seed user: {errors}");
             }
         }
 
