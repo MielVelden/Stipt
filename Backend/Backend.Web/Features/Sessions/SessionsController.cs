@@ -15,9 +15,9 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
     {
-        var response = await sessionsService.GetAllAsync(eventId, ct);
+        var response = await sessionsService.GetAllFilteredAsync(eventId, filter, ct);
         return Ok(response);
     }
 
