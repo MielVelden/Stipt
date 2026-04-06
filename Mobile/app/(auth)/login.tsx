@@ -1,21 +1,17 @@
-import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import { router } from "expo-router"
 import { Controller, useForm } from "react-hook-form"
 import { Image, ScrollView, TextInput, View } from "react-native"
-import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 
-const loginSchema = z.object({
-  email: z.string().min(1, "E-mailadres is verplicht").email("Voer een geldig e-mailadres in"),
-  password: z.string().min(1, "Wachtwoord is verplicht").min(8, "Wachtwoord moet minimaal 8 tekens bevatten"),
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = {
+  email: string
+  password: string
+}
 
 export default function LoginScreen() {
   const { login } = useAuth()
@@ -25,9 +21,7 @@ export default function LoginScreen() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  })
+  } = useForm<LoginFormData>()
 
   async function onSubmit(data: LoginFormData) {
     try {
@@ -54,7 +48,7 @@ export default function LoginScreen() {
           resizeMode="cover"
         />
       </View>
-
+      
       <View className="items-center mb-10">
         <Text className="text-3xl font-bold text-foreground mb-1">Welkom terug</Text>
         <Text variant="muted">iO - Event Connect</Text>
@@ -110,7 +104,6 @@ export default function LoginScreen() {
           {errors.password && (
             <Text className="text-sm text-destructive">{errors.password.message}</Text>
           )}
-          <Text className="text-sm text-muted-foreground text-right">Wachtwoord vergeten?</Text>
         </View>
 
         {errors.root && (
@@ -125,10 +118,6 @@ export default function LoginScreen() {
           <Text>{isSubmitting ? "Bezig met inloggen..." : "Inloggen"}</Text>
         </Button>
 
-        <View className="flex-row justify-center mt-2">
-          <Text variant="muted">Nog geen account? </Text>
-          <Text className="text-sm text-foreground underline">Aanmelden</Text>
-        </View>
       </View>
     </ScrollView>
   )
