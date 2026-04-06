@@ -48,21 +48,21 @@ public sealed class SessionsService(
 
         session.Room = room;
 
-        return session.ToRo();
+        return session.ToRo(null);
     }
 
     public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(Guid eventId, CancellationToken cancellationToken)
     {
         var sessions = await sessionRepository.GetAllAsync(eventId, cancellationToken);
         return sessions
-            .Select(session => session.ToRo())
+            .Select(session => session.ToRo(null))
             .ToArray();
     }
 
-    public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
+    public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, SessionQueryOptions options, CancellationToken cancellationToken)
     {
         var session = await sessionRepository.GetByIdAsync(eventId, id, cancellationToken);
-        return session?.ToRo();
+        return session?.ToRo(options);
     }
 
     public async Task<SessionRo?> UpdateAsync(Guid eventId, Guid id, UpdateSessionDto request, CancellationToken cancellationToken)
@@ -104,7 +104,7 @@ public sealed class SessionsService(
 
         existingSession.Room = room;
 
-        return existingSession.ToRo();
+        return existingSession.ToRo(null);
     }
 
     public async Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
