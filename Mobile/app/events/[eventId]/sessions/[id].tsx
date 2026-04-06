@@ -115,7 +115,7 @@ export default function SessionDetailScreen() {
                         {session.description ?? 'Geen beschrijving beschikbaar.'}
                     </Text>
 
-                    <View className="mt-4 flex-row flex-wrap gap-2">
+                    <View className="mt-2 flex-row flex-wrap gap-2">
                         {session.labels.map((label) => (
                             <View key={label} className="bg-muted px-3 py-1 rounded-full">
                                 <Text variant="small" className="text-xs uppercase">{label}</Text>
@@ -174,7 +174,7 @@ export default function SessionDetailScreen() {
                         )}
 
                         <View className="flex-row items-center gap-x-2">
-                            <Icon as={Users} size={18} />
+                            <Icon className="text-muted-foreground" as={Users} size={18} />
                             <Text className="text-muted-foreground">
                                 { `${session.enrolledCount}/${session.capacity} inschrijvingen` }
                             </Text>
