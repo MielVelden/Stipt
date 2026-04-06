@@ -6,10 +6,8 @@ namespace Backend.Web.Features.Sessions;
 
 public static class SessionMappings
 {
-    public static SessionRo ToRo(this Session session, SessionQueryOptions? options)
+    public static SessionRo ToRo(this Session session, Guid? participantId)
     {
-        options ??= new SessionQueryOptions();
-
         var enrolledCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
         var waitlist = session.Enrollments
             .Where(x => x.Status == SessionEnrollmentStatus.Waitlisted)
@@ -24,16 +22,20 @@ public static class SessionMappings
         SessionEnrollmentStatus? myEnrollmentStatus = null;
         int? myWaitlistPosition = null;
 
-        if (options.ParticipantId.HasValue)
+        Console.WriteLine(participantId);
+        
+        if (participantId.HasValue)
         {
-            var myEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == options.ParticipantId.Value);
+            var myEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId.Value);
             myEnrollmentStatus = myEnrollment?.Status;
             if (myEnrollmentStatus == SessionEnrollmentStatus.Waitlisted)
             {
-                var index = waitlist.FindIndex(x => x.ParticipantId == options.ParticipantId.Value);
+                var index = waitlist.FindIndex(x => x.ParticipantId == participantId.Value);
                 myWaitlistPosition = index >= 0 ? index + 1 : null;
             }
         }
+
+        Console.WriteLine(myEnrollmentStatus);
 
         return new SessionRo(
             session.Id,

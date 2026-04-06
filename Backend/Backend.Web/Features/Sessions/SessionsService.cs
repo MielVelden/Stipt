@@ -50,21 +50,21 @@ public sealed class SessionsService(
 
         session.Room = room;
 
-        return session.ToRo(new SessionQueryOptions());
+        return session.ToRo(null);
     }
 
-    public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(Guid eventId, SessionQueryOptions options, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(Guid eventId, Guid? userId, CancellationToken cancellationToken)
     {
         var sessions = await sessionRepository.GetAllAsync(eventId, cancellationToken);
         return sessions
-            .Select(session => session.ToRo(options))
+            .Select(session => session.ToRo(userId))
             .ToArray();
     }
 
-    public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, SessionQueryOptions options, CancellationToken cancellationToken)
+    public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, Guid? userId, CancellationToken cancellationToken)
     {
         var session = await sessionRepository.GetByIdAsync(eventId, id, cancellationToken);
-        return session?.ToRo(options);
+        return session?.ToRo(userId);
     }
 
     public async Task<SessionRo?> UpdateAsync(Guid eventId, Guid id, UpdateSessionDto request, CancellationToken cancellationToken)
@@ -106,7 +106,7 @@ public sealed class SessionsService(
 
         existingSession.Room = room;
 
-        return existingSession.ToRo(new SessionQueryOptions());
+        return existingSession.ToRo(null);
     }
 
     public async Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
@@ -126,7 +126,7 @@ public sealed class SessionsService(
 
         var existingEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId);
         if (existingEnrollment is not null)
-            return session.ToRo(new SessionQueryOptions { ParticipantId = participantId });
+            return session.ToRo(participantId);
 
         var conflictingSessions = await sessionEnrollmentRepository.GetOverlappingEnrolledSessionsAsync(
             eventId,
@@ -156,7 +156,7 @@ public sealed class SessionsService(
         var updatedSession = await sessionRepository.GetByIdAsync(eventId, sessionId, cancellationToken)
             ?? throw new BadHttpRequestException("De sessie bestaat niet.", StatusCodes.Status404NotFound);
 
-        return updatedSession.ToRo(new SessionQueryOptions { ParticipantId = participantId });
+        return updatedSession.ToRo(participantId);
     }
 
     public async Task<SessionRo> ReplaceEnrollmentAsync(

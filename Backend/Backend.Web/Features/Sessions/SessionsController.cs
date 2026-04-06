@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Backend.Web.Features.Sessions.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -5,7 +6,7 @@ namespace Backend.Web.Features.Sessions;
 
 [ApiController]
 [Route("api/events/{eventId:guid}/sessions")]
-public class SessionsController(SessionsService sessionsService, TemporaryHeaderUserContext participantContext) : ControllerBase
+public class SessionsController(SessionsService sessionsService) : ControllerBase
 {
     [HttpPost]
     public async Task<CreatedAtActionResult> CreateSession(Guid eventId, CreateSessionDto request, CancellationToken ct)
@@ -15,16 +16,24 @@ public class SessionsController(SessionsService sessionsService, TemporaryHeader
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, [FromQuery] SessionQueryOptions options, CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, CancellationToken ct)
     {
-        var response = await sessionsService.GetAllAsync(eventId, options, ct);
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
+
+        var response = await sessionsService.GetAllAsync(eventId, userId, ct);
         return Ok(response);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<SessionRo>> GetSessionById(Guid eventId, Guid id, [FromQuery] SessionQueryOptions options, CancellationToken ct)
+    public async Task<ActionResult<SessionRo>> GetSessionById(Guid eventId, Guid id, CancellationToken ct)
     {
-        var response = await sessionsService.GetByIdAsync(eventId, id, options, ct);
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
+
+        Console.WriteLine(userIdRaw ?? "-");
+        
+        var response = await sessionsService.GetByIdAsync(eventId, id, userId, ct);
         return response is null ? NotFound() : Ok(response);
     }
 
@@ -45,8 +54,11 @@ public class SessionsController(SessionsService sessionsService, TemporaryHeader
     [HttpPost("{id:guid}/enrollments")]
     public async Task<ActionResult<SessionRo>> EnrollInSession(Guid eventId, Guid id, CancellationToken ct)
     {
-        var participantId = participantContext.GetUserId(HttpContext);
-        var response = await sessionsService.EnrollAsync(eventId, id, participantId, ct);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+        
+        var response = await sessionsService.EnrollAsync(eventId, id, Guid.Parse(userId), ct);
         return Ok(response);
     }
 
@@ -57,16 +69,21 @@ public class SessionsController(SessionsService sessionsService, TemporaryHeader
         Guid sessionIdToUnenroll,
         CancellationToken ct)
     {
-        var participantId = participantContext.GetUserId(HttpContext);
-        var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, participantId, sessionIdToUnenroll, ct);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+        
+        var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, Guid.Parse(userId), sessionIdToUnenroll, ct);
         return Ok(response);
     }
 
     [HttpDelete("{id:guid}/enrollments/me")]
     public async Task<IActionResult> UnenrollFromSession(Guid eventId, Guid id, CancellationToken ct)
     {
-        var participantId = participantContext.GetUserId(HttpContext);
-        var deleted = await sessionsService.UnenrollAsync(eventId, id, participantId, ct);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();        
+        var deleted = await sessionsService.UnenrollAsync(eventId, id, Guid.Parse(userId), ct);
         return deleted ? NoContent() : NotFound();
     }
 }

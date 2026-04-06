@@ -16,7 +16,6 @@ public static class DependencyInjection
         services.AddScoped<EventsService>();
         services.AddScoped<RoomsService>();
         services.AddScoped<SessionsService>();
-        services.AddScoped<TemporaryHeaderUserContext>();
         services.AddSingleton<IClock>(SystemClock.Instance);
 
         return services;
