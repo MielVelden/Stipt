@@ -22,7 +22,7 @@ export default function EventsScreen() {
       <Text variant="muted">Evenementen</Text>
 
         {sessions.map((session) => (
-            <View>
+            <View key={session.id}>
                 <Text>{session.title}</Text>
                 <Button className="w-full mt-2" onPress={() => handleClick(session)}>
                     <Text>Bekijk sessie</Text>
