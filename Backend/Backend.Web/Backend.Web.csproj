@@ -1,15 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateFrontendTypesOnBuild>true</GenerateFrontendTypesOnBuild>
-    </PropertyGroup>
+      <UserSecretsId>92e91666-93bb-41fa-8e0b-23cc481e659f</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="FluentValidation" Version="12.1.0" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,10 +25,7 @@
         <ProjectReference Include="..\Backend.Database\Backend.Database.csproj" />
     </ItemGroup>
 
-    <UsingTask
-        TaskName="SyncFrontendTypesTask"
-        TaskFactory="RoslynCodeTaskFactory"
-        AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <UsingTask TaskName="SyncFrontendTypesTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
         <ParameterGroup>
             <GeneratedRoot ParameterType="System.String" Required="true" />
             <TypesFile ParameterType="System.String" Required="true" />
@@ -73,17 +72,14 @@
 
     <Target Name="GenerateFrontendTypes" AfterTargets="Build" Condition="'$(GenerateFrontendTypesOnBuild)' == 'true'">
         <Message Text="Generating TypeScript types from DTOs..." Importance="high" />
-        <Exec
-            Command="dotnet tool restore"
-            WorkingDirectory="$(MSBuildProjectDirectory)\.."
-            ContinueOnError="WarnAndContinue" />
-        <Exec
-            Command="dotnet tool run dotnet-typegen -- generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)/tgconfig.json&quot;"
-            WorkingDirectory="$(MSBuildProjectDirectory)\.."
-            ContinueOnError="WarnAndContinue" />
-        <SyncFrontendTypesTask
-            GeneratedRoot="$(MSBuildProjectDirectory)\..\..\Backoffice\app\generated-types"
-            TypesFile="$(MSBuildProjectDirectory)\..\..\Backoffice\app\types.ts" />
+        <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)\.." ContinueOnError="WarnAndContinue" />
+        <Exec Command="dotnet tool run dotnet-typegen -- generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)\tgconfig.json&quot;" WorkingDirectory="$(MSBuildProjectDirectory)\.." ContinueOnError="WarnAndContinue" />
+        <SyncFrontendTypesTask GeneratedRoot="$(MSBuildProjectDirectory)\..\..\Backoffice\app\generated-types" TypesFile="$(MSBuildProjectDirectory)\..\..\Backoffice\app\types.ts" />
+        <ItemGroup>
+            <GeneratedTypeFiles Include="$(MSBuildProjectDirectory)\..\..\Backoffice\app\generated-types\*.ts" />
+        </ItemGroup>
+        <Copy SourceFiles="@(GeneratedTypeFiles)" DestinationFolder="$(MSBuildProjectDirectory)\..\..\Mobile\generated-types" />
+        <SyncFrontendTypesTask GeneratedRoot="$(MSBuildProjectDirectory)\..\..\Mobile\generated-types" TypesFile="$(MSBuildProjectDirectory)\..\..\Mobile\generated-types\_legacy.ts" />
     </Target>
 
 </Project>

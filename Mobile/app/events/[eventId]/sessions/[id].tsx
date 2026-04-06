@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
+import { formatDateTime, formatTime } from '@/lib/utils';
 import { getSessionById } from '@/features/sessions/api';
 import { Session } from '@/features/sessions/types';
 import { Text } from '@/components/ui/text';
@@ -26,21 +27,8 @@ export default function SessionDetailScreen() {
             setLoading(true);
 
             getSessionById(eventId, id)
-                .then((data: any) => {
-                    const sessionWithMock = { //TODO: Remove mock after merging with backend
-                        ...data,
-                        registrationCount: data.registrationCount,
-                        availability: data.availability ?? "Full",
-                        speaker: {
-                            name: data.speaker,
-                            role: "Senior Software Architect",
-                            company: "Tech Solutions Inc.",
-                            bio: "Expert in schaalbare cloud-architecturen en gepassioneerd door Open Source. Ava spreekt wereldwijd op conferenties over de toekomst van mobiele ontwikkeling.",
-                            imageUrl: "https://i.pravatar.cc/150?u=" + data.speaker
-                        }
-                    };
-
-                    setSession(sessionWithMock);
+                .then((data) => {
+                    setSession(data);
                 })
                 .finally(() => {
                     setLoading(false);
@@ -123,7 +111,7 @@ export default function SessionDetailScreen() {
                 {/* Content */}
                 <View className="p-6">
                     <Text variant="muted" className="uppercase tracking-widest text-xs mb-2">
-                        {format(new Date(session.startDateTime), "d MMM yyyy ' | ' HH:mm", { locale: nl })} - {format(new Date(session.endDateTime), 'HH:mm')}
+                        {formatDateTime(session.startDateTime)} - {formatTime(session.endDateTime)}
                     </Text>
 
                     <Text variant="h1" className="text-left mb-4">{session.title}</Text>
@@ -135,7 +123,7 @@ export default function SessionDetailScreen() {
                         </View>
                         <View className="flex-row items-center gap-x-2">
                             <Icon as={User} className="text-muted-foreground" size={18} />
-                            <Text variant="p" className="mt-0">{session.speaker.name}</Text>
+                            <Text variant="p" className="mt-0">{session.speaker}</Text>
                         </View>
                     </View>
 
@@ -230,6 +218,7 @@ export default function SessionDetailScreen() {
                             {session.speaker.bio}
                         </Text>
                     </View>
+
                 </View>
             </ScrollView>
 

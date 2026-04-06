@@ -1,9 +1,39 @@
+using System.Text;
 using Backend.Database;
+using Backend.Database.Entities;
+using Backend.Database.Persistence;
 using Backend.Web.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi(builder.Configuration);
+
+builder.Services
+    .AddIdentityApiEndpoints<ApplicationUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var secretKey = builder.Configuration["Jwt:SecretKey"];
+        if (string.IsNullOrEmpty(secretKey))
+            throw new InvalidOperationException("Jwt:SecretKey is not configured. Set it via user-secrets or environment variables.");
+
+        options.TokenValidationParameters.ValidIssuer = builder.Configuration["Jwt:Issuer"];
+        options.TokenValidationParameters.ValidAudience = builder.Configuration["Jwt:Audience"];
+        options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -16,4 +46,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 app.UseWebApi();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 app.Run();
