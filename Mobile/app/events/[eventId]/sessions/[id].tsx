@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter} from 'expo-router';
+import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import {formatDateTime, formatTime} from '@/lib/utils';
 import {enrollSession, getSessionById, replaceSession, unenrollSession} from '@/features/sessions/api';
@@ -11,28 +12,47 @@ import { useEnrollment } from '@/lib/enrollment-store';
 import { SessionRo } from "@/generated-types/session-ro";
 
 export default function SessionDetailScreen() {
-    const { eventId, id } = useLocalSearchParams<{ eventId: string; id: string }>();
+    const { eventId: rawEventId, id: rawSessionId } = useLocalSearchParams<{
+        eventId?: string | string[];
+        id?: string | string[];
+    }>();
+
+    const eventId = Array.isArray(rawEventId) ? rawEventId[0] : rawEventId;
+    const sessionId = Array.isArray(rawSessionId) ? rawSessionId[0] : rawSessionId;
     const router = useRouter();
     const [session, setSession] = useState<SessionRo | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
 
     const { getConflict, enroll, unenroll, joinWaitlist } = useEnrollment();
 
     useEffect(() => {
-        if (eventId && id) {
-            setLoading(true);
-
-            getSessionById(eventId, id)
-                .then((data) => {
-                    setSession(data);
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
+        if (!eventId || !sessionId) {
+            setSession(null);
+            setLoading(false);
+            return;
         }
-    }, [eventId, id]);
+
+        let isMounted = true;
+        setLoading(true);
+
+        getSessionById(eventId, sessionId)
+            .then((data) => {
+                if (isMounted) {
+                    setSession(data);
+                }
+            })
+            .finally(() => {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [eventId, sessionId]);
 
     if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
@@ -40,7 +60,7 @@ export default function SessionDetailScreen() {
     const conflict = getConflict(session);
 
     async function handleEnrollPress() {
-        if (!session) return;
+        if (!session || !eventId) return;
 
         try {
             setLoadingEnrollment(true);
@@ -48,7 +68,7 @@ export default function SessionDetailScreen() {
             setSession(result);
 
         } catch (error) {
-            if (error.response?.status === 409) {
+            if (isAxiosError(error) && error.response?.status === 409) {
                 setShowConflictModal(true);
             } else {
                 throw error;
@@ -59,7 +79,7 @@ export default function SessionDetailScreen() {
     }
 
     async function handleUnenrollPress() {
-        if (!session) return;
+        if (!session || !eventId) return;
 
         setLoadingEnrollment(true);
         await unenrollSession(eventId, session.id);
@@ -70,7 +90,7 @@ export default function SessionDetailScreen() {
     }
 
     async function handleReplaceEnrollment() {
-        if (!session) return;
+        if (!session || !eventId) return;
 
         // setLoadingEnrollment(true);
         // await replaceSession(eventId, session.id, replaceSessionId);

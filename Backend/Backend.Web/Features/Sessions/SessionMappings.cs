@@ -22,8 +22,6 @@ public static class SessionMappings
         SessionEnrollmentStatus? myEnrollmentStatus = null;
         int? myWaitlistPosition = null;
 
-        Console.WriteLine(participantId);
-        
         if (participantId.HasValue)
         {
             var myEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId.Value);
@@ -34,8 +32,6 @@ public static class SessionMappings
                 myWaitlistPosition = index >= 0 ? index + 1 : null;
             }
         }
-
-        Console.WriteLine(myEnrollmentStatus);
 
         return new SessionRo(
             session.Id,
