@@ -120,7 +120,7 @@ public sealed class SessionsService(
         Guid participantId,
         CancellationToken cancellationToken)
     {
-        var session = await sessionRepository.GetByIdForEnrollmentAsync(eventId, sessionId, cancellationToken);
+        var session = await sessionRepository.GetByIdAsync(eventId, sessionId, cancellationToken);
         if (session is null)
             throw new BadHttpRequestException("De sessie bestaat niet.", StatusCodes.Status404NotFound);
 
@@ -172,7 +172,7 @@ public sealed class SessionsService(
         var targetSession = await sessionRepository.GetByIdAsync(eventId, sessionId, cancellationToken)
             ?? throw new BadHttpRequestException("De sessie bestaat niet.", StatusCodes.Status404NotFound);
 
-        var sessionToUnenroll = await sessionRepository.GetByIdForEnrollmentAsync(eventId, sessionIdToUnenroll, cancellationToken)
+        var sessionToUnenroll = await sessionRepository.GetByIdAsync(eventId, sessionIdToUnenroll, cancellationToken)
             ?? throw new BadHttpRequestException("De sessie om uit te schrijven bestaat niet.", StatusCodes.Status400BadRequest);
 
         var enrollmentToUnenroll = sessionToUnenroll.Enrollments
@@ -213,7 +213,7 @@ public sealed class SessionsService(
         Guid participantId,
         CancellationToken cancellationToken)
     {
-        var session = await sessionRepository.GetByIdForEnrollmentAsync(eventId, sessionId, cancellationToken);
+        var session = await sessionRepository.GetByIdAsync(eventId, sessionId, cancellationToken);
         if (session is null)
             return false;
 

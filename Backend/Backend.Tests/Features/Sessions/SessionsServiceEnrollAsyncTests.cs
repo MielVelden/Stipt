@@ -20,7 +20,7 @@ public sealed class SessionsServiceEnrollAsyncTests
         var enrollmentRepository = Substitute.For<ISessionEnrollmentRepository>();
         var service = SessionsServiceTestHelpers.CreateService(sessionRepository, enrollmentRepository);
 
-        sessionRepository.GetByIdForEnrollmentAsync(eventId, sessionId, Arg.Any<CancellationToken>())
+        sessionRepository.GetByIdAsync(eventId, sessionId, Arg.Any<CancellationToken>())
             .Returns(session);
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(
                 eventId,
@@ -66,7 +66,7 @@ public sealed class SessionsServiceEnrollAsyncTests
         var enrollmentRepository = Substitute.For<ISessionEnrollmentRepository>();
         var service = SessionsServiceTestHelpers.CreateService(sessionRepository, enrollmentRepository);
 
-        sessionRepository.GetByIdForEnrollmentAsync(eventId, sessionId, Arg.Any<CancellationToken>())
+        sessionRepository.GetByIdAsync(eventId, sessionId, Arg.Any<CancellationToken>())
             .Returns(session);
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(
                 eventId,
@@ -103,7 +103,7 @@ public sealed class SessionsServiceEnrollAsyncTests
         var enrollmentRepository = Substitute.For<ISessionEnrollmentRepository>();
         var service = SessionsServiceTestHelpers.CreateService(sessionRepository, enrollmentRepository);
 
-        sessionRepository.GetByIdForEnrollmentAsync(eventId, sessionId, Arg.Any<CancellationToken>())
+        sessionRepository.GetByIdAsync(eventId, sessionId, Arg.Any<CancellationToken>())
             .Returns(session);
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(
                 eventId,

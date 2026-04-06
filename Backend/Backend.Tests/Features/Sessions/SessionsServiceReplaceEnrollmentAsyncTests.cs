@@ -35,9 +35,9 @@ public sealed class SessionsServiceReplaceEnrollmentAsyncTests
 
         sessionRepository.GetByIdAsync(eventId, targetSessionId, Arg.Any<CancellationToken>())
             .Returns(targetSession);
-        sessionRepository.GetByIdForEnrollmentAsync(eventId, oldSessionId, Arg.Any<CancellationToken>())
+        sessionRepository.GetByIdAsync(eventId, oldSessionId, Arg.Any<CancellationToken>())
             .Returns(oldSession);
-        sessionRepository.GetByIdForEnrollmentAsync(eventId, targetSessionId, Arg.Any<CancellationToken>())
+        sessionRepository.GetByIdAsync(eventId, targetSessionId, Arg.Any<CancellationToken>())
             .Returns(targetSession);
 
         enrollmentRepository.GetOverlappingEnrolledSessionsAsync(

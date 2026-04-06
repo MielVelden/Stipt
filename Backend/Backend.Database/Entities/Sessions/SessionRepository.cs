@@ -20,14 +20,6 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
     }
 
-    public Task<Session?> GetByIdForEnrollmentAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
-    {
-        return dbContext.Sessions
-            .Include(x => x.Room)
-            .Include(x => x.Enrollments)
-            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
-    }
-
     public async Task<IReadOnlyCollection<Session>> GetAllAsync(Guid eventId, CancellationToken cancellationToken)
     {
         return await dbContext.Sessions
