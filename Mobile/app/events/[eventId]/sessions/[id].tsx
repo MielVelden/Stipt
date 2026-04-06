@@ -145,7 +145,7 @@ export default function SessionDetailScreen() {
                     </Text>
 
                     <Text variant="h1" className="text-left text-3xl">{session.title}</Text>
-                    <Text variant="p" className="m-0 text-muted-foreground">
+                    <Text variant="p" className="m-0 text-muted-foreground text-base">
                         {session.description ?? 'Geen beschrijving beschikbaar.'}
                     </Text>
 
@@ -224,11 +224,11 @@ export default function SessionDetailScreen() {
                 onRequestClose={closeConflictModal}
             >
                 <View className="flex-1 justify-end bg-black/40">
-                    <View className="bg-background rounded-t-2xl p-6 gap-y-4">
+                    <View className="bg-background rounded-t-2xl p-6">
                         <Text variant="h3">Overlap gedetecteerd</Text>
-                        <Text variant="p" className="text-muted-foreground">
+                        <Text variant="p" className="mt-0 pb-4 text-muted-foreground text-base">
                             Je bent al ingeschreven voor{' '}
-                            <Text className="font-semibold text-foreground">{conflictingSession?.title ?? 'een andere sessie'}</Text>
+                            <Text className="font-semibold text-foreground text-base">{conflictingSession?.title ?? 'een andere sessie'}</Text>
                             {' '}op hetzelfde tijdstip. Wil je uitschrijven voor die sessie en je inschrijven voor deze?
                         </Text>
                         <Button className="w-full" onPress={handleReplaceEnrollment} disabled={loadingEnrollment || !conflictingSession}>
@@ -236,7 +236,7 @@ export default function SessionDetailScreen() {
                                 ? <ActivityIndicator size="small" color="#fff" />
                                 : <Text>Vervangen</Text>}
                         </Button>
-                        <Button variant="outline" className="w-full" onPress={closeConflictModal}>
+                        <Button variant="ghost" className="w-full mt-1" onPress={closeConflictModal}>
                             <Text>Annuleren</Text>
                         </Button>
                     </View>
