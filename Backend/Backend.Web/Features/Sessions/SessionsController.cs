@@ -31,8 +31,6 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
 
-        Console.WriteLine(userIdRaw ?? "-");
-        
         var response = await sessionsService.GetByIdAsync(eventId, id, userId, ct);
         return response is null ? NotFound() : Ok(response);
     }

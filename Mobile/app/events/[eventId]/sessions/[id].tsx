@@ -3,7 +3,7 @@ import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native'
 import { useLocalSearchParams, useRouter} from 'expo-router';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import {formatDateTime, formatTime} from '@/lib/utils';
-import { enrollSession, getSessionById, unenrollSession } from '@/features/sessions/api';
+import {enrollSession, getSessionById, replaceSession, unenrollSession} from '@/features/sessions/api';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
@@ -42,10 +42,20 @@ export default function SessionDetailScreen() {
     async function handleEnrollPress() {
         if (!session) return;
 
-        setLoadingEnrollment(true);
-        const result = await enrollSession(eventId, session.id);
-        setSession(result);
-        setLoadingEnrollment(false);
+        try {
+            setLoadingEnrollment(true);
+            const result = await enrollSession(eventId, session.id);
+            setSession(result);
+
+        } catch (error) {
+            if (error.response?.status === 409) {
+                setShowConflictModal(true);
+            } else {
+                throw error;
+            }
+        } finally {
+            setLoadingEnrollment(false);
+        }
     }
 
     async function handleUnenrollPress() {
@@ -59,6 +69,14 @@ export default function SessionDetailScreen() {
         setLoadingEnrollment(false);
     }
 
+    async function handleReplaceEnrollment() {
+        if (!session) return;
+
+        // setLoadingEnrollment(true);
+        // await replaceSession(eventId, session.id, replaceSessionId);
+        // setLoadingEnrollment(false);
+    }
+
     async function doEnroll() {
         if (!session) return;
         setShowConflictModal(false);
@@ -68,12 +86,6 @@ export default function SessionDetailScreen() {
         } finally {
             setLoadingEnrollment(false);
         }
-    }
-
-    async function handleReplaceEnrollment() {
-        if (!session || !conflict) return;
-        unenroll(conflict.id);
-        await doEnroll();
     }
 
     async function handleJoinWaitlist() {

@@ -1,22 +1,31 @@
 import { View } from "react-native"
 import { Text } from "@/components/ui/text"
-import {router} from "expo-router";
+import {router, useLocalSearchParams} from "expo-router";
 import {Button} from "@/components/ui/button";
+import {getSessions} from "@/features/sessions/api";
+import {useState} from "react";
+import {SessionRo} from "@/generated-types/session-ro";
 
 export default function EventsScreen() {
+    const [sessions, setSessions] = useState<SessionRo[]>([]);
+    getSessions("831dd496-53ef-4ede-b72c-694a4e4c5bd4").then(setSessions);
 
-    function handleClick() {
-        router.replace("/events/831dd496-53ef-4ede-b72c-694a4e4c5bd4/sessions/30f71609-9e24-40ef-818c-d12665a0e46f/")
+    function handleClick(session: SessionRo) {
+        router.push(`/events/831dd496-53ef-4ede-b72c-694a4e4c5bd4/sessions/${session.id}/`)
     }
 
   return (
     <View className="flex-1 items-center justify-center bg-background">
       <Text variant="muted">Evenementen</Text>
 
-
-        <Button className="w-full mt-2" onPress={handleClick}>
-            <Text>Naar event</Text>
-        </Button>
+        {sessions.map((session) => (
+            <View>
+                <Text>{session.title}</Text>
+                <Button className="w-full mt-2" onPress={() => handleClick(session)}>
+                    <Text>Bekijk sessie</Text>
+                </Button>
+            </View>
+        ))}
     </View>
   )
 }
