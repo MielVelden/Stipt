@@ -1,6 +1,7 @@
 # iO Event Connect - Backend
 
 ## Database aanmaken
+
 ```bash
 docker run --name stipt-db \
   -e POSTGRES_USER=myuser \
@@ -24,11 +25,12 @@ dotnet ef database update --project Backend.Database --startup-project Backend.W
 
 ## TypeGen generatie
 
-Bij het builden van de backend, worden automatisch de types gegenereerd voor de frontend. Deze types worden opgeslagen in `app/generated-types`. 
+Bij het builden van de backend, worden automatisch de types gegenereerd voor de frontend. Deze types worden opgeslagen in `app/generated-types`.
 
 Voor meer informatie over TypeGen, zie de [TypeGen documentatie](https://typegen.readthedocs.io/). Hierin staat ook uitgelegd hoe de [Enums](https://typegen.readthedocs.io/en/latest/attributes.html#tsstringinitializersattribute) etc. worden gegenereerd.
 
 ## JWT Secret Key
+
 In `appsettings.Development.json` staat een veld `Jwt:SecretKey`. Deze wordt leeg gelaten, en we gebruiken user-secrets om deze in te stellen. Dit is een veilige manier om gevoelige informatie op te slaan tijdens de ontwikkeling.
 
 > Run in het project `Backend.Web` het volgende commando om de JWT Secret Key in te stellen:
