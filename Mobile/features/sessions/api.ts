@@ -18,7 +18,7 @@ export async function enrollSession(eventId: string, sessionId: string): Promise
     return response.data;
 }
 
-export async function unenrollSession(eventId: string, sessionId: string): Promise<SessionRo> {
+export async function unenrollSession(eventId: string, sessionId: string): Promise<void> {
     const response = await apiClient.delete(`/events/${eventId}/sessions/${sessionId}/enrollments/me`);
     return response.data;
 }

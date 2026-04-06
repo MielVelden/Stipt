@@ -52,8 +52,8 @@ export default function SessionDetailScreen() {
         if (!session) return;
 
         setLoadingEnrollment(true);
-        const result = await unenrollSession(eventId, session.id);
-        setSession(result);
+        await unenrollSession(eventId, session.id);
+        session.myEnrollmentStatus = undefined;
         setLoadingEnrollment(false);
     }
 
