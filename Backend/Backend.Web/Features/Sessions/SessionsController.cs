@@ -83,7 +83,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
             return Unauthorized();        
-        var deleted = await sessionsService.UnenrollAsync(eventId, id, Guid.Parse(userId), ct);
-        return deleted ? NoContent() : NotFound();
+        var response = await sessionsService.UnenrollAsync(eventId, id, Guid.Parse(userId), ct);
+        return response is null ? NotFound() : Ok(response);
     }
 }

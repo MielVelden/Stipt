@@ -201,13 +201,13 @@ public sealed class SessionsService(
             throw new SessionEnrollmentConflictException(remainingConflicts.Select(item => item.ToConflictingSessionRo()).ToArray());
 
         var unenrolled = await UnenrollAsync(eventId, sessionIdToUnenroll, participantId, cancellationToken);
-        if (!unenrolled)
+        if (unenrolled is null)
             throw new BadHttpRequestException("Uitschrijven is mislukt.", StatusCodes.Status400BadRequest);
 
         return await EnrollAsync(eventId, sessionId, participantId, cancellationToken);
     }
 
-    public async Task<bool> UnenrollAsync(
+    public async Task<SessionRo?> UnenrollAsync(
         Guid eventId,
         Guid sessionId,
         Guid participantId,
@@ -215,11 +215,11 @@ public sealed class SessionsService(
     {
         var session = await sessionRepository.GetByIdForEnrollmentAsync(eventId, sessionId, cancellationToken);
         if (session is null)
-            return false;
+            return null;
 
         var enrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId);
         if (enrollment is null)
-            return false;
+            return null;
 
         var wasEnrolled = enrollment.Status == SessionEnrollmentStatus.Enrolled;
         await sessionEnrollmentRepository.RemoveEnrollmentAsync(enrollment, cancellationToken);
@@ -227,7 +227,7 @@ public sealed class SessionsService(
         if (wasEnrolled)
             await PromoteFirstWaitlistedParticipantAsync(sessionId, cancellationToken);
 
-        return true;
+        return session.ToRo(participantId);
     }
 
     private static void EnsureWithinEventPeriod(DateTime startDateTime, DateTime endDateTime, Event eventItem)

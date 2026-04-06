@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter} from 'expo-router';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
-import { formatDateTime, formatTime } from '@/lib/utils';
+import {formatDateTime, formatTime} from '@/lib/utils';
 import { enrollSession, getSessionById, unenrollSession } from '@/features/sessions/api';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ export default function SessionDetailScreen() {
     const router = useRouter();
     const [session, setSession] = useState<SessionRo | null>(null);
     const [loading, setLoading] = useState(true);
-    const [enrolling, setEnrolling] = useState(false);
+    const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
 
     const { getConflict, enroll, unenroll, joinWaitlist } = useEnrollment();
@@ -42,27 +42,29 @@ export default function SessionDetailScreen() {
     async function handleEnrollPress() {
         if (!session) return;
 
-        setLoading(true);
-        await enrollSession(eventId, session.id);
-        setLoading(false);
+        setLoadingEnrollment(true);
+        const result = await enrollSession(eventId, session.id);
+        setSession(result);
+        setLoadingEnrollment(false);
     }
 
     async function handleUnenrollPress() {
         if (!session) return;
 
-        setLoading(true);
-        await unenrollSession(eventId, session.id);
-        setLoading(false);
+        setLoadingEnrollment(true);
+        const result = await unenrollSession(eventId, session.id);
+        setSession(result);
+        setLoadingEnrollment(false);
     }
 
     async function doEnroll() {
         if (!session) return;
         setShowConflictModal(false);
-        setEnrolling(true);
+        setLoadingEnrollment(true);
         try {
             await enroll(session);
         } finally {
-            setEnrolling(false);
+            setLoadingEnrollment(false);
         }
     }
 
@@ -74,11 +76,11 @@ export default function SessionDetailScreen() {
 
     async function handleJoinWaitlist() {
         if (!session) return;
-        setEnrolling(true);
+        setLoadingEnrollment(true);
         try {
             await joinWaitlist(session);
         } finally {
-            setEnrolling(false);
+            setLoadingEnrollment(false);
         }
     }
 
@@ -104,25 +106,35 @@ export default function SessionDetailScreen() {
 
                 {/* Content */}
                 <View className="p-6">
-                    <Text variant="muted" className="uppercase tracking-widest text-xs mb-2">
+                    <Text variant="muted" className="uppercase tracking-widest text-xs">
                         {formatDateTime(session.startDateTime)} - {formatTime(session.endDateTime)}
                     </Text>
 
-                    <Text variant="h1" className="text-left mb-4">{session.title}</Text>
+                    <Text variant="h1" className="text-left text-3xl">{session.title}</Text>
+                    <Text variant="p" className="m-0 text-muted-foreground">
+                        {session.description ?? 'Geen beschrijving beschikbaar.'}
+                    </Text>
 
-                    <View className="gap-y-3 mb-6">
+                    <View className="mt-4 flex-row flex-wrap gap-2">
+                        {session.labels.map((label) => (
+                            <View key={label} className="bg-muted px-3 py-1 rounded-full">
+                                <Text variant="small" className="text-xs uppercase">{label}</Text>
+                            </View>
+                        ))}
+                    </View>
+
+                    <View className="gap-y-1 pt-4 pb-4">
                         <View className="flex-row items-center gap-x-2">
                             <Icon as={MapPin} className="text-muted-foreground" size={18} />
-                            <Text variant="p" className="mt-0">{session.room.name}</Text>
+                            <Text variant="p" className="text-muted-foreground mt-0">{session.room.name}</Text>
                         </View>
                         <View className="flex-row items-center gap-x-2">
                             <Icon as={User} className="text-muted-foreground" size={18} />
-                            <Text variant="p" className="mt-0">{session.speaker}</Text>
+                            <Text variant="p" className="text-muted-foreground mt-0">{session.speaker}</Text>
                         </View>
                     </View>
 
-                    <View className="border-t border-border pt-6 gap-y-4">
-                        {/* Enrollment button */}
+                    <View className="border-t border-border pt-4 gap-y-2">
                         {session.myEnrollmentStatus === 'enrolled' ? (
                             <View className="gap-y-1">
                                 <View className="flex-row items-center gap-x-2 justify-center py-2 rounded-md bg-green-50 border border-green-200">
@@ -143,15 +155,15 @@ export default function SessionDetailScreen() {
                                 </Button>
                             </View>
                         ) : session.hasAvailableSpots ? (
-                            <Button className="w-full" disabled={enrolling} onPress={handleEnrollPress}>
-                                {enrolling
+                            <Button className="w-full" disabled={loadingEnrollment} onPress={handleEnrollPress}>
+                                {loadingEnrollment
                                     ? <ActivityIndicator size="small" color="#fff" />
                                     : <Text>INSCHRIJVEN</Text>}
                             </Button>
                         ) : (
                             <View className="gap-y-2">
-                                <Button className="w-full" disabled={enrolling} onPress={handleJoinWaitlist}>
-                                    {enrolling
+                                <Button className="w-full" disabled={loadingEnrollment} onPress={handleJoinWaitlist}>
+                                    {loadingEnrollment
                                         ? <ActivityIndicator size="small" color="#fff" />
                                         : <Text>Wachtlijst</Text>}
                                 </Button>
@@ -161,7 +173,6 @@ export default function SessionDetailScreen() {
                             </View>
                         )}
 
-                        {/* Registration count */}
                         <View className="flex-row items-center gap-x-2">
                             <Icon as={Users} size={18} />
                             <Text className="text-muted-foreground">
@@ -169,27 +180,9 @@ export default function SessionDetailScreen() {
                             </Text>
                         </View>
                     </View>
-
-                    {/* Description */}
-                    <View className="mt-8">
-                        <Text variant="h4" className="m-0">Over deze sessie</Text>
-                        <Text variant="p" className="m-0 text-muted-foreground">
-                            {session.description ?? 'Geen beschrijving beschikbaar.'}
-                        </Text>
-                    </View>
-
-                    {/* Labels */}
-                    <View className="mt-2 flex-row flex-wrap gap-2">
-                        {session.labels.map((label) => (
-                            <View key={label} className="bg-muted px-3 py-1 rounded-full">
-                                <Text variant="small" className="text-xs uppercase">{label}</Text>
-                            </View>
-                        ))}
-                    </View>
                 </View>
             </ScrollView>
 
-            {/* Conflict Modal */}
             <Modal
                 visible={showConflictModal}
                 transparent
