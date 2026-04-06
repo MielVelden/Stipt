@@ -1,6 +1,6 @@
-using System.Runtime.CompilerServices;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +21,7 @@ public static class DependencyInjection
                 npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<ISessionEnrollmentRepository, SessionEnrollmentRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
 

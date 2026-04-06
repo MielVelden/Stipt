@@ -6,6 +6,7 @@ public interface ISessionRepository
     Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Session>> GetAllAsync(Guid eventId, CancellationToken cancellationToken);
     Task<Session?> GetByIdAsync(Guid eventId, Guid id, CancellationToken cancellationToken);
+    Task<Session?> GetByIdForEnrollmentAsync(Guid eventId, Guid id, CancellationToken cancellationToken);
     Task<bool> HasOverlapAsync(
         Guid eventId,
         Guid roomId,
@@ -15,4 +16,3 @@ public interface ISessionRepository
         CancellationToken cancellationToken);
     Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken);
 }
-

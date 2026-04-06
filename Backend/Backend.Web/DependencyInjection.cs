@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<EventsService>();
         services.AddScoped<RoomsService>();
         services.AddScoped<SessionsService>();
+        services.AddScoped<TemporaryHeaderUserContext>();
 
         return services;
     }
