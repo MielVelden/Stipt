@@ -3,12 +3,11 @@ import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native'
 import { useLocalSearchParams, useRouter} from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
-import {formatDateTime, formatTime} from '@/lib/utils';
-import {enrollSession, getSessionById, replaceSession, unenrollSession} from '@/features/sessions/api';
+import { formatDateTime, formatTime } from '@/lib/utils';
+import { enrollSession, getSessionById, unenrollSession } from '@/features/sessions/api';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
-import { useEnrollment } from '@/lib/enrollment-store';
 import { SessionRo } from "@/generated-types/session-ro";
 
 export default function SessionDetailScreen() {
@@ -24,8 +23,6 @@ export default function SessionDetailScreen() {
     const [loading, setLoading] = useState(false);
     const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
-
-    const { getConflict, enroll, unenroll, joinWaitlist } = useEnrollment();
 
     useEffect(() => {
         if (!eventId || !sessionId) {
@@ -56,8 +53,6 @@ export default function SessionDetailScreen() {
 
     if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
-
-    const conflict = getConflict(session);
 
     async function handleEnrollPress() {
         if (!session || !eventId) return;
@@ -95,27 +90,6 @@ export default function SessionDetailScreen() {
         // setLoadingEnrollment(true);
         // await replaceSession(eventId, session.id, replaceSessionId);
         // setLoadingEnrollment(false);
-    }
-
-    async function doEnroll() {
-        if (!session) return;
-        setShowConflictModal(false);
-        setLoadingEnrollment(true);
-        try {
-            await enroll(session);
-        } finally {
-            setLoadingEnrollment(false);
-        }
-    }
-
-    async function handleJoinWaitlist() {
-        if (!session) return;
-        setLoadingEnrollment(true);
-        try {
-            await joinWaitlist(session);
-        } finally {
-            setLoadingEnrollment(false);
-        }
     }
 
     return (
@@ -196,7 +170,7 @@ export default function SessionDetailScreen() {
                             </Button>
                         ) : (
                             <View className="gap-y-2">
-                                <Button className="w-full" disabled={loadingEnrollment} onPress={handleJoinWaitlist}>
+                                <Button className="w-full" disabled={loadingEnrollment} onPress={handleEnrollPress}>
                                     {loadingEnrollment
                                         ? <ActivityIndicator size="small" color="#fff" />
                                         : <Text>Wachtlijst</Text>}
@@ -227,9 +201,7 @@ export default function SessionDetailScreen() {
                     <View className="bg-background rounded-t-2xl p-6 gap-y-4">
                         <Text variant="h3">Overlap gedetecteerd</Text>
                         <Text variant="p" className="text-muted-foreground">
-                            Je bent al ingeschreven voor{' '}
-                            <Text className="font-semibold text-foreground">{conflict?.title}</Text>
-                            {' '}op hetzelfde tijdstip. Wil je uitschrijven voor die sessie en je inschrijven voor deze?
+                            Je bent al ingeschreven voor ... op hetzelfde tijdstip. Wil je uitschrijven voor die sessie en je inschrijven voor deze?
                         </Text>
                         <Button className="w-full" onPress={handleReplaceEnrollment}>
                             <Text>Vervangen</Text>
