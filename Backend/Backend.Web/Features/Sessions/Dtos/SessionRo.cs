@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.SessionEnrollments;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;
@@ -19,8 +20,11 @@ public sealed record SessionRo(
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
-    int? RegistrationCount = null,
-    string? Availability = null);
+    int EnrolledCount,
+    int WaitlistCount,
+    bool HasAvailableSpots,
+    SessionEnrollmentStatus? MyEnrollmentStatus = null,
+    int? MyWaitlistPosition = null);
 
 [ExportTsInterface]
 public sealed record SessionRoomRo(

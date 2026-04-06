@@ -15,4 +15,3 @@ public interface ISessionRepository
         CancellationToken cancellationToken);
     Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken);
 }
-

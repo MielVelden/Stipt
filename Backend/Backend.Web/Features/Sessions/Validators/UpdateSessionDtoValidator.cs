@@ -47,4 +47,3 @@ public sealed class UpdateSessionDtoValidator : AbstractValidator<UpdateSessionD
             .WithMessage("Labels can contain at most 30 items.");
     }
 }
-

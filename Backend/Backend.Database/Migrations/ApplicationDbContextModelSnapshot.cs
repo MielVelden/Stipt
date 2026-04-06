@@ -256,6 +256,39 @@ namespace Backend.Database.Migrations
                     b.ToTable("sessions", (string)null);
                 });
 
+            modelBuilder.Entity("Backend.Database.Entities.Sessions.SessionEnrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ParticipantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantId", "Status");
+
+                    b.HasIndex("SessionId", "ParticipantId")
+                        .IsUnique();
+
+                    b.HasIndex("SessionId", "Status", "CreatedAtUtc");
+
+                    b.ToTable("session_enrollments", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -516,6 +549,17 @@ namespace Backend.Database.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Backend.Database.Entities.Sessions.SessionEnrollment", b =>
+                {
+                    b.HasOne("Backend.Database.Entities.Sessions.Session", "Session")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Session");
+                });
+
             modelBuilder.Entity("Backend.Database.Entities.Events.Event", b =>
                 {
                     b.Navigation("Rooms");
@@ -526,6 +570,11 @@ namespace Backend.Database.Migrations
             modelBuilder.Entity("Backend.Database.Entities.Rooms.Room", b =>
                 {
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("Backend.Database.Entities.Sessions.Session", b =>
+                {
+                    b.Navigation("Enrollments");
                 });
 #pragma warning restore 612, 618
         }

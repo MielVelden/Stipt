@@ -16,6 +16,7 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         return dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
+            .Include(x => x.Enrollments)
             .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
     }
 
@@ -24,10 +25,12 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         return await dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
+            .Include(x => x.Enrollments)
             .Where(x => x.EventId == eventId)
             .OrderBy(x => x.StartDateTime)
             .ToListAsync(cancellationToken);
     }
+
 
     public async Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken)
     {
@@ -67,4 +70,5 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
                      && s.EndDateTime > startDateTime,
                 cancellationToken);
     }
+
 }

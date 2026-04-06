@@ -1,12 +1,20 @@
 import { Room } from "../rooms/types";
 
-export type SessionAvailability = 'Unavailable'| 'Available' | 'FillingUp' | 'Full';
+export type SessionAvailability = 'Unavailable' | 'Available' | 'FillingUp' | 'Full';
+
+export type Speaker = {
+    name: string;
+    role: string;
+    company: string;
+    bio: string;
+    imageUrl: string;
+};
 
 export type Session = {
     id: string
     title: string
     description: string | null
-    speaker: string
+    speaker: Speaker
     room: Room
     startDateTime: string
     endDateTime: string

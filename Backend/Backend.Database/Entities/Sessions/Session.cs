@@ -1,5 +1,6 @@
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.SessionEnrollments;
 
 namespace Backend.Database.Entities.Sessions;
 
@@ -18,6 +19,7 @@ public sealed class Session
     public DateTime EndDateTime { get; set; }
     public int? Capacity { get; set; }
     public List<string> Labels { get; set; } = [];
+    public ICollection<SessionEnrollment> Enrollments { get; set; } = new List<SessionEnrollment>();
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }
