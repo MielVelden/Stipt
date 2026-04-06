@@ -24,7 +24,7 @@ export async function unenrollSession(eventId: string, sessionId: string): Promi
 }
 
 
-export async function replaceSession(eventId: string, newSessionId: string, oldSessionId: string): Promise<void> {
-    const response = await apiClient.delete(`/events/${eventId}/sessions/${newSessionId}/enrollments/replace/${oldSessionId}`);
+export async function replaceSession(eventId: string, newSessionId: string, oldSessionId: string): Promise<SessionRo> {
+    const response = await apiClient.post<SessionRo>(`/events/${eventId}/sessions/${newSessionId}/enrollments/replace/${oldSessionId}`);
     return response.data;
 }

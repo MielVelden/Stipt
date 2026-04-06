@@ -4,11 +4,16 @@ import { useLocalSearchParams, useRouter} from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import { formatDateTime, formatTime } from '@/lib/utils';
-import { enrollSession, getSessionById, unenrollSession } from '@/features/sessions/api';
+import { enrollSession, getSessionById, replaceSession, unenrollSession } from '@/features/sessions/api';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { ConflictingSessionRo } from '@/generated-types/conflicting-session-ro';
 import { SessionRo } from "@/generated-types/session-ro";
+
+type EnrollmentConflictResponse = {
+    conflictingSessions?: ConflictingSessionRo[];
+};
 
 export default function SessionDetailScreen() {
     const { eventId: rawEventId, id: rawSessionId } = useLocalSearchParams<{
@@ -23,6 +28,12 @@ export default function SessionDetailScreen() {
     const [loading, setLoading] = useState(false);
     const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
+    const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
+
+    function closeConflictModal() {
+        setShowConflictModal(false);
+        setConflictingSession(null);
+    }
 
     useEffect(() => {
         if (!eventId || !sessionId) {
@@ -63,8 +74,10 @@ export default function SessionDetailScreen() {
             setSession(result);
 
         } catch (error) {
-            if (isAxiosError(error) && error.response?.status === 409) {
-                setShowConflictModal(true);
+            if (isAxiosError<EnrollmentConflictResponse>(error) && error.response?.status === 409) {
+                const firstConflict = error.response.data?.conflictingSessions?.[0] ?? null;
+                setConflictingSession(firstConflict);
+                setShowConflictModal(firstConflict !== null);
             } else {
                 throw error;
             }
@@ -85,11 +98,24 @@ export default function SessionDetailScreen() {
     }
 
     async function handleReplaceEnrollment() {
-        if (!session || !eventId) return;
+        if (!session || !eventId || !conflictingSession) return;
 
-        // setLoadingEnrollment(true);
-        // await replaceSession(eventId, session.id, replaceSessionId);
-        // setLoadingEnrollment(false);
+        try {
+            setLoadingEnrollment(true);
+            const updatedSession = await replaceSession(eventId, session.id, conflictingSession.id);
+            setSession(updatedSession);
+            closeConflictModal();
+        } catch (error) {
+            if (isAxiosError<EnrollmentConflictResponse>(error) && error.response?.status === 409) {
+                const firstConflict = error.response.data?.conflictingSessions?.[0] ?? null;
+                setConflictingSession(firstConflict);
+                setShowConflictModal(firstConflict !== null);
+            } else {
+                throw error;
+            }
+        } finally {
+            setLoadingEnrollment(false);
+        }
     }
 
     return (
@@ -195,18 +221,22 @@ export default function SessionDetailScreen() {
                 visible={showConflictModal}
                 transparent
                 animationType="slide"
-                onRequestClose={() => setShowConflictModal(false)}
+                onRequestClose={closeConflictModal}
             >
                 <View className="flex-1 justify-end bg-black/40">
                     <View className="bg-background rounded-t-2xl p-6 gap-y-4">
                         <Text variant="h3">Overlap gedetecteerd</Text>
                         <Text variant="p" className="text-muted-foreground">
-                            Je bent al ingeschreven voor ... op hetzelfde tijdstip. Wil je uitschrijven voor die sessie en je inschrijven voor deze?
+                            Je bent al ingeschreven voor{' '}
+                            <Text className="font-semibold text-foreground">{conflictingSession?.title ?? 'een andere sessie'}</Text>
+                            {' '}op hetzelfde tijdstip. Wil je uitschrijven voor die sessie en je inschrijven voor deze?
                         </Text>
-                        <Button className="w-full" onPress={handleReplaceEnrollment}>
-                            <Text>Vervangen</Text>
+                        <Button className="w-full" onPress={handleReplaceEnrollment} disabled={loadingEnrollment || !conflictingSession}>
+                            {loadingEnrollment
+                                ? <ActivityIndicator size="small" color="#fff" />
+                                : <Text>Vervangen</Text>}
                         </Button>
-                        <Button variant="outline" className="w-full" onPress={() => setShowConflictModal(false)}>
+                        <Button variant="outline" className="w-full" onPress={closeConflictModal}>
                             <Text>Annuleren</Text>
                         </Button>
                     </View>
