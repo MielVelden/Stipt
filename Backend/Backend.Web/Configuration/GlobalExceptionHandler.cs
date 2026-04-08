@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Backend.Web.Features.Sessions.Exceptions;
 
 namespace Backend.Web.Configuration;
 
@@ -24,6 +25,18 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
                     detail: badHttpRequestException.Message,
                     statusCode: badHttpRequestException.StatusCode
                 ).ExecuteAsync(httpContext);
+
+                return true;
+            }
+            case SessionEnrollmentConflictException conflictException:
+            {
+                await Results.Json(
+                    new
+                    {
+                        message = conflictException.Message,
+                        conflictingSessions = conflictException.ConflictingSessions
+                    },
+                    statusCode: StatusCodes.Status409Conflict).ExecuteAsync(httpContext);
 
                 return true;
             }

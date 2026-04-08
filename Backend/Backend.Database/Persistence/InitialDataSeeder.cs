@@ -1,14 +1,55 @@
+using Backend.Database.Entities;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Configuration;
 
 namespace Backend.Database.Persistence;
 
 internal static class InitialDataSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext dbContext, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(ApplicationDbContext dbContext, IConfiguration configuration, CancellationToken cancellationToken = default)
     {
+        var userManager = dbContext.GetService<UserManager<ApplicationUser>>();
+        var roleManager = dbContext.GetService<RoleManager<IdentityRole>>();
+
+        const string participantRole = "deelnemer";
+        if (!await roleManager.RoleExistsAsync(participantRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(participantRole));
+        }
+
+        const string participantTestEmail = "deelnemer@test.nl";
+        if (await userManager.FindByEmailAsync(participantTestEmail) == null)
+        {
+            var seedPassword = configuration["Seeder:SeedUserPassword"];
+            if (string.IsNullOrEmpty(seedPassword))
+                throw new InvalidOperationException("Seeder:SeedUserPassword is not configured. Set it via user-secrets or environment variables.");
+
+            var user = new ApplicationUser
+            {
+                UserName = participantTestEmail,
+                Email = participantTestEmail,
+                EmailConfirmed = true,
+                FirstName = "Jan",
+                LastName = "Jansen"
+            };
+
+            var result = await userManager.CreateAsync(user, seedPassword);
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, participantRole);
+            }
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to create seed user: {errors}");
+            }
+        }
+
         if (await dbContext.Events.AnyAsync(cancellationToken))
         {
             return;

@@ -16,6 +16,7 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         return dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
+            .Include(x => x.Enrollments)
             .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
     }
 
@@ -24,6 +25,7 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         var query = dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
+            .Include(x => x.Enrollments)
             .Where(x => x.EventId == eventId);
 
         if (filter.Labels is { Count: > 0 })
@@ -35,6 +37,7 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .ThenBy(x => x.Room.Name)
             .ToListAsync(cancellationToken);
     }
+
 
     public async Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken)
     {
@@ -74,4 +77,5 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
                      && s.EndDateTime > startDateTime,
                 cancellationToken);
     }
+
 }

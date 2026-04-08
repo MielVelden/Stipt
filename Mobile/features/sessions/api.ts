@@ -1,23 +1,44 @@
 import type { AxiosResponse } from "axios"
 import apiClient from "@/lib/api-client"
+import { SessionRo } from "@/generated-types/session-ro";
 import type { Session, SessionFilterDto } from "./types"
 
-const DEFAULT_EVENT_ID = "a5635e67-a5d4-4d2a-b052-05fa63324790"
-
-export async function getAllSessions(filter?: SessionFilterDto): Promise<Session[]> {
-  // TODO eventID uit ingelogde user halen. nu is het hardcoded en moet je het uit je eigen database halen gezien guid random is.
-  const response: AxiosResponse<Session[]> = await apiClient.get(`/events/${DEFAULT_EVENT_ID}/sessions`, {
-    params: filter,
-    paramsSerializer: {
-      serialize: (params) => toSessionQueryString(params as SessionFilterDto | undefined),
-    },
-  })
-  return response.data
+export async function getAllSessions(eventId: string, filter?: SessionFilterDto): Promise<Session[]> {
+    const response: AxiosResponse<Session[]> = await apiClient.get(`/events/${eventId}/sessions`, {
+        params: filter,
+        paramsSerializer: {
+            serialize: (params) => toSessionQueryString(params as SessionFilterDto | undefined),
+        },
+    })
+    return response.data
 }
 
-export async function getSessionById(id: string): Promise<Session> {
-  const response = await apiClient.get<Session>(`/sessions/${id}`)
-  return response.data
+export async function getSessions(eventId: string): Promise<SessionRo[]> {
+    const response = await apiClient.get<SessionRo[]>(`/events/${eventId}/sessions`)
+    return response.data
+}
+
+export async function getSessionById(eventId: string, sessionId: string): Promise<SessionRo> {
+    const response = await apiClient.get<SessionRo>(`/events/${eventId}/sessions/${sessionId}`, {
+        params: { includeRegistrationCount: true }
+    });
+    return response.data;
+}
+
+export async function enrollSession(eventId: string, sessionId: string): Promise<SessionRo> {
+    const response = await apiClient.post(`/events/${eventId}/sessions/${sessionId}/enrollments`);
+    return response.data;
+}
+
+export async function unenrollSession(eventId: string, sessionId: string): Promise<void> {
+    const response = await apiClient.delete(`/events/${eventId}/sessions/${sessionId}/enrollments/me`);
+    return response.data;
+}
+
+
+export async function replaceSession(eventId: string, newSessionId: string, oldSessionId: string): Promise<SessionRo> {
+    const response = await apiClient.post<SessionRo>(`/events/${eventId}/sessions/${newSessionId}/enrollments/replace/${oldSessionId}`);
+    return response.data;
 }
 
 function toSessionQueryString(filter?: SessionFilterDto) {

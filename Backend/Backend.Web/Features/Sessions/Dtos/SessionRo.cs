@@ -1,5 +1,6 @@
 using Backend.Database.Entities.Sessions;
 using Backend.Web.Features.Sessions.Enums;
+using Backend.Database.Entities.SessionEnrollments;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;
@@ -21,7 +22,11 @@ public sealed record SessionRo(
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
     SessionAvailability Availability,
-    int CurrentAttendeeCount);
+    int EnrolledCount,
+    int WaitlistCount,
+    bool HasAvailableSpots,
+    SessionEnrollmentStatus? MyEnrollmentStatus = null,
+    int? MyWaitlistPosition = null);
     
 
 [ExportTsInterface]

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Backend.Web.Features.Sessions.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,14 +18,20 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
     {
-        var response = await sessionsService.GetAllFilteredAsync(eventId, filter, ct);
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
+
+        var response = await sessionsService.GetAllFilteredAsync(eventId, filter, userId, ct);
         return Ok(response);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<SessionRo>> GetSessionById(Guid eventId, Guid id, CancellationToken ct)
     {
-        var response = await sessionsService.GetByIdAsync(eventId, id, ct);
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
+
+        var response = await sessionsService.GetByIdAsync(eventId, id, userId, ct);
         return response is null ? NotFound() : Ok(response);
     }
 
@@ -39,6 +46,42 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     public async Task<IActionResult> DeleteSession(Guid eventId, Guid id, CancellationToken ct)
     {
         var deleted = await sessionsService.DeleteAsync(eventId, id, ct);
+        return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{id:guid}/enrollments")]
+    public async Task<ActionResult<SessionRo>> EnrollInSession(Guid eventId, Guid id, CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+        
+        var response = await sessionsService.EnrollAsync(eventId, id, Guid.Parse(userId), ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{id:guid}/enrollments/replace/{sessionIdToUnenroll:guid}")]
+    public async Task<ActionResult<SessionRo>> ReplaceSessionEnrollment(
+        Guid eventId,
+        Guid id,
+        Guid sessionIdToUnenroll,
+        CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+        
+        var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, Guid.Parse(userId), sessionIdToUnenroll, ct);
+        return Ok(response);
+    }
+
+    [HttpDelete("{id:guid}/enrollments/me")]
+    public async Task<IActionResult> UnenrollFromSession(Guid eventId, Guid id, CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();        
+        var deleted = await sessionsService.UnenrollAsync(eventId, id, Guid.Parse(userId), ct);
         return deleted ? NoContent() : NotFound();
     }
 }
