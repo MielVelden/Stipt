@@ -16,37 +16,61 @@ internal static class InitialDataSeeder
         var userManager = dbContext.GetService<UserManager<ApplicationUser>>();
         var roleManager = dbContext.GetService<RoleManager<IdentityRole>>();
 
-        const string participantRole = "deelnemer";
-        if (!await roleManager.RoleExistsAsync(participantRole))
-        {
-            await roleManager.CreateAsync(new IdentityRole(participantRole));
-        }
+        const string attendeeRole = "attendee";
+        if (!await roleManager.RoleExistsAsync(attendeeRole))
+            await roleManager.CreateAsync(new IdentityRole(attendeeRole));
 
-        const string participantTestEmail = "deelnemer@test.nl";
-        if (await userManager.FindByEmailAsync(participantTestEmail) == null)
-        {
-            var seedPassword = configuration["Seeder:SeedUserPassword"];
-            if (string.IsNullOrEmpty(seedPassword))
-                throw new InvalidOperationException("Seeder:SeedUserPassword is not configured. Set it via user-secrets or environment variables.");
+        const string managerRole = "manager";
+        if (!await roleManager.RoleExistsAsync(managerRole))
+            await roleManager.CreateAsync(new IdentityRole(managerRole));
 
+        var seedPassword = configuration["Seeder:SeedUserPassword"];
+        if (string.IsNullOrEmpty(seedPassword))
+            throw new InvalidOperationException("Seeder:SeedUserPassword is not configured. Set it via user-secrets or environment variables.");
+
+        const string attendeeTestEmail = "attendee@test.nl";
+        var userEntity = await userManager.FindByEmailAsync(attendeeTestEmail);
+        if (userEntity == null)
+        {
             var user = new ApplicationUser
             {
-                UserName = participantTestEmail,
-                Email = participantTestEmail,
+                UserName = attendeeTestEmail,
+                Email = attendeeTestEmail,
                 EmailConfirmed = true,
-                FirstName = "Jan",
-                LastName = "Jansen"
+                FirstName = "Danny",
+                LastName = "de Deelnemer"
             };
 
             var result = await userManager.CreateAsync(user, seedPassword);
             if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, participantRole);
-            }
+                await userManager.AddToRoleAsync(user, attendeeRole);
             else
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new InvalidOperationException($"Failed to create seed user: {errors}");
+                throw new InvalidOperationException($"Failed to create seed attendee user: {errors}");
+            }
+        }
+
+        const string managerTestEmail = "manager@test.nl";
+        var managerEntity = await userManager.FindByEmailAsync(managerTestEmail);
+        if (managerEntity == null)
+        {
+            var manager = new ApplicationUser
+            {
+                UserName = managerTestEmail,
+                Email = managerTestEmail,
+                EmailConfirmed = true,
+                FirstName = "Maikel",
+                LastName = "de Manager"
+            };
+
+            var result = await userManager.CreateAsync(manager, seedPassword);
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(manager, managerRole);
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to create seed manager user: {errors}");
             }
         }
 
