@@ -114,6 +114,48 @@ public sealed class SessionsService(
         return await sessionRepository.DeleteAsync(eventId, id, cancellationToken);
     }
 
+    public async Task<PersonalAgendaRo> GetPersonalAgendaAsync(
+        Guid eventId,
+        Guid participantId,
+        string? filter,
+        CancellationToken cancellationToken)
+    {
+        var sessions = await sessionRepository.GetAgendaSessionsAsync(eventId, participantId, cancellationToken);
+
+        var filteredSessions = filter?.ToLower() switch
+        {
+            "enrolled" => sessions.Where(s => s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)),
+            "general" => sessions.Where(s => s.Type == SessionType.Keynote),
+            _ => sessions
+        };
+
+        var sortedSessions = filteredSessions.OrderBy(s => s.StartDateTime).ToList();
+
+        var conflicts = new List<PersonalAgendaConflictRo>();
+        for (int i = 0; i < sortedSessions.Count; i++)
+        {
+            for (int j = i + 1; j < sortedSessions.Count; j++)
+            {
+                var s1 = sortedSessions[i];
+                var s2 = sortedSessions[j];
+
+                if (s1.StartDateTime < s2.EndDateTime && s1.EndDateTime > s2.StartDateTime)
+                    conflicts.Add(new PersonalAgendaConflictRo(s1.Id, s2.Id));
+
+            }
+        }
+
+        var sessionRos = sortedSessions
+            .Select(s => s.ToRo(participantId))
+            .ToArray();
+
+        return new PersonalAgendaRo(
+            sessionRos,
+            conflicts.ToArray(),
+            conflicts.Count > 0
+        );
+    }
+
     public async Task<SessionRo> EnrollAsync(
         Guid eventId,
         Guid sessionId,

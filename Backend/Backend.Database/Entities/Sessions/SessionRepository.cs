@@ -1,5 +1,6 @@
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Backend.Database.Entities.SessionEnrollments;
 
 namespace Backend.Database.Entities.Sessions;
 
@@ -28,6 +29,22 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .Include(x => x.Enrollments)
             .Where(x => x.EventId == eventId)
             .OrderBy(x => x.StartDateTime)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<Session>> GetAgendaSessionsAsync(
+        Guid eventId,
+        Guid participantId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Sessions
+            .AsNoTracking()
+            .Include(x => x.Room)
+            .Include(x => x.Enrollments)
+            .Where(s => s.EventId == eventId &&
+                        (s.Type == SessionType.Keynote ||
+                         s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)))
+            .OrderBy(s => s.StartDateTime)
             .ToListAsync(cancellationToken);
     }
 
