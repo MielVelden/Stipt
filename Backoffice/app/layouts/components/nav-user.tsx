@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router"
 import { Avatar, AvatarFallback } from "~/components/ui/avatar"
 import {
   DropdownMenu,
@@ -14,14 +15,23 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar"
 import { EllipsisVerticalIcon, LogOutIcon } from "lucide-react"
-
-const user = {
-  name: "Ger Saris",
-  email: "ger.saris@avans.nl",
-}
+import { clearAuth, getUser } from "~/lib/auth"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
+  const navigate = useNavigate()
+  const user = getUser()
+
+  const displayName = user ? `${user.firstName} ${user.lastName}` : "Gebruiker"
+  const email = user?.email ?? ""
+  const initials = user
+    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+    : "??"
+
+  function handleLogout() {
+    clearAuth()
+    navigate("/login")
+  }
 
   return (
     <SidebarMenu>
@@ -33,13 +43,11 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarFallback className="rounded-lg">GS</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
-                </span>
+                <span className="truncate font-medium">{displayName}</span>
+                <span className="truncate text-xs text-muted-foreground">{email}</span>
               </div>
               <EllipsisVerticalIcon className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -53,20 +61,18 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">GS</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
+                  <span className="truncate font-medium">{displayName}</span>
+                  <span className="truncate text-xs text-muted-foreground">{email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOutIcon />
-              Log out
+              Uitloggen
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

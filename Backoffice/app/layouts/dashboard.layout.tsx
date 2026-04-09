@@ -1,13 +1,18 @@
 import { AppSidebar } from "~/layouts/components/app-sidebar"
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar"
-import { Outlet, useLoaderData } from "react-router"
+import { Outlet, redirect, useLoaderData } from "react-router"
 import { AppProvider } from "~/contexts/app-context"
 import { EventGuard } from "~/components/event-guard"
 import apiClient from "~/lib/api-client"
 import type { EventRo } from "~/generated-types/event-ro"
 import { toast } from "sonner"
+import { getToken } from "~/lib/auth"
 
 export async function clientLoader() {
+  if (!getToken()) {
+    throw redirect("/login")
+  }
+
   try {
     const response = await apiClient.get<EventRo[]>("/events")
     return { events: response.data }
