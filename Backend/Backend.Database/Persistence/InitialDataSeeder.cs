@@ -28,7 +28,7 @@ internal static class InitialDataSeeder
         if (string.IsNullOrEmpty(seedPassword))
             throw new InvalidOperationException("Seeder:SeedUserPassword is not configured. Set it via user-secrets or environment variables.");
 
-        const string attendeeTestEmail = "attendee@test.nl";
+        const string attendeeTestEmail = "deelnemer@test.nl";
         var userEntity = await userManager.FindByEmailAsync(attendeeTestEmail);
         if (userEntity == null)
         {
