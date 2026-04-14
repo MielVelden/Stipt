@@ -10,6 +10,18 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session, onPress }: SessionCardProps) {
+    const occupancy = session.enrolledCount / session.effectiveCapacity;
+
+    let status: 'available' | 'fillingUp' | 'full';
+
+    if (occupancy >= 1) {
+        status = 'full';
+    } else if (occupancy >= 0.8) {
+        status = 'fillingUp';
+    } else {
+        status = 'available';
+    }
+
     return (
         <Pressable
             onPress={onPress}
@@ -27,17 +39,17 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
 
             <Text variant="muted">
                 {session.enrolledCount}
-                {session.capacity ? `/${session.capacity}` : ""} inschrijvingen
+                {session.effectiveCapacity ? `/${session.effectiveCapacity}` : ""} inschrijvingen
             </Text>
 
             <View className="mt-2 flex-row items-center gap-2">
                 <View
                     className="h-2.5 w-2.5 rounded-full"
                     style={{
-                        backgroundColor: getAvailabilityColor(session.availability),
+                        backgroundColor: getAvailabilityColor(status),
                     }}
                 />
-                <Text variant="muted">{formatAvailabilityText(session.availability)}</Text>
+                <Text variant="muted">{formatAvailabilityText(status)}</Text>
             </View>
                     
             {session.description ? (

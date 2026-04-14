@@ -3,7 +3,6 @@ using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Web.Features.Sessions.Dtos;
-using Backend.Web.Features.Sessions.Enums;
 using Backend.Web.Features.Sessions.Exceptions;
 
 namespace Backend.Web.Features.Sessions;
@@ -57,7 +56,7 @@ public sealed class SessionsService(
     public async Task<IReadOnlyCollection<SessionRo>> GetAllFilteredAsync(
     Guid eventId,
     SessionFilterDto filterDto,
-    Guid? userId, // Toegevoegd: userId om de specifieke enrollment status op te halen
+    Guid? userId,
     CancellationToken cancellationToken)
     {
         var dbFilter = new SessionFilter(
@@ -67,11 +66,8 @@ public sealed class SessionsService(
 
         var sessions = await sessionRepository.GetFilteredAsync(eventId, dbFilter, cancellationToken);
 
-        // Mock is verwijderd. We gebruiken nu direct ToRo() met de userId.
         var mappedSessions = sessions.Select(session => session.ToRo(userId)).ToList();
-
-        // TODO: Filteren op beschikbaarheid moet in de database gebeuren, niet in het geheugen. 
-        // Nu gefilterd op basis van de HasAvailableSpots property die uit ToRo komt.
+              
         if (filterDto.AvailableOnly == true)
         {
             mappedSessions = mappedSessions
@@ -81,14 +77,6 @@ public sealed class SessionsService(
 
         return mappedSessions;
     }
-
-    //public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(Guid eventId, Guid? userId, CancellationToken cancellationToken)
-    //{
-    //    var sessions = await sessionRepository.GetAllAsync(eventId, cancellationToken);
-    //    return sessions
-    //        .Select(session => session.ToRo(userId))
-    //        .ToArray();
-    //}
 
     public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, Guid? userId, CancellationToken cancellationToken)
     {

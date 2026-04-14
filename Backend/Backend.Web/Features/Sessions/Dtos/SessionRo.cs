@@ -1,5 +1,4 @@
 using Backend.Database.Entities.Sessions;
-using Backend.Web.Features.Sessions.Enums;
 using Backend.Database.Entities.SessionEnrollments;
 using TypeGen.Core.TypeAnnotations;
 
@@ -21,7 +20,7 @@ public sealed record SessionRo(
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
-    SessionAvailability Availability,
+    int EffectiveCapacity,
     int EnrolledCount,
     int WaitlistCount,
     bool HasAvailableSpots,

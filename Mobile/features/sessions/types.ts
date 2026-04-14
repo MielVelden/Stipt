@@ -12,8 +12,6 @@ export type SessionRoom = {
     capacity: number
 }
 
-export type SessionAvailability = 'Unavailable' | 'Available' | 'FillingUp' | 'Full';
-
 export type Session = {
     id: string
     title: string
@@ -29,7 +27,7 @@ export type Session = {
     labels: string[]
     createdAtUtc: string
     updatedAtUtc: string | null
-    availability: SessionAvailability
+    effectiveCapacity: number
     enrolledCount: number
     waitlistCount: number
     hasAvailableSpots: boolean

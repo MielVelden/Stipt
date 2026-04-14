@@ -1,7 +1,7 @@
 import { format, isValid, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { formatTime } from '@/lib/utils';
-import type { Session, SessionType, SessionAvailability, NormalizedSessionAvailability } from './types';
+import type { Session, SessionType, NormalizedSessionAvailability } from './types';
 
 export function formatSessionTime(start: string, end: string): string {
     const startDate = parseISO(start);

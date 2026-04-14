@@ -5,7 +5,6 @@
 
 import type { SessionType } from './session-type';
 import type { SessionRoomRo } from './session-room-ro';
-import type { SessionAvailability } from './session-availability';
 import type { SessionEnrollmentStatus } from './session-enrollment-status';
 
 export interface SessionRo {
@@ -23,7 +22,7 @@ export interface SessionRo {
   labels: string[];
   createdAtUtc: string;
   updatedAtUtc: string | undefined;
-  availability: SessionAvailability;
+  effectiveCapacity: number;
   enrolledCount: number;
   waitlistCount: number;
   hasAvailableSpots: boolean;
