@@ -3,7 +3,6 @@ using Backend.Database;
 using Backend.Database.Entities;
 using Backend.Database.Persistence;
 using Backend.Web.Configuration;
-using Backend.Web.Features.Sessions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +32,21 @@ builder.Services
         options.TokenValidationParameters.ValidIssuer = builder.Configuration["Jwt:Issuer"];
         options.TokenValidationParameters.ValidAudience = builder.Configuration["Jwt:Audience"];
         options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/hub/"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -46,10 +60,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapHub<SessionsHub>("/api/sessionshub");
+
 app.UseCors();
 app.UseWebApi();
 app.UseAuthentication();
 app.UseAuthorization();
+app.AddHubs();
 app.MapControllers();
 app.Run();

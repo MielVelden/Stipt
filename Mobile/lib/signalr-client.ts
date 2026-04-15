@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { API_BASE_URL } from "@/constants/api";
+import { getAccessTokenAsync, getRefreshTokenAsync, saveTokensAsync } from "@/lib/auth";
+import { refreshTokensAsync } from "@/features/auth/api";
 
 type ConnectionStatus =
     | "disconnected"
@@ -8,7 +10,7 @@ type ConnectionStatus =
     | "connected"
     | "reconnecting";
 
-export function useSignalR(path: string, token?: string) {
+export function ConnectToHub(path: string) {
     const [connection, setConnection] =
         useState<signalR.HubConnection | null>(null);
     const [status, setStatus] = useState<ConnectionStatus>("disconnected");
@@ -17,9 +19,19 @@ export function useSignalR(path: string, token?: string) {
         const hubUrl = `${API_BASE_URL}${path}`;
         const options: signalR.IHttpConnectionOptions = {};
 
-        if (token) {
-            options.accessTokenFactory = () => token;
+        let token: string | null;
+
+        const refreshAccessToken = async () => {
+            const refresToken = await getRefreshTokenAsync() || ""
+            const response = await refreshTokensAsync(refresToken)
+            await saveTokensAsync(response.accessToken, response.refreshToken)
+            token = await getAccessTokenAsync()
         }
+
+        options.accessTokenFactory = async () => {
+            token = await getAccessTokenAsync() || ""
+            return token;
+        };
 
         const nextConnection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl, options)
@@ -29,9 +41,14 @@ export function useSignalR(path: string, token?: string) {
 
         setConnection(nextConnection);
 
-        nextConnection.onreconnecting(() => setStatus("reconnecting"));
+        nextConnection.onreconnecting( async () => {
+            setStatus("reconnecting")
+            await refreshAccessToken()
+        });
         nextConnection.onreconnected(() => setStatus("connected"));
-        nextConnection.onclose(() => setStatus("disconnected"));
+        nextConnection.onclose( async () => {
+            setStatus("disconnected")
+        });
 
         const start = async () => {
             try {
@@ -50,7 +67,7 @@ export function useSignalR(path: string, token?: string) {
             nextConnection.stop().catch(console.error);
             setConnection(null);
         };
-    }, [path, token]);
+    }, [path]);
 
     return { connection, status };
 }

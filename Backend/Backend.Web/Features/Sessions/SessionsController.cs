@@ -1,13 +1,12 @@
 using System.Security.Claims;
 using Backend.Web.Features.Sessions.Dtos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Backend.Web.Features.Sessions;
 
 [ApiController]
 [Route("api/events/{eventId:guid}/sessions")]
-public class SessionsController(SessionsService sessionsService, IHubContext<SessionsHub> hubContext) : ControllerBase
+public class SessionsController(SessionsService sessionsService) : ControllerBase
 {
     
     [HttpPost]
@@ -85,13 +84,5 @@ public class SessionsController(SessionsService sessionsService, IHubContext<Ses
             return Unauthorized();        
         var deleted = await sessionsService.UnenrollAsync(eventId, id, Guid.Parse(userId), ct);
         return deleted ? NoContent() : NotFound();
-    }
-
-    [HttpPost]
-    [Route("sendmessage")]
-    public async Task<IActionResult> SendMessage()
-    {
-        await hubContext.Clients.All.SendAsync("ReceiveMessage", "Test message");
-        return Ok();
     }
 }

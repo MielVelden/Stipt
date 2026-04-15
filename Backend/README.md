@@ -24,15 +24,44 @@ dotnet ef database update --project Backend.Database --startup-project Backend.W
 ```
 
 # SignalR
-- 2 richting verkeer tussen client en server. Maakt gebruik van Hubs die de connecties beheren. Sessionshub bevat 1 method die wordt aangeroepen door de mobiele app en vervolgens een bericht stuurt naar alle aangesloten clients.
-- Sessionscontroller bevat de method SendMessage, die op basis van een post request eenzelfde message stuurt naar alle clients. Dit middels de IHubContext die automatisch al injected kan worden zolang de hub geregistreerd staat.
-- Program bevat een call om signalR toe te voegen en een mapping voor de route van de sessionhub
+De app gebruikt SignalR voor realtime communicatie. Deze communicatie verloopt via websockets waarbij de client en server methods op elkaar aanroepen.
 
-## Extra overwegingen
-- Niet voor elke call direct updates sturen naar signalR clients, gezien dit op schaal resource en dataverkeer inensief wordt. Mogelijkheid bekijken voor een achtergrondproces voor rate limitted mobile updates
-- Probeer niet steeds de zelfde data naar clients te sturen, om dataverkeer op grotere schaal te besparen kan er gekeken worden naar enkel weizigingen sturen.
+Hiervoor moet er als eerst een Hub worden aangemaakt op de server:
+```csharp
+public class ExampleHub : Hub
+{
+}
+```
+Om de client een method op de server te laten aanroepen gebruik je: 
+```csharp
+public async Task ServerMethodName(data)
+{
+    //some code here
+}
+```
+Om vanaf de server een method van de client aan te roepen (in dit geval op alle verbonden clients) gebruik je:
+```csharp
+await Clients.All.SendAsync("ClientMethod", data);
+```
 
-Voor meet uitleg over hoe signalR werkt, zie de microsoft docs. 
+Het aanroepen van methodes op de client kan standaard alleen vanuit de Hub. Om vanuit een andere class een client method aan te roepen geef je door middel van de DI container een HubContext mee:
+```csharp
+public class ExampleController(IHubContext<ExampleHub> hubContext) : ControllerBase
+```
+
+Vanuit hier gebruik je:
+```csharp
+await hubContext.Clients.All.SendAsync("ClientMethod", data);
+```
+
+Om een Hub te registreren voor gebruik voeg je het volgende toe aan Backend.Web/Configuration/ApplicationBuilderExtention.cs in de methode AddHubs():
+```csharp
+app.MapHub<ExampleHub>("/api/hub/examplehub", options);
+```
+> Hub en server methods zijn op dezelfde manier te beveiligen met de ```[Authorize]``` tag als normale controllers en methods.
+
+Verdere uitleg is te vinden in de [Microsoft documentatie](https://learn.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-10.0)
+
 
 ## TypeGen generatie
 
