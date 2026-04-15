@@ -1,5 +1,6 @@
 using Backend.Web.Features.Auth;
 using Backend.Web.Features.Events;
+using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Rooms;
 using Backend.Web.Features.Sessions;
 using FluentValidation;
@@ -15,10 +16,10 @@ public static class DependencyInjection
         services.AddScoped<AuthService>();
         services.AddScoped<EventsService>();
         services.AddScoped<RoomsService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<SessionsService>();
         services.AddSingleton<IClock>(SystemClock.Instance);
 
         return services;
     }
 }
-

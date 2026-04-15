@@ -2,6 +2,7 @@ using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.SessionEnrollments;
+using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
 
@@ -11,7 +12,8 @@ public sealed class SessionsService(
     ISessionRepository sessionRepository,
     ISessionEnrollmentRepository sessionEnrollmentRepository,
     IRoomRepository roomRepository,
-    IEventRepository eventRepository)
+    IEventRepository eventRepository,
+    INotificationService notificationService)
 {
     public async Task<SessionRo> CreateAsync(Guid eventId, CreateSessionDto request, CancellationToken cancellationToken)
     {
@@ -225,7 +227,7 @@ public sealed class SessionsService(
         await sessionEnrollmentRepository.RemoveEnrollmentAsync(enrollment, cancellationToken);
 
         if (wasEnrolled)
-            await PromoteFirstWaitlistedParticipantAsync(sessionId, cancellationToken);
+            await PromoteFirstWaitlistedParticipantAsync(session, cancellationToken);
 
         return true;
     }
@@ -240,15 +242,16 @@ public sealed class SessionsService(
         }
     }
 
-    private async Task PromoteFirstWaitlistedParticipantAsync(Guid sessionId, CancellationToken cancellationToken)
+    private async Task PromoteFirstWaitlistedParticipantAsync(Session session, CancellationToken cancellationToken)
     {
-        var nextWaitlisted = await sessionEnrollmentRepository.GetFirstWaitlistedEnrollmentAsync(sessionId, cancellationToken);
+        var nextWaitlisted = await sessionEnrollmentRepository.GetFirstWaitlistedEnrollmentAsync(session.Id, cancellationToken);
         if (nextWaitlisted is null)
             return;
 
         nextWaitlisted.Status = SessionEnrollmentStatus.Enrolled;
         nextWaitlisted.UpdatedAtUtc = DateTime.UtcNow;
         await sessionEnrollmentRepository.UpdateEnrollmentAsync(nextWaitlisted, cancellationToken);
+        await notificationService.NotifyWaitlistPromotionAsync(nextWaitlisted.ParticipantId, session, cancellationToken);
     }
 
 
