@@ -43,7 +43,7 @@ Mobile/
 │   └── (tabs)/
 │       ├── _layout.tsx           # Tab navigator (4 tabs)
 │       ├── index.tsx             # Evenementen overzicht
-│       ├── schedule.tsx          # Mijn agenda -> prototype signalR ontvangen/verzenden
+│       ├── schedule.tsx          # Mijn agenda
 │       ├── qr.tsx                # QR scanner
 │       ├── settings.tsx          # Instellingen
 │
@@ -57,7 +57,6 @@ Mobile/
 │   └── sessions/
 │       ├── types.ts
 │       └── api.ts                # API calls (getSessions, getSessionById)
-│       └── websocket.ts          # websocket methods voor zowel verzenden als ontvangen
 │
 ├── lib/
 │   ├── api-client.ts             # Axios HTTP client
@@ -96,8 +95,6 @@ De app gebruikt [Expo Router](https://expo.github.io/router) voor file-based rou
 ## SignalR
 De app gebruikt SignalR voor realtime communicatie. Deze communicatie verloopt via websockets waarbij de client en server methods op elkaar aanroepen. Voor de mobiele app wordt er gebruik gemaakt van de npm package [@microsoft/signalr](https://www.npmjs.com/package/@microsoft/signalr)
 
-
-
 Importeer:
 ```ts
 import { ConnectToHub } from "@/lib/signalr-client";
@@ -120,8 +117,6 @@ Om een method op de server aan te roepen gebruik je:
 await connection.invoke("ServerMethodName", Data);
 ```
 Verdere uitleg is te vinden in de [API Refrence](https://learn.microsoft.com/en-us/javascript/api/@microsoft/signalr/?view=signalr-js-latest) van Microsoft
-
-
 
 ## Styling
 

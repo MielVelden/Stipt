@@ -60,7 +60,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-
 app.UseCors();
 app.UseWebApi();
 app.UseAuthentication();

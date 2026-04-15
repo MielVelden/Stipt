@@ -8,7 +8,6 @@ namespace Backend.Web.Features.Sessions;
 [Route("api/events/{eventId:guid}/sessions")]
 public class SessionsController(SessionsService sessionsService) : ControllerBase
 {
-    
     [HttpPost]
     public async Task<CreatedAtActionResult> CreateSession(Guid eventId, CreateSessionDto request, CancellationToken ct)
     {
