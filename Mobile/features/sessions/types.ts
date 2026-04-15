@@ -1,11 +1,5 @@
 export type SessionType = "keynote" | "breakout"
 
-export type NormalizedSessionAvailability =
-    | "available"
-    | "fillingup"
-    | "full"
-    | "unknown"
-
 export type SessionRoom = {
     id: string
     name: string
