@@ -1,11 +1,16 @@
 import "../global.css"
-import { Redirect, Stack } from "expo-router"
+import { Stack } from "expo-router"
+import { PortalHost } from "@rn-primitives/portal"
+import { AuthProvider } from "@/lib/auth-context"
 
 export default function RootLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-    </Stack>
+    <AuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+      <PortalHost />
+    </AuthProvider>
   )
 }

@@ -11,20 +11,26 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public Task<Session?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public Task<Session?> GetByIdAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
         return dbContext.Sessions
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            .Include(x => x.Room)
+            .Include(x => x.Enrollments)
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyCollection<Session>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Session>> GetAllAsync(Guid eventId, CancellationToken cancellationToken)
     {
         return await dbContext.Sessions
             .AsNoTracking()
-            .OrderBy(x => x.StartTime)
+            .Include(x => x.Room)
+            .Include(x => x.Enrollments)
+            .Where(x => x.EventId == eventId)
+            .OrderBy(x => x.StartDateTime)
             .ToListAsync(cancellationToken);
     }
+
 
     public async Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken)
     {
@@ -33,9 +39,10 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         return result > 0;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
-        var session = await dbContext.Sessions.FindAsync([id], cancellationToken);
+        var session = await dbContext.Sessions
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
 
         if (session is null)
             return false;
@@ -46,21 +53,22 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
     }
 
     public async Task<bool> HasOverlapAsync(
-        string room,
-        DateTimeOffset startTime,
-        DateTimeOffset endTime,
+        Guid eventId,
+        Guid roomId,
+        DateTime startDateTime,
+        DateTime endDateTime,
         Guid? excludedSessionId,
         CancellationToken cancellationToken)
     {
-        var normalizedRoom = room.Trim().ToLower();
-
         return await dbContext.Sessions
             .AsNoTracking()
             .AnyAsync(
                 s => (!excludedSessionId.HasValue || s.Id != excludedSessionId.Value)
-                     && s.Room.ToLower() == normalizedRoom
-                     && s.StartTime < endTime
-                     && s.EndTime > startTime,
+                     && s.EventId == eventId
+                     && s.RoomId == roomId
+                     && s.StartDateTime < endDateTime
+                     && s.EndDateTime > startDateTime,
                 cancellationToken);
     }
+
 }

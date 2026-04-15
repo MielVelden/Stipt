@@ -20,18 +20,24 @@ internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
         builder.Property(x => x.Description)
             .HasMaxLength(2000);
 
+        builder.Property(x => x.Type)
+            .HasConversion<string>()
+            .IsRequired();
+
         builder.Property(x => x.Speaker)
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(x => x.Room)
-            .IsRequired()
-            .HasMaxLength(200);
-
-        builder.Property(x => x.StartTime)
+        builder.Property(x => x.RoomId)
             .IsRequired();
 
-        builder.Property(x => x.EndTime)
+        builder.Property(x => x.EventId)
+            .IsRequired();
+
+        builder.Property(x => x.StartDateTime)
+            .IsRequired();
+
+        builder.Property(x => x.EndDateTime)
             .IsRequired();
 
         builder.Property(x => x.Capacity);
@@ -45,8 +51,21 @@ internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 
         builder.Property(x => x.UpdatedAtUtc);
 
-        builder.HasIndex(x => x.StartTime);
-        builder.HasIndex(x => x.Room);
+        builder.HasOne(x => x.Room)
+            .WithMany(r => r.Sessions)
+            .HasForeignKey(x => x.RoomId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Event)
+            .WithMany(e => e.Sessions)
+            .HasForeignKey(x => x.EventId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(x => x.StartDateTime);
+        builder.HasIndex(x => x.RoomId);
+        builder.HasIndex(x => x.EventId);
         builder.HasIndex(x => x.CreatedAtUtc);
     }
 }
