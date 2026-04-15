@@ -207,11 +207,12 @@ export default function SessionDetailScreen() {
                             </View>
                         ) : session.myEnrollmentStatus === 'waitlisted' ? (
                             <View className="gap-y-2">
-                                <View className="flex-row items-center gap-x-2 justify-center py-3 rounded-md bg-orange-50 border border-orange-200">
-                                    <Text className="text-orange-700 font-medium">Op de wachtlijst</Text>
+                                <View className="p-4 bg-green-50 rounded-xl">
+                                    <Text className="text-green-700">Ingeschreven op de wachtlijst</Text>
+                                    <Text className="text-green-700 font-bold">Positie: {session.myWaitlistPosition}</Text>
                                 </View>
                                 <Button variant="outline" className="w-full" onPress={handleUnenrollPress} disabled={loadingEnrollment}>
-                                    <Text>Van wachtlijst verwijderen</Text>
+                                    <Text>Uitschrijven</Text>
                                 </Button>
                             </View>
                         ) : session.hasAvailableSpots ? (
@@ -225,7 +226,7 @@ export default function SessionDetailScreen() {
                                 <Button className="w-full" disabled={loadingEnrollment} onPress={handleEnrollPress}>
                                     {loadingEnrollment
                                         ? <ActivityIndicator size="small" color="#fff" />
-                                        : <Text>Wachtlijst</Text>}
+                                        : <Text>Inschrijven</Text>}
                                 </Button>
                                 <Text variant="muted" className="text-center text-xs">
                                     Sessie is vol — schrijf je in op de wachtlijst
