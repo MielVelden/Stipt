@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Modal, ScrollView, View, Pressable } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { X, Check } from "lucide-react-native";
+import { X } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface FilterModalProps {
     visible: boolean;
@@ -53,6 +55,8 @@ export function SessionFilterModal({
             transparent={true}
             visible={visible}
             onRequestClose={onClose}
+            statusBarTranslucent={true}
+            presentationStyle="overFullScreen"
         >
             <View className="flex-1 justify-end bg-black/40">
                 <Pressable className="flex-1" onPress={onClose} />
@@ -72,33 +76,36 @@ export function SessionFilterModal({
                         <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
                             Beschikbaarheid
                         </Text>
-                        <Pressable
-                            onPress={() => setTempAvailableOnly(!tempAvailableOnly)}
-                            className="flex-row items-center mb-8 active:opacity-80"
-                        >
-                            <View
-                                className={`w-6 h-6 rounded-md border-2 items-center justify-center mr-3 ${tempAvailableOnly
-                                        ? 'bg-slate-900 border-slate-900'
-                                        : 'bg-white border-slate-300'
-                                    }`}
-                            >
-                                {tempAvailableOnly && <Icon as={Check} size={14} className="text-white" strokeWidth={3} />}
+                        <View className="flex-row items-center justify-between mb-8">
+                            <View className="flex-1 mr-3">
+                                <Label
+                                    nativeID="available-filter"
+                                    onPress={() => setTempAvailableOnly(!tempAvailableOnly)}
+                                    className="text-base font-semibold text-slate-800"
+                                >
+                                </Label>
+                                <Text className="text-sm font-semibold">
+                                    Verberg sessies die al volgeboekt zijn
+                                </Text>
                             </View>
-                            <Text className="text-base font-semibold text-slate-800">
-                                Toon alleen sessies met plek
-                            </Text>
-                        </Pressable>
+
+                            <Switch
+                                checked={tempAvailableOnly}
+                                onCheckedChange={setTempAvailableOnly}
+                                nativeID="available-filter"
+                            />
+                        </View>
 
                         {availableLabels.length > 0 && (
                             <>
-                                <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
+                                <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 border-t border-slate-200 pt-4">
                                     Onderwerpen
                                 </Text>
                                 <View className="flex-row flex-wrap gap-2">
                                     {availableLabels.map(label => {
                                         const isSelected = tempSelectedLabels.includes(label);
                                         return (
-                                            <Pressable
+                                            <Button
                                                 key={label}
                                                 onPress={() => toggleTempLabel(label)}
                                                 className={`px-4 py-2.5 rounded-full border ${isSelected
@@ -109,7 +116,7 @@ export function SessionFilterModal({
                                                 <Text className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-slate-700'}`}>
                                                     {label}
                                                 </Text>
-                                            </Pressable>
+                                            </Button>
                                         );
                                     })}
                                 </View>
@@ -117,18 +124,19 @@ export function SessionFilterModal({
                         )}
                     </ScrollView>
 
-                    <View className="flex-row gap-3 pt-2">
+                    <View className="flex justify-end flex-row gap-3 pt-2">
+                        
                         {tempActiveFilterCount > 0 && (
                             <Button
-                                variant="outline"
-                                className="flex-1 rounded-2xl border-slate-200"
+                                variant="link"
                                 onPress={clearTempFilters}
                             >
-                                <Text className="font-semibold text-slate-700">Wis alles</Text>
+                                <Text className="font-semibold text-destructive">Wis filters</Text>
                             </Button>
                         )}
+
                         <Button
-                            className="flex-[2] rounded-2xl bg-slate-900"
+                            variant="default"
                             onPress={handleApply}
                         >
                             <Text className="font-semibold text-white">Toepassen</Text>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { ActivityIndicator, ScrollView, View, Image, Pressable } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -11,7 +11,7 @@ import type { Event } from "../../features/events/types";
 import { getAvailableLabels } from "@/features/sessions/utils";
 import { formatDateTimeRange } from "@/lib/utils";
 import { SessionCard } from "@/features/sessions/components/SessionCard";
-import { SessionFilterModal } from "@/features/sessions/components/SessionFilterModal"; 
+import { SessionFilterModal } from "@/features/sessions/components/SessionFilterModal";
 
 const EVENT_ID = "f6672b9f-d140-4566-abc0-e6779dfab7f1";
 
@@ -52,7 +52,7 @@ export default function ScheduleScreen() {
                     setEvent(eventData);
 
                     if (allLabels.length === 0 && selectedLabels.length === 0 && !availableOnly) {
-                       
+
                         setAllLabels(getAvailableLabels(sessionData));
                     }
                 }
@@ -112,18 +112,18 @@ export default function ScheduleScreen() {
                                     {event.name}
                                 </Text>
                             </View>
-                         </View>
+                        </View>
 
                         <View className="gap-y-3">
                             <View className="flex-row items-center">
-                                <MapPin size={16} color={event.style?.primaryForegroundColor } opacity={0.6} />
-                                <Text className="ml-2 font-medium" style={{ color: event.style?.primaryForegroundColor , opacity: 0.8 }}>
+                                <MapPin size={16} color={event.style?.primaryForegroundColor} opacity={0.6} />
+                                <Text className="ml-2 font-medium" style={{ color: event.style?.primaryForegroundColor, opacity: 0.8 }}>
                                     {event.location}
                                 </Text>
                             </View>
                             <View className="flex-row items-center">
-                                <Calendar size={16} color={event.style?.primaryForegroundColor } opacity={0.6} />
-                                <Text className="ml-2 font-medium" style={{ color: event.style?.primaryForegroundColor , opacity: 0.8 }}>
+                                <Calendar size={16} color={event.style?.primaryForegroundColor} opacity={0.6} />
+                                <Text className="ml-2 font-medium" style={{ color: event.style?.primaryForegroundColor, opacity: 0.8 }}>
                                     {formatDateTimeRange(event.startDate, event.endDate)}
                                 </Text>
                             </View>
@@ -134,19 +134,19 @@ export default function ScheduleScreen() {
                 <View className="mb-6 flex-row justify-between items-center">
                     <Text className="text-xl font-bold text-slate-900">Programma</Text>
 
-                    <Pressable
-                        onPress={() => setIsFilterModalVisible(true)}
-                        className="flex-row items-center bg-white px-4 py-2.5 rounded-full border border-slate-200 shadow-sm active:opacity-80"
-                    >
-                        <Filter size={16} color="#0f172a" strokeWidth={2.5} />
-                        <Text className="ml-2 font-semibold text-slate-800">Filters</Text>
-
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full flex-row gap-2"
+                        onPress={() => setIsFilterModalVisible(true)}>
+                        <Filter size={16} className="text-foreground" />
+                        <Text>Filters</Text>
                         {activeFilterCount > 0 && (
                             <View className="ml-2 bg-slate-900 rounded-full w-5 h-5 items-center justify-center">
                                 <Text className="text-white text-[10px] font-bold">{activeFilterCount}</Text>
                             </View>
                         )}
-                    </Pressable>
+                    </Button>
                 </View>
 
                 {sessions.length === 0 ? (
@@ -159,7 +159,7 @@ export default function ScheduleScreen() {
                         )}
                     </View>
                 ) : (
-                    <View className="gap-y-1">
+                    <View className="gap-y-3">
                         {sessions.map(session => (
                             <SessionCard
                                 key={session.id}

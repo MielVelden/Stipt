@@ -3,9 +3,9 @@ import { View, Pressable } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { MapPin, Users, Clock } from 'lucide-react-native';
 import type { Session } from '../types';
-import { formatTime } from '@/lib/utils';
+import { formatDateTimeRange } from '@/lib/utils';
 import { Icon } from '@/components/ui/icon';
-
+import { Badge } from '@/components/ui/badge';
 interface SessionCardProps {
     session: Session;
     onPress: () => void;
@@ -14,7 +14,7 @@ interface SessionCardProps {
 export function SessionCard({ session, onPress }: SessionCardProps) {
     const isFull = session.enrolledCount >= session.effectiveCapacity;
     const isKeynote = session.type === 'keynote';
-
+    
     return (
         <Pressable
             onPress={onPress}
@@ -39,7 +39,7 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
                 >
                     <Icon as={Clock} size={13} className="text-slate-500" strokeWidth={2.5} />
                     <Text className="text-xs font-bold text-slate-600">
-                        {formatTime(session.startDateTime)}
+                        {formatDateTimeRange(session.startDateTime, session.endDateTime)}
                     </Text>
                 </View>
             </View>
@@ -49,7 +49,7 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
                     <View className="w-6 items-center justify-center mr-2">
                         <Icon as={MapPin} size={16} className="text-slate-500" />
                     </View>
-                    <Text className="text-slate-600 text-sm font-medium">
+                    <Text className="text-slate-600 text-sm font-medium ml-2">
                         {session.room.name}
                     </Text>
                 </View>
@@ -62,20 +62,22 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
                             className={isFull ? 'text-red-500' : 'text-slate-500'}
                         />
                     </View>
-                    <Text className={`text-sm font-medium ${isFull ? 'text-red-500' : 'text-slate-600'}`}>
-                        {" " + session.enrolledCount} {session.effectiveCapacity != 0 ? `/ ${session.effectiveCapacity}` : ''} inschrijvingen
+                    <Text className={`text-sm font-medium  ml-2 ${isFull ? 'text-red-500' : 'text-slate-600'}`}>
+                        {isFull ? 'Vol - ' + session.waitlistCount + ' in wachtrij' : session.enrolledCount + (session.effectiveCapacity != 0 ? ` / ${session.effectiveCapacity}` : '') + ' inschrijvingen'}               
                     </Text>
                 </View>
             </View>
 
             {session.labels && session.labels.length > 0 && (
-                <View className="mt-4 pt-4 flex-row flex-wrap gap-2 border-t border-slate-200">
+                <View className=" pt-4 flex-row flex-wrap gap-2">
                     {session.labels.map((label, index) => (
-                        <View key={index} className="bg-slate-100 px-3 py-1 ">
-                            <Text className="text-[11px] font-semibold text-slate-600">
-                                {label}
-                            </Text>
-                        </View>
+                        <Badge
+                            key={index}
+                            variant="secondary" 
+                            className="rounded-full"
+                        >
+                            <Text>{label}</Text>
+                        </Badge>
                     ))}
                 </View>
             )}
