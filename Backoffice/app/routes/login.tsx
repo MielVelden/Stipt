@@ -32,8 +32,12 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password)
       navigate("/app")
-    } catch {
-      setServerError("Ongeldige inloggegevens. Controleer uw e-mail en wachtwoord.")
+    } catch (error) {
+      if (error instanceof Error && error.message === "ACCESS_DENIED") {
+        setServerError("Je hebt geen toegang tot de backoffice.")
+      } else {
+        setServerError("Ongeldige inloggegevens. Controleer uw e-mail en wachtwoord.")
+      }
     }
   }
 
