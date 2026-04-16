@@ -23,7 +23,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && window.location.pathname !== "/login") {
       localStorage.removeItem("auth_token")
       localStorage.removeItem("auth_user")
       window.location.href = "/login"

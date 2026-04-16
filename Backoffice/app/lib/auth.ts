@@ -29,12 +29,7 @@ export function clearAuth(): void {
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const response = await apiClient.post<LoginResponse>("/auth/login", { email, password })
-
-  if (!response.data.user.roles.includes("manager")) {
-    throw new Error("ACCESS_DENIED")
-  }
-
+  const response = await apiClient.post<LoginResponse>("/auth/backoffice/login", { email, password })
   setAuth(response.data.accessToken, response.data.user)
   return response.data
 }

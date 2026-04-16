@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import axios from "axios"
 import { login } from "~/lib/auth"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
@@ -33,7 +34,7 @@ export default function LoginPage() {
       await login(data.email, data.password)
       navigate("/app")
     } catch (error) {
-      if (error instanceof Error && error.message === "ACCESS_DENIED") {
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
         setServerError("Je hebt geen toegang tot de backoffice.")
       } else {
         setServerError("Ongeldige inloggegevens. Controleer uw e-mail en wachtwoord.")

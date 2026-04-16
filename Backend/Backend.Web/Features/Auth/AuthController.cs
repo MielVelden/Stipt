@@ -20,6 +20,20 @@ public sealed class AuthController(AuthService authService) : ControllerBase
         return Ok(response);
     }
 
+    [HttpPost("backoffice/login")]
+    [AllowAnonymous]
+    public async Task<ActionResult<LoginResponse>> BackofficeLogin(LoginRequest request, CancellationToken ct)
+    {
+        var response = await authService.LoginAsync(request, ct);
+        if (response is null)
+            return Unauthorized("Invalid email or password.");
+
+        if (!response.User.Roles.Contains(AppRoles.Manager))
+            return StatusCode(StatusCodes.Status403Forbidden);
+
+        return Ok(response);
+    }
+
     [HttpPost("refresh")]
     [AllowAnonymous]
     public async Task<ActionResult<RefreshResponse>> Refresh(RefreshRequest request, CancellationToken ct)
