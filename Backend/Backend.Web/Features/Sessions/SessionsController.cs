@@ -25,7 +25,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         return Ok(response);
     }
 
-    [HttpGet("agenda")]
+    [HttpGet("personal-agenda")]
     public async Task<ActionResult<PersonalAgendaRo>> GetPersonalAgenda(Guid eventId, [FromQuery] string? filter, CancellationToken ct)
     {
         var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);

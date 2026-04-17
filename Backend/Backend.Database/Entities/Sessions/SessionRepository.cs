@@ -33,17 +33,32 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
     }
 
     public async Task<IReadOnlyCollection<Session>> GetAgendaSessionsAsync(
-        Guid eventId,
-        Guid participantId,
-        CancellationToken cancellationToken)
+    Guid eventId,
+    Guid participantId,
+    string? filter,
+    CancellationToken cancellationToken)
     {
-        return await dbContext.Sessions
+        var isEnrolledFilter = filter?.Equals("enrolled", StringComparison.OrdinalIgnoreCase) == true;
+        var isGeneralFilter = filter?.Equals("general", StringComparison.OrdinalIgnoreCase) == true;
+
+        var query = dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
-            .Include(x => x.Enrollments)
-            .Where(s => s.EventId == eventId &&
-                        (s.Type == SessionType.Keynote ||
-                         s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)))
+            .Include(x => x.Enrollments.Where(e => e.ParticipantId == participantId))
+            .Where(s => s.EventId == eventId)
+            .Where(s =>
+                (!isEnrolledFilter && !isGeneralFilter &&
+                    (s.Type == SessionType.Keynote ||
+                     s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)))
+                ||
+                (isEnrolledFilter &&
+                    s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled))
+                ||
+                (isGeneralFilter &&
+                    s.Type == SessionType.Keynote)
+            );
+
+        return await query
             .OrderBy(s => s.StartDateTime)
             .ToListAsync(cancellationToken);
     }

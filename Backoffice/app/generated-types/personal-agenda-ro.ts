@@ -4,10 +4,7 @@
  */
 
 import type { SessionRo } from './session-ro';
-import type { PersonalAgendaConflictRo } from './personal-agenda-conflict-ro';
 
 export interface PersonalAgendaRo {
   sessions: SessionRo[];
-  conflicts: PersonalAgendaConflictRo[];
-  hasConflicts: boolean;
 }
