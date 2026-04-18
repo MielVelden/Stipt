@@ -36,39 +36,18 @@ export async function getPersonalAgenda(
     eventId: string,
     filter?: SessionFilterDto,
 ): Promise<Session[]> {
-    console.log("Fetching personal agenda with filter:", filter);
-    console.log("user: ", await getAccessTokenAsync());
-
-    let response = null;
-    try {
-        response = await apiClient.get<PersonalAgendaRo>(
-            `/events/${eventId}/sessions/personal-agenda`,
-            {
-                params: filter,
-                paramsSerializer: {
-                    serialize: (params) =>
-                        toSessionQueryString(
-                            params as SessionFilterDto | undefined,
-                        ),
-                },
+    const response = await apiClient.get<PersonalAgendaRo>(
+        `/events/${eventId}/sessions/personal-agenda`,
+        {
+            params: filter,
+            paramsSerializer: {
+                serialize: (params) =>
+                    toSessionQueryString(
+                        params as SessionFilterDto | undefined,
+                    ),
             },
-        );
-    } catch (error) {
-        console.error("Error fetching personal agenda:", error);
-        console.error("Error response data:", (error as any)?.response?.data);
-        console.error(
-            "Error response status:",
-            (error as any)?.response?.status,
-        );
-        console.error(
-            "Error response headers:",
-            (error as any)?.response?.headers,
-        );
-        console.error("Error method:", (error as any)?.config?.method);
-        console.error("Error URL:", (error as any)?.config?.url);
-    }
-
-    console.log("Personal agenda response:", response?.data);
+        },
+    );
 
     return response?.data.sessions.map(toSessionModel) || [];
 }
