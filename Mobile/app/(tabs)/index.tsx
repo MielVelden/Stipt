@@ -6,7 +6,7 @@ import {getSessions} from "@/features/sessions/api";
 import {useEffect, useState} from "react";
 import { SessionRo } from "@/generated-types/session-ro";
 
-const EVENT_ID = "f6672b9f-d140-4566-abc0-e6779dfab7f1";
+const EVENT_ID = "f6672b9f-d140-4566-abc0-e6779dfab7f1"; // TODO
 
 export default function EventsScreen() {
     const [sessions, setSessions] = useState<SessionRo[]>([]);
@@ -16,7 +16,7 @@ export default function EventsScreen() {
     }, []);
 
     function handleClick(session: SessionRo) {
-        router.push(`/${EVENT_ID}/sessions/${session.id}/`)
+        router.push(`/events/${EVENT_ID}/sessions/${session.id}/`)
     }
 
   return (
