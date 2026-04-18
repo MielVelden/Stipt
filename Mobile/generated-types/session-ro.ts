@@ -22,6 +22,7 @@ export interface SessionRo {
   labels: string[];
   createdAtUtc: string;
   updatedAtUtc: string | undefined;
+  effectiveCapacity: number;
   enrolledCount: number;
   waitlistCount: number;
   hasAvailableSpots: boolean;

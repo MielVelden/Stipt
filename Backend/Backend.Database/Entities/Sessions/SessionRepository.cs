@@ -21,14 +21,21 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyCollection<Session>> GetAllAsync(Guid eventId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<Session>> GetFilteredAsync(Guid eventId, SessionFilter filter, CancellationToken cancellationToken)
     {
-        return await dbContext.Sessions
+        var query = dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
             .Include(x => x.Enrollments)
-            .Where(x => x.EventId == eventId)
+            .Where(x => x.EventId == eventId);
+
+        if (filter.Labels is { Count: > 0 })
+            query = query.Where(s => s.Labels.Any(label => filter.Labels.Contains(label)));
+
+
+        return await query
             .OrderBy(x => x.StartDateTime)
+            .ThenBy(x => x.Room.Name)
             .ToListAsync(cancellationToken);
     }
 

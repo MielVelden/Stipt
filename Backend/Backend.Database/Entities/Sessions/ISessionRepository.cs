@@ -4,6 +4,7 @@ public interface ISessionRepository
 {
     Task AddAsync(Session session, CancellationToken cancellationToken);
     Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Session>> GetFilteredAsync(Guid eventId, SessionFilter filter, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Session>> GetAllAsync(Guid eventId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Session>> GetAgendaSessionsAsync(Guid eventId, Guid participantId, string? filter, CancellationToken cancellationToken);
     Task<Session?> GetByIdAsync(Guid eventId, Guid id, CancellationToken cancellationToken);
