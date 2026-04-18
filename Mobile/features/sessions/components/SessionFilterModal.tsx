@@ -76,24 +76,21 @@ export function SessionFilterModal({
                         <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
                             Beschikbaarheid
                         </Text>
-                        <View className="flex-row items-center justify-between mb-8">
-                            <View className="flex-1 mr-3">
-                                <Label
-                                    nativeID="available-filter"
-                                    onPress={() => setTempAvailableOnly(!tempAvailableOnly)}
-                                    className="text-base font-semibold text-slate-800"
-                                >
-                                </Label>
-                                <Text className="text-sm font-semibold">
-                                    Verberg sessies die al volgeboekt zijn
-                                </Text>
-                            </View>
-
+                        <View className="flex flex-row items-center gap-2 mb-8">
                             <Switch
                                 checked={tempAvailableOnly}
                                 onCheckedChange={setTempAvailableOnly}
                                 nativeID="available-filter"
                             />
+                            <Label
+                                nativeID="available-filter"
+                                onPress={() => setTempAvailableOnly(!tempAvailableOnly)}
+                                className="text-base font-semibold text-slate-800"
+                            >
+                                <Text className="text-sm font-semibold">
+                                    Verberg sessies die al volgeboekt zijn
+                                </Text>
+                            </Label>
                         </View>
 
                         {availableLabels.length > 0 && (

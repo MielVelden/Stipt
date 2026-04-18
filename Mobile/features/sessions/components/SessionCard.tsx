@@ -37,7 +37,7 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
                     className="bg-slate-50 flex-row items-center"
                     style={{ paddingHorizontal: 10, paddingVertical: 6 }}
                 >
-                    <Icon as={Clock} size={13} className="text-slate-500" strokeWidth={2.5} />
+                    <Icon as={Clock} size={13} className="text-slate-500 mr-1" strokeWidth={2.5} />
                     <Text className="text-xs font-bold text-slate-600">
                         {formatDateTimeRange(session.startDateTime, session.endDateTime)}
                     </Text>
@@ -46,23 +46,23 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
 
             <View className="gap-y-2 mb-2">
                 <View className="flex-row items-center">
-                    <View className="w-6 items-center justify-center mr-2">
+                    <View className="w-6 items-center justify-center mr-1">
                         <Icon as={MapPin} size={16} className="text-slate-500" />
                     </View>
-                    <Text className="text-slate-600 text-sm font-medium ml-2">
+                    <Text className="text-slate-600 text-sm font-medium">
                         {session.room.name}
                     </Text>
                 </View>
 
                 <View className="flex-row items-center">
-                    <View className="w-6 items-center justify-center mr-2">
+                    <View className="w-6 items-center justify-center mr-1">
                         <Icon
                             as={Users}
                             size={16}
                             className={isFull ? 'text-red-500' : 'text-slate-500'}
                         />
                     </View>
-                    <Text className={`text-sm font-medium  ml-2 ${isFull ? 'text-red-500' : 'text-slate-600'}`}>
+                    <Text className={`text-sm font-medium ${isFull ? 'text-red-500' : 'text-slate-600'}`}>
                         {isFull ? 'Vol - ' + session.waitlistCount + ' in wachtrij' : session.enrolledCount + (session.effectiveCapacity != 0 ? ` / ${session.effectiveCapacity}` : '') + ' inschrijvingen'}               
                     </Text>
                 </View>
