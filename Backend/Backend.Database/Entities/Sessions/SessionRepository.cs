@@ -32,6 +32,9 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         if (filter.Labels is { Count: > 0 })
             query = query.Where(s => s.Labels.Any(label => filter.Labels.Contains(label)));
 
+        if (filter.AvailableOnly == true)
+            query = query.Where(s => s.Enrollments.Count(e => e.Status == SessionEnrollmentStatus.Enrolled) < (s.Capacity ?? int.MaxValue));
+
 
         return await query
             .OrderBy(x => x.StartDateTime)
@@ -40,30 +43,26 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
     }
 
     public async Task<IReadOnlyCollection<Session>> GetAgendaSessionsAsync(
-    Guid eventId,
-    Guid participantId,
-    string? filter,
-    CancellationToken cancellationToken)
+        Guid eventId,
+        Guid participantId,
+        SessionFilter filter,
+        CancellationToken cancellationToken)
     {
-        var isEnrolledFilter = filter?.Equals("enrolled", StringComparison.OrdinalIgnoreCase) == true;
-        var isGeneralFilter = filter?.Equals("general", StringComparison.OrdinalIgnoreCase) == true;
-
         var query = dbContext.Sessions
             .AsNoTracking()
             .Include(x => x.Room)
             .Include(x => x.Enrollments.Where(e => e.ParticipantId == participantId))
             .Where(s => s.EventId == eventId)
             .Where(s =>
-                (!isEnrolledFilter && !isGeneralFilter &&
-                    (s.Type == SessionType.Keynote ||
-                     s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)))
-                ||
-                (isEnrolledFilter &&
-                    s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled))
-                ||
-                (isGeneralFilter &&
-                    s.Type == SessionType.Keynote)
+                s.Type == SessionType.Keynote ||
+                s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)
             );
+
+        if (filter.Labels is { Count: > 0 })
+            query = query.Where(s => s.Labels.Any(label => filter.Labels.Contains(label)));
+
+        if (filter.AvailableOnly == true)
+            query = query.Where(s => s.Enrollments.Count(e => e.Status == SessionEnrollmentStatus.Enrolled) < (s.Capacity ?? int.MaxValue));
 
         return await query
             .OrderBy(s => s.StartDateTime)
