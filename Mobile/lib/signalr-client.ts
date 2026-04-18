@@ -23,7 +23,7 @@ export function ConnectToHub(path: string) {
 
         const refreshAccessToken = async () => {
             const refreshToken = await getRefreshTokenAsync() || ""
-            const response = await refreshTokensAsync(refresToken)
+            const response = await refreshTokensAsync(refreshToken)
             await saveTokensAsync(response.accessToken, response.refreshToken)
             token = await getAccessTokenAsync()
         }
