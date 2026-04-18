@@ -1,5 +1,17 @@
+import type { AxiosResponse } from "axios"
 import apiClient from "@/lib/api-client"
 import { SessionRo } from "@/generated-types/session-ro";
+import type { Session, SessionFilterDto } from "./types"
+
+export async function getAllSessions(eventId: string, filter?: SessionFilterDto): Promise<Session[]> {
+    const response: AxiosResponse<Session[]> = await apiClient.get(`/events/${eventId}/sessions`, {
+        params: filter,
+        paramsSerializer: {
+            serialize: (params) => toSessionQueryString(params as SessionFilterDto | undefined),
+        },
+    })
+    return response.data
+}
 
 export async function getSessions(eventId: string): Promise<SessionRo[]> {
     const response = await apiClient.get<SessionRo[]>(`/events/${eventId}/sessions`)
@@ -27,4 +39,26 @@ export async function unenrollSession(eventId: string, sessionId: string): Promi
 export async function replaceSession(eventId: string, newSessionId: string, oldSessionId: string): Promise<SessionRo> {
     const response = await apiClient.post<SessionRo>(`/events/${eventId}/sessions/${newSessionId}/enrollments/replace/${oldSessionId}`);
     return response.data;
+}
+
+function toSessionQueryString(filter?: SessionFilterDto) {
+  if (!filter) {
+    return ""
+  }
+
+  const params = new URLSearchParams()
+
+  filter.labels?.forEach((label) => {
+    const trimmedLabel = label.trim()
+
+    if (trimmedLabel.length > 0) {
+      params.append("labels", trimmedLabel)
+    }
+  })
+
+  if (typeof filter.availableOnly === "boolean") {
+    params.append("availableOnly", String(filter.availableOnly))
+  }
+
+  return params.toString()
 }

@@ -4,17 +4,19 @@ import {router, useLocalSearchParams} from "expo-router";
 import {Button} from "@/components/ui/button";
 import {getSessions} from "@/features/sessions/api";
 import {useEffect, useState} from "react";
-import {SessionRo} from "@/generated-types/session-ro";
+import { SessionRo } from "@/generated-types/session-ro";
+
+const EVENT_ID = "f6672b9f-d140-4566-abc0-e6779dfab7f1"; // TODO
 
 export default function EventsScreen() {
     const [sessions, setSessions] = useState<SessionRo[]>([]);
 
     useEffect(() => {
-        getSessions("831dd496-53ef-4ede-b72c-694a4e4c5bd4").then(setSessions);
+        getSessions(EVENT_ID).then(setSessions);
     }, []);
 
     function handleClick(session: SessionRo) {
-        router.push(`/events/831dd496-53ef-4ede-b72c-694a4e4c5bd4/sessions/${session.id}/`)
+        router.push(`/events/${EVENT_ID}/sessions/${session.id}/`)
     }
 
   return (

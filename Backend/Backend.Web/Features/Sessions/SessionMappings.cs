@@ -6,9 +6,12 @@ namespace Backend.Web.Features.Sessions;
 
 public static class SessionMappings
 {
-    public static SessionRo ToRo(this Session session, Guid? participantId)
+    public static SessionRo ToRo(this Session session, Guid? participantId = null)
     {
+        var effectiveCapacity = session.Capacity ?? session.Room.Capacity;
+
         var enrolledCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
+
         var waitlist = session.Enrollments
             .Where(x => x.Status == SessionEnrollmentStatus.Waitlisted)
             .OrderBy(x => x.CreatedAtUtc)
@@ -16,7 +19,6 @@ public static class SessionMappings
             .ToList();
         var waitlistCount = waitlist.Count;
 
-        var effectiveCapacity = session.Capacity ?? session.Room.Capacity;
         var hasAvailableSpots = enrolledCount < effectiveCapacity;
 
         SessionEnrollmentStatus? myEnrollmentStatus = null;
@@ -26,6 +28,7 @@ public static class SessionMappings
         {
             var myEnrollment = session.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId.Value);
             myEnrollmentStatus = myEnrollment?.Status;
+
             if (myEnrollmentStatus == SessionEnrollmentStatus.Waitlisted)
             {
                 var index = waitlist.FindIndex(x => x.ParticipantId == participantId.Value);
@@ -51,6 +54,7 @@ public static class SessionMappings
             session.Labels.AsReadOnly(),
             session.CreatedAtUtc,
             session.UpdatedAtUtc,
+            effectiveCapacity,
             enrolledCount,
             waitlistCount,
             hasAvailableSpots,

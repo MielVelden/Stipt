@@ -16,12 +16,12 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
     {
         var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
 
-        var response = await sessionsService.GetAllAsync(eventId, userId, ct);
+        var response = await sessionsService.GetAllFilteredAsync(eventId, filter, userId, ct);
         return Ok(response);
     }
 
