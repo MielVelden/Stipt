@@ -134,10 +134,15 @@ public sealed class SessionsService(
     public async Task<PersonalAgendaRo> GetPersonalAgendaAsync(
         Guid eventId,
         Guid participantId,
-        string? filter,
+        SessionFilterDto filterDto,
         CancellationToken cancellationToken)
     {
-        var sessions = await sessionRepository.GetAgendaSessionsAsync(eventId, participantId, filter, cancellationToken);
+        var dbFilter = new SessionFilter(
+            Labels: filterDto.Labels,
+            AvailableOnly: filterDto.AvailableOnly
+        );
+
+        var sessions = await sessionRepository.GetAgendaSessionsAsync(eventId, participantId, dbFilter, cancellationToken);
 
         return new PersonalAgendaRo(
             sessions.Select(s => s.ToRo(participantId)).ToArray()
