@@ -1,6 +1,10 @@
-using Backend.Application.Features.Todos.Repositories;
+using Backend.Database.Entities.Events;
+using System.Runtime.CompilerServices;
+using Backend.Database.Entities.Auth;
+using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.SessionEnrollments;
+using Backend.Database.Entities.Sessions;
 using Backend.Database.Persistence;
-using Backend.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,10 +20,28 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
-                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+            {
+                npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                npgsql.UseNodaTime();
+            }));
 
-        services.AddScoped<ITodoRepository, TodoRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<ISessionEnrollmentRepository, SessionEnrollmentRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         return services;
+    }
+
+    public static async Task MigrateAndSeedDatabaseAsync(this IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+        await dbContext.Database.MigrateAsync(cancellationToken);
+        await InitialDataSeeder.SeedAsync(dbContext, configuration, cancellationToken);
     }
 }

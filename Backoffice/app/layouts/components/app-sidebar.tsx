@@ -13,8 +13,15 @@ import {
 import { Link } from "react-router"
 import logo from "~/assets/images/iO-logo.svg"
 import { NavEventSelect } from "./nav-event-select"
+import type { EventRo } from "~/generated-types/event-ro"
+import { useAppContext } from "~/contexts/app-context"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  events: EventRo[]
+}
+
+export function AppSidebar({ events, ...props }: AppSidebarProps) {
+  const { eventBaseUrl } = useAppContext()
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -24,7 +31,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <Link to="/app">
+              <Link to={eventBaseUrl}>
                 <img src={logo} alt="iO Logo" className="size-8!" />
                 <span className="text-base font-semibold">Event Connect</span>
               </Link>
@@ -34,7 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavEventSelect />
+        <NavEventSelect events={events} />
         <NavMain />
       </SidebarContent>
 

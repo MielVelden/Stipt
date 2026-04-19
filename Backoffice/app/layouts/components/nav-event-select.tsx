@@ -4,12 +4,10 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
-import { ArrowRight, Plus, TicketIcon } from "lucide-react"
-import { Link } from "react-router"
+import { ArrowRight, Plus } from "lucide-react"
+import { Link, useNavigate, useLocation } from "react-router"
 import {
   Select,
   SelectContent,
@@ -19,15 +17,28 @@ import {
   SelectValue,
 } from "~/components/ui/select"
 import { Button } from "~/components/ui/button"
+import { useAppContext } from "~/contexts/app-context"
+import type { EventRo } from "~/generated-types/event-ro"
 
-// TODO: Replace with actual events from the API
-const events = [
-  { id: "1", name: "Example 1" },
-  { id: "2", name: "Example 2" },
-  { id: "3", name: "Example 3" },
-]
+export function NavEventSelect({ events }: { events: EventRo[] }) {
+  const { selectedEventId, setSelectedEventId } = useAppContext()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-export function NavEventSelect() {
+  const handleEventChange = (id: string) => {
+    setSelectedEventId(id)
+
+    const newPath = location.pathname.includes("/app/event/")
+      ? location.pathname.replace(/\/app\/event\/[^/]+/, `/app/event/${id}`)
+      : `/app/event/${id}/`
+
+    navigate({
+      pathname: newPath,
+      search: location.search,
+      hash: location.hash,
+    })
+  }
+
   return (
     <SidebarGroup>
       <div className="flex items-center justify-between">
@@ -50,15 +61,24 @@ export function NavEventSelect() {
               className="group-data-[collapsible=icon]:hidden"
             >
               <div className="flex items-center gap-1">
-                <Select>
+                <Select
+                  value={selectedEventId ?? undefined}
+                  onValueChange={handleEventChange}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecteer een evenement" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
-                      {events.map((event) => (
+                      {!events?.length && (
+                        <SelectItem value="null" disabled>
+                          Geen event beschikbaar
+                        </SelectItem>
+                      )}
+                      {events?.map((event) => (
                         <SelectItem key={event.id} value={event.id}>
                           {event.name}
+                          {event.isArchived && " (Gearchiveerd)"}
                         </SelectItem>
                       ))}
                     </SelectGroup>

@@ -1,4 +1,4 @@
-using Backend.Common.Web;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace Backend.Web.Configuration;
 
@@ -9,9 +9,18 @@ public static class ApplicationBuilderExtensions
         app.UseExceptionHandler();
 
         app.UseHttpsRedirection();
-        app.UseAuthorization();
 
-        app.MapEndpointDefinitions();
+        return app;
+    }
+
+    public static WebApplication AddHubs(this WebApplication app)
+    {
+        var options = new HttpConnectionDispatcherOptions()
+        {
+            CloseOnAuthenticationExpiration = true,
+
+        };
+        //app.MapHub<ExampleHub>("/api/hub/examplehub", options);
 
         return app;
     }

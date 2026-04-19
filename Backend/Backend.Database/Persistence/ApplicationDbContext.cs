@@ -1,14 +1,26 @@
-using Backend.Domain.Todos;
+using Backend.Database.Entities;
+using Backend.Database.Entities.Auth;
+using Backend.Database.Entities.Events;
+using Backend.Database.Entities.Rooms;
+using Backend.Database.Entities.SessionEnrollments;
+using Backend.Database.Entities.Sessions;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Database.Persistence;
 
-public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
-    public DbSet<TodoItem> Todos => Set<TodoItem>();
+    public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<Event> Events => Set<Event>();
+    public DbSet<Session> Sessions => Set<Session>();
+    public DbSet<SessionEnrollment> SessionEnrollments => Set<SessionEnrollment>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
