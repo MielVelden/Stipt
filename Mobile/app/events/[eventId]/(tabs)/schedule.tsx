@@ -5,19 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { MapPin, Calendar, Filter } from "lucide-react-native";
 import { getAllSessions } from "@/features/sessions/api";
-import { getEventById } from "../../features/events/api";
+import { getEventById } from "@/features/events/api";
 import type { Session, SessionFilterDto } from "@/features/sessions/types";
-import type { Event } from "../../features/events/types";
 import { getAvailableLabels } from "@/features/sessions/utils";
 import { formatDateTimeRange } from "@/lib/utils";
 import { SessionCard } from "@/features/sessions/components/SessionCard";
 import { SessionFilterModal } from "@/features/sessions/components/SessionFilterModal";
+import { EventRo } from "@/generated-types/event-ro";
 
 const EVENT_ID = "f6672b9f-d140-4566-abc0-e6779dfab7f1";
 
 export default function ScheduleScreen() {
     const router = useRouter();
-    const [event, setEvent] = useState<Event | null>(null);
+    const [event, setEvent] = useState<EventRo | null>(null);
     const [sessions, setSessions] = useState<Session[]>([]);
 
     const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
