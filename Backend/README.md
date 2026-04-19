@@ -23,6 +23,46 @@ dotnet ef migrations add <MigrationName> --project Backend.Database --startup-pr
 dotnet ef database update --project Backend.Database --startup-project Backend.Web
 ```
 
+# SignalR
+De app gebruikt SignalR voor realtime communicatie. Deze communicatie verloopt via websockets waarbij de client en server methods op elkaar aanroepen.
+
+Hiervoor moet er als eerst een Hub worden aangemaakt op de server:
+```csharp
+public class ExampleHub : Hub
+{
+}
+```
+Om de client een method op de server te laten aanroepen gebruik je: 
+```csharp
+public async Task ServerMethodName(data)
+{
+    //some code here
+}
+```
+Om vanaf de server een method van de client aan te roepen (in dit geval op alle verbonden clients) gebruik je:
+```csharp
+await Clients.All.SendAsync("ClientMethod", data);
+```
+
+Het aanroepen van methodes op de client kan standaard alleen vanuit de Hub. Om vanuit een andere class een client method aan te roepen geef je door middel van de DI container een HubContext mee:
+```csharp
+public class ExampleController(IHubContext<ExampleHub> hubContext) : ControllerBase
+```
+
+Vanuit hier gebruik je:
+```csharp
+await hubContext.Clients.All.SendAsync("ClientMethod", data);
+```
+
+Om een Hub te registreren voor gebruik voeg je het volgende toe aan Backend.Web/Configuration/ApplicationBuilderExtention.cs in de methode AddHubs():
+```csharp
+app.MapHub<ExampleHub>("/api/hub/examplehub", options);
+```
+> Hub en server methods zijn op dezelfde manier te beveiligen met de ```[Authorize]``` tag als normale controllers en methods.
+
+Verdere uitleg is te vinden in de [Microsoft documentatie](https://learn.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-10.0)
+
+
 ## TypeGen generatie
 
 Bij het builden van de backend, worden automatisch de types gegenereerd voor de frontend. Deze types worden opgeslagen in `app/generated-types`.
@@ -51,3 +91,4 @@ dotnet user-secrets set "Seeder:SeedUserPassword" "###YOUR_SEED_PASSWORD###"
 ```
 
 Vervang `###YOUR_SEED_PASSWORD###` door een wachtwoord dat voldoet aan de ASP.NET Identity vereisten (minimaal 6 tekens, hoofdletter, cijfer en speciaal teken). Zorg ervoor dat dit wachtwoord geheim blijft en niet wordt gedeeld of gecommit naar versiebeheer.
+
