@@ -16,7 +16,7 @@ export default function EventsScreen() {
     }, []);
 
     function handleClick(event: EventRo) {
-        router.push(`/events/${event.id}/(tabs)`)
+        router.push(`/events/${event.id}/(tabs)/sessions`)
     }
 
     return (

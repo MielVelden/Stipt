@@ -22,15 +22,6 @@ export default function TabsLayout() {
             }}
         >
             <Tabs.Screen
-                name="index"
-                options={{
-                    title: "Evenementen",
-                    tabBarIcon: ({ color, size }) => (
-                        <TicketIcon color={color} size={size} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
                 name="sessions"
                 options={{
                     title: "Sessies",
