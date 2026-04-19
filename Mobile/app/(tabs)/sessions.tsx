@@ -76,6 +76,7 @@ export default function SessionOverview() {
             eventId={eventId}
             sectionTitle="Programma"
             loadSessions={getAllSessions}
+            showAvailabilityFilter={true}
         />
     );
 }

@@ -76,6 +76,7 @@ export default function MyAgendaScreen() {
             eventId={eventId}
             sectionTitle="Mijn agenda"
             loadSessions={getPersonalAgenda}
+            showAvailabilityFilter={false}
         />
     );
 }

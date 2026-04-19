@@ -19,12 +19,14 @@ interface SessionTimelineScreenProps {
         eventId: string,
         filter: SessionFilterDto,
     ) => Promise<Session[]>;
+    showAvailabilityFilter?: boolean;
 }
 
 export function SessionTimelineScreen({
     eventId,
     sectionTitle,
     loadSessions,
+    showAvailabilityFilter = true,
 }: SessionTimelineScreenProps) {
     const router = useRouter();
     const [event, setEvent] = useState<Event | null>(null);
@@ -36,7 +38,15 @@ export function SessionTimelineScreen({
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const activeFilterCount = selectedLabels.length + (availableOnly ? 1 : 0);
+    const activeFilterCount =
+        selectedLabels.length +
+        (showAvailabilityFilter && availableOnly ? 1 : 0);
+
+    useEffect(() => {
+        if (!showAvailabilityFilter) {
+            setAvailableOnly(false);
+        }
+    }, [showAvailabilityFilter]);
 
     useEffect(() => {
         let isMounted = true;
@@ -49,7 +59,9 @@ export function SessionTimelineScreen({
                 const filter: SessionFilterDto = {
                     labels:
                         selectedLabels.length > 0 ? selectedLabels : undefined,
-                    availableOnly,
+                    availableOnly: showAvailabilityFilter
+                        ? availableOnly
+                        : false,
                 };
 
                 const [sessionData, eventData] = await Promise.all([
@@ -87,14 +99,20 @@ export function SessionTimelineScreen({
         return () => {
             isMounted = false;
         };
-    }, [availableOnly, eventId, loadSessions, selectedLabels]);
+    }, [
+        availableOnly,
+        eventId,
+        loadSessions,
+        selectedLabels,
+        showAvailabilityFilter,
+    ]);
 
     const handleApplyFilters = (
         newLabels: string[],
         newAvailableOnly: boolean,
     ) => {
         setSelectedLabels(newLabels);
-        setAvailableOnly(newAvailableOnly);
+        setAvailableOnly(showAvailabilityFilter ? newAvailableOnly : false);
         setIsFilterModalVisible(false);
     };
 
@@ -256,6 +274,7 @@ export function SessionTimelineScreen({
                 availableLabels={allLabels}
                 currentSelectedLabels={selectedLabels}
                 currentAvailableOnly={availableOnly}
+                showAvailabilityFilter={showAvailabilityFilter}
             />
         </View>
     );
