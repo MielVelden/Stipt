@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Text } from "@/components/ui/text";
-import { getEvents } from "@/features/events/api";
 import { SessionTimelineScreen } from "@/features/sessions/components/SessionTimelineScreen";
 import { getAllSessions } from "@/features/sessions/api";
+import {useLocalSearchParams} from "expo-router";
 
 export default function SessionOverview() {
-    const [eventId, setEventId] = useState<string | null>(null);
+    const { eventId: rawEventId } = useLocalSearchParams<{
+        eventId?: string | string[];
+    }>();
+    const eventId = Array.isArray(rawEventId) ? rawEventId[0] : rawEventId;
+
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -17,23 +21,9 @@ export default function SessionOverview() {
             try {
                 setError(null);
 
-                // TODO: get event from context or so
-                const events = await getEvents();
-                const activeEvent =
-                    events.find((event) => !event.isArchived) ??
-                    events[0] ??
-                    null;
-
                 if (!isMounted) {
                     return;
                 }
-
-                if (!activeEvent) {
-                    setError("Geen evenement beschikbaar.");
-                    return;
-                }
-
-                setEventId(activeEvent.id);
             } catch {
                 if (isMounted) {
                     setError("Evenement kon niet worden geladen.");

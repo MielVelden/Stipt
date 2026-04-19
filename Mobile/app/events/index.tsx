@@ -23,10 +23,10 @@ export default function EventsScreen() {
         <View className="pt-20 px-6">
             <Text variant="h1" className="text-2xl text-left">Evenementen</Text>
 
-            {events.map((session) => (
-                <View key={session.id}>
-                    <Button variant="outline" className="w-full mt-2" onPress={() => handleClick(session)}>
-                        <Text>{session.name}</Text>
+            {events.map((event) => (
+                <View key={event.id}>
+                    <Button variant="outline" className="w-full mt-2" onPress={() => handleClick(event)}>
+                        <Text>{event.name}</Text>
                         <View className="flex-grow" />
                         <Icon as={ChevronRight} size={18} />
                     </Button>
