@@ -1,13 +1,16 @@
 using Backend.Web.Features.Rooms.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Web.Features.Rooms;
 
 [ApiController]
 [Route("api/events/{eventId:guid}/rooms")]
+[Authorize]
 public class RoomsController(RoomsService roomsService) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<CreatedAtActionResult> CreateRoom(Guid eventId, CreateRoomDto request, CancellationToken ct)
     {
         var response = await roomsService.CreateAsync(eventId, request, ct);
@@ -29,6 +32,7 @@ public class RoomsController(RoomsService roomsService) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<ActionResult<RoomRo>> UpdateRoom(Guid eventId, Guid id, UpdateRoomDto request, CancellationToken ct)
     {
         var response = await roomsService.UpdateAsync(eventId, id, request, ct);
@@ -36,6 +40,7 @@ public class RoomsController(RoomsService roomsService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<IActionResult> DeleteRoom(Guid eventId, Guid id, CancellationToken ct)
     {
         await roomsService.DeleteAsync(eventId, id, ct);

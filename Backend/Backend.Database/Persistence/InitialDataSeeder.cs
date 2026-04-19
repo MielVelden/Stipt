@@ -12,7 +12,8 @@ namespace Backend.Database.Persistence;
 
 internal static class InitialDataSeeder
 {
-    private const string ParticipantRole = "deelnemer";
+    private const string AttendeeRole = "attendee";
+    private const string ManagerRole = "manager";
     private const string ParticipantTestEmail = "deelnemer@test.nl";
 
     private static readonly Guid MainEventId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850001");
@@ -38,8 +39,9 @@ internal static class InitialDataSeeder
         if (string.IsNullOrEmpty(seedPassword))
             throw new InvalidOperationException("Seeder:SeedUserPassword is not configured. Set it via user-secrets or environment variables.");
 
-        await EnsureParticipantRoleExistsAsync(roleManager);
-        var seededUsers = await EnsureSeedUsersAsync(userManager, seedPassword);
+        await EnsureRolesExistsAsync(roleManager);
+        var seededUsers = await EnsureSeedAttendeesAsync(userManager, seedPassword);
+        var seededUsers = await EnsureSeedManagerAsync(userManager, seedPassword);
 
         await SeedMainEventAsync(dbContext, cancellationToken);
         await SeedTestEventWithEnrollmentsAsync(dbContext, seededUsers, cancellationToken);
@@ -47,15 +49,16 @@ internal static class InitialDataSeeder
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task EnsureParticipantRoleExistsAsync(RoleManager<IdentityRole> roleManager)
+    private static async Task EnsureRolesExistsAsync(RoleManager<IdentityRole> roleManager)
     {
-        if (!await roleManager.RoleExistsAsync(ParticipantRole))
-        {
-            await roleManager.CreateAsync(new IdentityRole(ParticipantRole));
-        }
+        if (!await roleManager.RoleExistsAsync(AttendeeRole))
+            await roleManager.CreateAsync(new IdentityRole(AttendeeRole));
+
+        if (!await roleManager.RoleExistsAsync(ManagerRole))
+            await roleManager.CreateAsync(new IdentityRole(ManagerRole));
     }
 
-    private static async Task<IReadOnlyDictionary<string, ApplicationUser>> EnsureSeedUsersAsync(
+    private static async Task<IReadOnlyDictionary<string, ApplicationUser>> EnsureSeedAttendeesAsync(
         UserManager<ApplicationUser> userManager,
         string seedPassword)
     {
@@ -82,8 +85,11 @@ internal static class InitialDataSeeder
                 if (!result.Succeeded)
                 {
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    throw new InvalidOperationException($"Failed to create seed user {email}: {errors}");
+                    throw new InvalidOperationException($"Failed to create seed attendee user {email}: {errors}");
                 }
+
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(user, AttendeeRole);
 
                 user = await userManager.FindByEmailAsync(email)
                     ?? throw new InvalidOperationException($"Seed user {email} was created but could not be loaded.");
@@ -98,6 +104,36 @@ internal static class InitialDataSeeder
         }
 
         return usersByEmail;
+    }
+
+
+    private static async Task<IReadOnlyDictionary<string, ApplicationUser>> EnsureSeedManagerAsync(
+        UserManager<ApplicationUser> userManager,
+        string seedPassword)
+    {
+
+        const string managerTestEmail = "manager@test.nl";
+        var managerEntity = await userManager.FindByEmailAsync(managerTestEmail);
+        if (managerEntity == null)
+        {
+            var manager = new ApplicationUser
+            {
+                UserName = managerTestEmail,
+                Email = managerTestEmail,
+                EmailConfirmed = true,
+                FirstName = "Maikel",
+                LastName = "de Manager"
+            };
+
+            var result = await userManager.CreateAsync(manager, seedPassword);
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(manager, ManagerRole);
+            else
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to create seed manager user: {errors}");
+            }
+        }
     }
 
     private static async Task SeedMainEventAsync(ApplicationDbContext dbContext, CancellationToken cancellationToken)

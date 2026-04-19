@@ -60,6 +60,7 @@ Mobile/
 │
 ├── lib/
 │   ├── api-client.ts             # Axios HTTP client
+│   ├── signalr-client.ts         # connectiemanager voor SignalR
 │   └── utils.ts                  # cn() utility (clsx + tailwind-merge)
 │
 ├── components/
@@ -91,6 +92,31 @@ De app gebruikt [Expo Router](https://expo.github.io/router) voor file-based rou
   ├── settings        Instellingen
 ```
 
+## SignalR
+De app gebruikt SignalR voor realtime communicatie. Deze communicatie verloopt via websockets waarbij de client en server methods op elkaar aanroepen. Voor de mobiele app wordt er gebruik gemaakt van de npm package [@microsoft/signalr](https://www.npmjs.com/package/@microsoft/signalr)
+
+Importeer:
+```ts
+import { ConnectToHub } from "@/lib/signalr-client";
+```
+
+Vervolgens maakt je een connection aan waarbij je de route van de hub als parameter meegeeft:
+```ts
+const { connection, status } = ConnectToHub("/path/to/hub");
+```
+> HubRoutes moeten starten met /hub/
+Hieruit krijg je een connection en een status, waarbij status = ```"disconnected" | "connecting" | "connected" | "reconnecting"```
+
+Om de server een method aan te laten roepen in de mobiele app gebruik je:
+```ts
+connection.on("ClientMethodName", callbackFunction);
+```
+
+Om een method op de server aan te roepen gebruik je:
+```ts
+await connection.invoke("ServerMethodName", Data);
+```
+Verdere uitleg is te vinden in de [API Refrence](https://learn.microsoft.com/en-us/javascript/api/@microsoft/signalr/?view=signalr-js-latest) van Microsoft
 
 ## Styling
 

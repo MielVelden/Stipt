@@ -55,12 +55,29 @@ public sealed class SessionsService(
         return session.ToRo(null);
     }
 
-    public async Task<IReadOnlyCollection<SessionRo>> GetAllAsync(Guid eventId, Guid? userId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<SessionRo>> GetAllFilteredAsync(
+    Guid eventId,
+    SessionFilterDto filterDto,
+    Guid? userId,
+    CancellationToken cancellationToken)
     {
-        var sessions = await sessionRepository.GetAllAsync(eventId, cancellationToken);
-        return sessions
-            .Select(session => session.ToRo(userId))
-            .ToArray();
+        var dbFilter = new SessionFilter(
+            Labels: filterDto.Labels,
+            AvailableOnly: filterDto.AvailableOnly
+        );
+
+        var sessions = await sessionRepository.GetFilteredAsync(eventId, dbFilter, cancellationToken);
+
+        var mappedSessions = sessions.Select(session => session.ToRo(userId)).ToList();
+              
+        if (filterDto.AvailableOnly == true)
+        {
+            mappedSessions = mappedSessions
+                .Where(s => s.HasAvailableSpots)
+                .ToList();
+        }
+
+        return mappedSessions;
     }
 
     public async Task<SessionRo?> GetByIdAsync(Guid eventId, Guid id, Guid? userId, CancellationToken cancellationToken)

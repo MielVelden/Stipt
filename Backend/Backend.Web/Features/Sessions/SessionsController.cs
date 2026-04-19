@@ -1,14 +1,17 @@
 using System.Security.Claims;
 using Backend.Web.Features.Sessions.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Web.Features.Sessions;
 
 [ApiController]
 [Route("api/events/{eventId:guid}/sessions")]
+[Authorize]
 public class SessionsController(SessionsService sessionsService) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<CreatedAtActionResult> CreateSession(Guid eventId, CreateSessionDto request, CancellationToken ct)
     {
         var response = await sessionsService.CreateAsync(eventId, request, ct);
@@ -16,12 +19,12 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
     {
         var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
         Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
 
-        var response = await sessionsService.GetAllAsync(eventId, userId, ct);
+        var response = await sessionsService.GetAllFilteredAsync(eventId, filter, userId, ct);
         return Ok(response);
     }
 
@@ -36,6 +39,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<ActionResult<SessionRo>> UpdateSession(Guid eventId, Guid id, UpdateSessionDto request, CancellationToken ct)
     {
         var response = await sessionsService.UpdateAsync(eventId, id, request, ct);
@@ -43,6 +47,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<IActionResult> DeleteSession(Guid eventId, Guid id, CancellationToken ct)
     {
         var deleted = await sessionsService.DeleteAsync(eventId, id, ct);
@@ -50,6 +55,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpPost("{id:guid}/enrollments")]
+    [Authorize(Roles = AppRoles.Attendee)]
     public async Task<ActionResult<SessionRo>> EnrollInSession(Guid eventId, Guid id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -61,6 +67,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpPost("{id:guid}/enrollments/replace/{sessionIdToUnenroll:guid}")]
+    [Authorize(Roles = AppRoles.Attendee)]
     public async Task<ActionResult<SessionRo>> ReplaceSessionEnrollment(
         Guid eventId,
         Guid id,
@@ -76,6 +83,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     }
 
     [HttpDelete("{id:guid}/enrollments/me")]
+    [Authorize(Roles = AppRoles.Attendee)]
     public async Task<IActionResult> UnenrollFromSession(Guid eventId, Guid id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
