@@ -41,7 +41,7 @@ internal static class InitialDataSeeder
 
         await EnsureRolesExistsAsync(roleManager);
         var seededUsers = await EnsureSeedAttendeesAsync(userManager, seedPassword);
-        var seededUsers = await EnsureSeedManagerAsync(userManager, seedPassword);
+        await EnsureSeedManagerAsync(userManager, seedPassword);
 
         await SeedMainEventAsync(dbContext, cancellationToken);
         await SeedTestEventWithEnrollmentsAsync(dbContext, seededUsers, cancellationToken);
@@ -88,16 +88,10 @@ internal static class InitialDataSeeder
                     throw new InvalidOperationException($"Failed to create seed attendee user {email}: {errors}");
                 }
 
-                if (result.Succeeded)
-                    await userManager.AddToRoleAsync(user, AttendeeRole);
+                await userManager.AddToRoleAsync(user, AttendeeRole);
 
                 user = await userManager.FindByEmailAsync(email)
                     ?? throw new InvalidOperationException($"Seed user {email} was created but could not be loaded.");
-            }
-
-            if (!await userManager.IsInRoleAsync(user, ParticipantRole))
-            {
-                await userManager.AddToRoleAsync(user, ParticipantRole);
             }
 
             usersByEmail[email] = user;
@@ -107,8 +101,7 @@ internal static class InitialDataSeeder
     }
 
 
-    private static async Task<IReadOnlyDictionary<string, ApplicationUser>> EnsureSeedManagerAsync(
-        UserManager<ApplicationUser> userManager,
+    private static async Task EnsureSeedManagerAsync(UserManager<ApplicationUser> userManager,
         string seedPassword)
     {
 
