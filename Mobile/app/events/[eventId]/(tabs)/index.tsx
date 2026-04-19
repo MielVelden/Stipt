@@ -1,39 +1,82 @@
-import { View } from "react-native"
-import { Text } from "@/components/ui/text"
-import {router, useLocalSearchParams} from "expo-router";
-import {Button} from "@/components/ui/button";
-import {getSessions} from "@/features/sessions/api";
-import React, {useEffect, useState} from "react";
-import {SessionRo} from "@/generated-types/session-ro";
-import {Icon} from "@/components/ui/icon";
-import {ChevronRight} from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { Text } from "@/components/ui/text";
+import { getEvents } from "@/features/events/api";
+import { SessionTimelineScreen } from "@/features/sessions/components/SessionTimelineScreen";
+import { getAllSessions } from "@/features/sessions/api";
 
-export default function EventsScreen() {
-    const [sessions, setSessions] = useState<SessionRo[]>([]);
-
-    const { eventId } = useLocalSearchParams<{eventId: string}>();
+export default function SessionOverview() {
+    const [eventId, setEventId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        getSessions(eventId).then(setSessions);
+        let isMounted = true;
+
+        async function loadEvent() {
+            try {
+                setError(null);
+
+                // TODO: get event from context or so
+                const events = await getEvents();
+                const activeEvent =
+                    events.find((event) => !event.isArchived) ??
+                    events[0] ??
+                    null;
+
+                if (!isMounted) {
+                    return;
+                }
+
+                if (!activeEvent) {
+                    setError("Geen evenement beschikbaar.");
+                    return;
+                }
+
+                setEventId(activeEvent.id);
+            } catch {
+                if (isMounted) {
+                    setError("Evenement kon niet worden geladen.");
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        loadEvent();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    function handleClick(session: SessionRo) {
-        router.push(`/events/${eventId}/sessions/${session.id}/`)
+    if (isLoading) {
+        return (
+            <View className="flex-1 items-center justify-center bg-slate-50/50">
+                <ActivityIndicator color="#64748b" />
+                <Text className="text-slate-400 mt-4">Gegevens laden...</Text>
+            </View>
+        );
     }
 
-  return (
-  <View className="pt-20 px-6">
-      <Text variant="h1" className="text-2xl text-left">Sessies</Text>
-
-        {sessions.map((session) => (
-            <View key={session.id}>
-                <Button variant="outline" className="w-full mt-2" onPress={() => handleClick(session)}>
-                    <Text>{session.title}</Text>
-                    <View className="flex-grow" />
-                    <Icon as={ChevronRight} size={18} />
-                </Button>
+    if (error || !eventId) {
+        return (
+            <View className="flex-1 items-center justify-center bg-slate-50/50">
+                <Text className="text-slate-500">
+                    {error ?? "Geen evenement beschikbaar."}
+                </Text>
             </View>
-        ))}
-    </View>
-  )
+        );
+    }
+
+    return (
+        <SessionTimelineScreen
+            eventId={eventId}
+            sectionTitle="Programma"
+            loadSessions={getAllSessions}
+            showAvailabilityFilter={true}
+        />
+    );
 }
