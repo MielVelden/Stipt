@@ -20,6 +20,7 @@ interface SessionTimelineScreenProps {
         filter: SessionFilterDto,
     ) => Promise<Session[]>;
     showAvailabilityFilter?: boolean;
+    emptyStateText?: string;
 }
 
 export function SessionTimelineScreen({
@@ -27,6 +28,7 @@ export function SessionTimelineScreen({
     sectionTitle,
     loadSessions,
     showAvailabilityFilter = true,
+    emptyStateText = "Geen sessies gevonden voor deze filters.",
 }: SessionTimelineScreenProps) {
     const router = useRouter();
     const [event, setEvent] = useState<Event | null>(null);
@@ -234,7 +236,7 @@ export function SessionTimelineScreen({
                 {sessions.length === 0 ? (
                     <View className="mt-10 items-center">
                         <Text className="text-slate-400 font-medium">
-                            Geen sessies gevonden voor deze filters.
+                            {emptyStateText}
                         </Text>
                         {activeFilterCount > 0 && (
                             <Button
