@@ -53,9 +53,7 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .Include(x => x.Room)
             .Include(x => x.Enrollments.Where(e => e.ParticipantId == participantId))
             .Where(s => s.EventId == eventId)
-            .Where(s =>
-                s.Type == SessionType.Keynote ||
-                s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)
+            .Where(s => s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)
             );
 
         if (filter.Labels is { Count: > 0 })
