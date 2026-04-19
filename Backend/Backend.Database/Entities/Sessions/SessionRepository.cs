@@ -1,5 +1,6 @@
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Backend.Database.Entities.SessionEnrollments;
 
 namespace Backend.Database.Entities.Sessions;
 
@@ -31,10 +32,38 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
         if (filter.Labels is { Count: > 0 })
             query = query.Where(s => s.Labels.Any(label => filter.Labels.Contains(label)));
 
+        if (filter.AvailableOnly == true)
+            query = query.Where(s => s.Enrollments.Count(e => e.Status == SessionEnrollmentStatus.Enrolled) < (s.Capacity ?? int.MaxValue));
+
 
         return await query
             .OrderBy(x => x.StartDateTime)
             .ThenBy(x => x.Room.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<Session>> GetAgendaSessionsAsync(
+        Guid eventId,
+        Guid participantId,
+        SessionFilter filter,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.Sessions
+            .AsNoTracking()
+            .Include(x => x.Room)
+            .Include(x => x.Enrollments.Where(e => e.ParticipantId == participantId))
+            .Where(s => s.EventId == eventId)
+            .Where(s => s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)
+            );
+
+        if (filter.Labels is { Count: > 0 })
+            query = query.Where(s => s.Labels.Any(label => filter.Labels.Contains(label)));
+
+        if (filter.AvailableOnly == true)
+            query = query.Where(s => s.Enrollments.Count(e => e.Status == SessionEnrollmentStatus.Enrolled) < (s.Capacity ?? int.MaxValue));
+
+        return await query
+            .OrderBy(s => s.StartDateTime)
             .ToListAsync(cancellationToken);
     }
 

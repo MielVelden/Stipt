@@ -28,6 +28,18 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         return Ok(response);
     }
 
+    [HttpGet("personal-agenda")]
+    [Authorize(Roles = AppRoles.Attendee)]
+    public async Task<ActionResult<PersonalAgendaRo>> GetPersonalAgenda(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
+    {
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdRaw is null)
+            return Unauthorized();
+
+        var response = await sessionsService.GetPersonalAgendaAsync(eventId, Guid.Parse(userIdRaw), filter, ct);
+        return Ok(response);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<SessionRo>> GetSessionById(Guid eventId, Guid id, CancellationToken ct)
     {
