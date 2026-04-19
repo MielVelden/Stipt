@@ -1,13 +1,16 @@
 using Backend.Web.Features.Events.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Web.Features.Events;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class EventsController(EventsService eventsService) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<CreatedAtActionResult> CreateEvent(CreateEventDto request, CancellationToken ct)
     {
         var response = await eventsService.CreateAsync(request, ct);
@@ -29,6 +32,7 @@ public class EventsController(EventsService eventsService) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<ActionResult<EventRo>> UpdateEvent(Guid id, UpdateEventDto request, CancellationToken ct)
     {
         var response = await eventsService.UpdateAsync(id, request, ct);
@@ -36,6 +40,7 @@ public class EventsController(EventsService eventsService) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/archive")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<IActionResult> ArchiveEvent(Guid id, CancellationToken ct)
     {
         var archived = await eventsService.ArchiveAsync(id, ct);
@@ -43,6 +48,7 @@ public class EventsController(EventsService eventsService) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/unarchive")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<IActionResult> UnarchiveEvent(Guid id, CancellationToken ct)
     {
         var unarchived = await eventsService.UnarchiveAsync(id, ct);
@@ -50,6 +56,7 @@ public class EventsController(EventsService eventsService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
     public async Task<IActionResult> DeleteEvent(Guid id, CancellationToken ct)
     {
         var deleted = await eventsService.DeleteAsync(id, ct);
