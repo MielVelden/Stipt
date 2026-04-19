@@ -31,7 +31,7 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
                         {session.type}
                     </Text>
                 </View>
-                
+
                 <Badge variant="secondary" className="rounded-full">
                     <Icon
                         as={Clock}
@@ -48,7 +48,7 @@ export function SessionCard({ session, onPress }: SessionCardProps) {
                 </Badge>
             </View>
 
-            <Text className="text-xl font-bold text-slate-900 mb-2">
+            <Text className="text-xl font-bold text-slate-900 mb-2 mt-1">
                 {session.title}
             </Text>
 

@@ -14,6 +14,7 @@ interface FilterModalProps {
     availableLabels: string[];
     currentSelectedLabels: string[];
     currentAvailableOnly: boolean;
+    showAvailabilityFilter?: boolean;
 }
 
 export function SessionFilterModal({
@@ -23,6 +24,7 @@ export function SessionFilterModal({
     availableLabels,
     currentSelectedLabels,
     currentAvailableOnly,
+    showAvailabilityFilter = true,
 }: FilterModalProps) {
     const [tempSelectedLabels, setTempSelectedLabels] = useState<string[]>([]);
     const [tempAvailableOnly, setTempAvailableOnly] = useState(false);
@@ -30,14 +32,27 @@ export function SessionFilterModal({
     useEffect(() => {
         if (visible) {
             setTempSelectedLabels(currentSelectedLabels);
-            setTempAvailableOnly(currentAvailableOnly);
+            setTempAvailableOnly(
+                showAvailabilityFilter ? currentAvailableOnly : false,
+            );
         }
-    }, [visible, currentSelectedLabels, currentAvailableOnly]);
+    }, [
+        visible,
+        currentSelectedLabels,
+        currentAvailableOnly,
+        showAvailabilityFilter,
+    ]);
 
-    const tempActiveFilterCount = tempSelectedLabels.length + (tempAvailableOnly ? 1 : 0);
+    const tempActiveFilterCount =
+        tempSelectedLabels.length +
+        (showAvailabilityFilter && tempAvailableOnly ? 1 : 0);
 
     const toggleTempLabel = (label: string) => {
-        setTempSelectedLabels(prev => prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]);
+        setTempSelectedLabels((prev) =>
+            prev.includes(label)
+                ? prev.filter((l) => l !== label)
+                : [...prev, label],
+        );
     };
 
     const clearTempFilters = () => {
@@ -63,7 +78,9 @@ export function SessionFilterModal({
 
                 <View className="bg-white rounded-t-[32px] p-6 max-h-[85%]">
                     <View className="flex-row justify-between items-center mb-6">
-                        <Text className="text-2xl font-bold text-slate-900">Filters</Text>
+                        <Text className="text-2xl font-bold text-slate-900">
+                            Filters
+                        </Text>
                         <Pressable
                             onPress={onClose}
                             className="p-2 bg-slate-100 rounded-full"
@@ -72,45 +89,63 @@ export function SessionFilterModal({
                         </Pressable>
                     </View>
 
-                    <ScrollView showsVerticalScrollIndicator={false} className="mb-6">
-                        <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
-                            Beschikbaarheid
-                        </Text>
-                        <View className="flex flex-row items-center gap-2 mb-8">
-                            <Switch
-                                checked={tempAvailableOnly}
-                                onCheckedChange={setTempAvailableOnly}
-                                nativeID="available-filter"
-                            />
-                            <Label
-                                nativeID="available-filter"
-                                onPress={() => setTempAvailableOnly(!tempAvailableOnly)}
-                                className="text-base font-semibold text-slate-800"
-                            >
-                                <Text className="text-sm font-semibold">
-                                    Verberg sessies die al volgeboekt zijn
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        className="mb-6"
+                    >
+                        {showAvailabilityFilter && (
+                            <>
+                                <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
+                                    Beschikbaarheid
                                 </Text>
-                            </Label>
-                        </View>
+                                <View className="flex flex-row items-center gap-2 mb-8">
+                                    <Switch
+                                        checked={tempAvailableOnly}
+                                        onCheckedChange={setTempAvailableOnly}
+                                        nativeID="available-filter"
+                                    />
+                                    <Label
+                                        nativeID="available-filter"
+                                        onPress={() =>
+                                            setTempAvailableOnly(
+                                                !tempAvailableOnly,
+                                            )
+                                        }
+                                        className="text-base font-semibold text-slate-800"
+                                    >
+                                        <Text className="text-sm font-semibold">
+                                            Verberg sessies die al volgeboekt
+                                            zijn
+                                        </Text>
+                                    </Label>
+                                </View>
+                            </>
+                        )}
 
                         {availableLabels.length > 0 && (
                             <>
-                                <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 border-t border-slate-200 pt-4">
+                                <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
                                     Onderwerpen
                                 </Text>
                                 <View className="flex-row flex-wrap gap-2">
-                                    {availableLabels.map(label => {
-                                        const isSelected = tempSelectedLabels.includes(label);
+                                    {availableLabels.map((label) => {
+                                        const isSelected =
+                                            tempSelectedLabels.includes(label);
                                         return (
                                             <Button
                                                 key={label}
-                                                onPress={() => toggleTempLabel(label)}
-                                                className={`px-4 py-2.5 rounded-full border ${isSelected
-                                                        ? 'bg-slate-900 border-slate-900'
-                                                        : 'bg-white border-slate-200'
-                                                    }`}
+                                                onPress={() =>
+                                                    toggleTempLabel(label)
+                                                }
+                                                className={`px-4 py-2.5 rounded-full border ${
+                                                    isSelected
+                                                        ? "bg-slate-900 border-slate-900"
+                                                        : "bg-white border-slate-200"
+                                                }`}
                                             >
-                                                <Text className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-slate-700'}`}>
+                                                <Text
+                                                    className={`text-sm font-semibold ${isSelected ? "text-white" : "text-slate-700"}`}
+                                                >
                                                     {label}
                                                 </Text>
                                             </Button>
@@ -122,21 +157,18 @@ export function SessionFilterModal({
                     </ScrollView>
 
                     <View className="flex justify-end flex-row gap-3 pt-2">
-                        
                         {tempActiveFilterCount > 0 && (
-                            <Button
-                                variant="link"
-                                onPress={clearTempFilters}
-                            >
-                                <Text className="font-semibold text-destructive">Wis filters</Text>
+                            <Button variant="link" onPress={clearTempFilters}>
+                                <Text className="font-semibold text-destructive">
+                                    Wis filters
+                                </Text>
                             </Button>
                         )}
 
-                        <Button
-                            variant="default"
-                            onPress={handleApply}
-                        >
-                            <Text className="font-semibold text-white">Toepassen</Text>
+                        <Button variant="default" onPress={handleApply}>
+                            <Text className="font-semibold text-white">
+                                Toepassen
+                            </Text>
                         </Button>
                     </View>
                 </View>

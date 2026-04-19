@@ -133,6 +133,24 @@ public sealed class SessionsService(
         return await sessionRepository.DeleteAsync(eventId, id, cancellationToken);
     }
 
+    public async Task<PersonalAgendaRo> GetPersonalAgendaAsync(
+        Guid eventId,
+        Guid participantId,
+        SessionFilterDto filterDto,
+        CancellationToken cancellationToken)
+    {
+        var dbFilter = new SessionFilter(
+            Labels: filterDto.Labels,
+            AvailableOnly: filterDto.AvailableOnly
+        );
+
+        var sessions = await sessionRepository.GetAgendaSessionsAsync(eventId, participantId, dbFilter, cancellationToken);
+
+        return new PersonalAgendaRo(
+            sessions.Select(s => s.ToRo(participantId)).ToArray()
+        );
+    }
+
     public async Task<SessionRo> EnrollAsync(
         Guid eventId,
         Guid sessionId,
