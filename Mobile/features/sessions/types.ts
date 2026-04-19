@@ -1,27 +1,35 @@
-import { Room } from "../rooms/types";
+export type SessionType = "keynote" | "breakout"
 
-export type SessionAvailability = 'Unavailable' | 'Available' | 'FillingUp' | 'Full';
-
-export type Speaker = {
-    name: string;
-    role: string;
-    company: string;
-    bio: string;
-    imageUrl: string;
-};
+export type SessionRoom = {
+    id: string
+    name: string
+    capacity: number
+}
 
 export type Session = {
     id: string
     title: string
     description: string | null
-    speaker: Speaker
-    room: Room
+    type: SessionType
+    speaker: string
+    roomId: string
+    room: SessionRoom
+    eventId: string
     startDateTime: string
     endDateTime: string
     capacity: number | null
     labels: string[]
-    availability: SessionAvailability
-    registrationCount?: number | null
     createdAtUtc: string
     updatedAtUtc: string | null
+    effectiveCapacity: number
+    enrolledCount: number
+    waitlistCount: number
+    hasAvailableSpots: boolean
+    myEnrollmentStatus?: string | null
+    myWaitlistPosition?: number | null
+}
+
+export type SessionFilterDto = {
+    labels?: string[] | null
+    availableOnly?: boolean | null
 }

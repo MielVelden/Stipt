@@ -20,11 +20,13 @@ public sealed record SessionRo(
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc,
+    int EffectiveCapacity,
     int EnrolledCount,
     int WaitlistCount,
     bool HasAvailableSpots,
     SessionEnrollmentStatus? MyEnrollmentStatus = null,
     int? MyWaitlistPosition = null);
+    
 
 [ExportTsInterface]
 public sealed record SessionRoomRo(
