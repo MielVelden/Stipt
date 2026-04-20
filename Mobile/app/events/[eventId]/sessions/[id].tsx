@@ -210,7 +210,7 @@ export default function SessionDetailScreen() {
                         <View className="flex-row items-center gap-x-2">
                             <Icon className="text-muted-foreground" as={Users} size={18} />
                             <Text className="text-muted-foreground">
-                                { `${session.enrolledCount}/${session.capacity} inschrijvingen` }
+                                { `${session.enrolledCount}/${session.effectiveCapacity} inschrijvingen` }
                             </Text>
                         </View>
                     </View>
