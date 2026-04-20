@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { MapPin, Calendar, Filter } from "lucide-react-native";
 import type { Session, SessionFilterDto } from "@/features/sessions/types";
-import type { Event } from "@/features/events/types";
 import { getAvailableLabels } from "@/features/sessions/utils";
 import { formatDateTimeRange } from "@/lib/utils";
 import { SessionCard } from "@/features/sessions/components/SessionCard";
 import { SessionFilterModal } from "@/features/sessions/components/SessionFilterModal";
 import { getEventById } from "@/features/events/api";
+import { EventRo } from "@/generated-types/event-ro";
 
 interface SessionTimelineScreenProps {
     eventId: string;
@@ -31,7 +31,7 @@ export function SessionTimelineScreen({
     emptyStateText = "Geen sessies gevonden voor deze filters.",
 }: SessionTimelineScreenProps) {
     const router = useRouter();
-    const [event, setEvent] = useState<Event | null>(null);
+    const [event, setEvent] = useState<EventRo | null>(null);
     const [sessions, setSessions] = useState<Session[]>([]);
     const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
     const [availableOnly, setAvailableOnly] = useState(false);

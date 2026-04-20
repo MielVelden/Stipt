@@ -2,6 +2,7 @@ using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
+using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions;
 using NSubstitute;
 
@@ -11,13 +12,15 @@ internal static class SessionsServiceTestHelpers
 {
     public static SessionsService CreateService(
         ISessionRepository sessionRepository,
-        ISessionEnrollmentRepository enrollmentRepository)
+        ISessionEnrollmentRepository enrollmentRepository,
+        INotificationService? notificationService = null)
     {
         return new SessionsService(
             sessionRepository,
             enrollmentRepository,
             Substitute.For<IRoomRepository>(),
-            Substitute.For<IEventRepository>());
+            Substitute.For<IEventRepository>(),
+            notificationService ?? Substitute.For<INotificationService>());
     }
 
     public static Session BuildSession(Guid eventId, Guid sessionId, int capacity)
@@ -45,4 +48,3 @@ internal static class SessionsServiceTestHelpers
         };
     }
 }
-

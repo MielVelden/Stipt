@@ -26,7 +26,7 @@ export default function LoginScreen() {
   async function onSubmit(data: LoginFormData) {
     try {
       await login(data.email, data.password)
-      router.replace("/(tabs)/")
+      router.replace("/events/")
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401)
         setError("root", { message: "E-mailadres of wachtwoord is onjuist" })

@@ -12,5 +12,5 @@ export default function Index() {
       </View>
     )
 
-  return <Redirect href={isAuthenticated ? "/(tabs)/" : "/(auth)/login"} />
+  return <Redirect href={isAuthenticated ? "/events/" : "/(auth)/login"} />
 }

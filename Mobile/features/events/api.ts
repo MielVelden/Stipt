@@ -1,12 +1,12 @@
 import apiClient from "@/lib/api-client"
-import type { Event } from "./types"
+import {EventRo} from "@/generated-types/event-ro";
 
-export async function getEvents(): Promise<Event[]> {
-  const response = await apiClient.get<Event[]>("/events")
+export async function getEvents(): Promise<EventRo[]> {
+  const response = await apiClient.get<EventRo[]>("/events")
   return response.data
 }
 
-export async function getEventById(id: string): Promise<Event> {
-  const response = await apiClient.get<Event>(`/events/${id}`)
+export async function getEventById(id: string): Promise<EventRo> {
+  const response = await apiClient.get<EventRo>(`/events/${id}`)
   return response.data
 }

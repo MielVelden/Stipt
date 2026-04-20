@@ -29,10 +29,15 @@ export default function SessionDetailScreen() {
     const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
+    const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
 
     function closeConflictModal() {
         setShowConflictModal(false);
         setConflictingSession(null);
+    }
+
+    function closeUnenrollConfirmModal() {
+        setShowUnenrollConfirmModal(false);
     }
 
     useEffect(() => {
@@ -86,15 +91,36 @@ export default function SessionDetailScreen() {
         }
     }
 
-    async function handleUnenrollPress() {
+    function handleUnenrollPress() {
         if (!session || !eventId) return;
 
-        setLoadingEnrollment(true);
-        await unenrollSession(eventId, session.id);
-        session.myEnrollmentStatus = undefined;
-        // TODO: Dit is niet meer nodig na de realtime functie
-        session.enrolledCount--;
-        setLoadingEnrollment(false);
+        setShowUnenrollConfirmModal(true);
+    }
+
+    async function confirmUnenroll() {
+        if (!session || !eventId) return;
+
+        const wasEnrolled = session.myEnrollmentStatus === 'enrolled';
+
+        try {
+            setLoadingEnrollment(true);
+            await unenrollSession(eventId, session.id);
+            setSession((prevSession) => {
+                if (!prevSession) return null;
+
+                return {
+                    ...prevSession,
+                    myEnrollmentStatus: undefined,
+                    // TODO: Dit is niet meer nodig na de realtime functie
+                    enrolledCount: wasEnrolled
+                        ? Math.max(0, prevSession.enrolledCount - 1)
+                        : prevSession.enrolledCount,
+                };
+            });
+            closeUnenrollConfirmModal();
+        } finally {
+            setLoadingEnrollment(false);
+        }
     }
 
     async function handleReplaceEnrollment() {
@@ -175,17 +201,18 @@ export default function SessionDetailScreen() {
                                     <Icon as={CheckCircle} className="text-green-600" size={16} />
                                     <Text className="text-green-600 font-medium">Ingeschreven</Text>
                                 </View>
-                                <Button variant="outline" className="w-full" onPress={handleUnenrollPress}>
+                                <Button variant="outline" className="w-full" onPress={handleUnenrollPress} disabled={loadingEnrollment}>
                                     <Text>Uitschrijven</Text>
                                 </Button>
                             </View>
                         ) : session.myEnrollmentStatus === 'waitlisted' ? (
                             <View className="gap-y-2">
-                                <View className="flex-row items-center gap-x-2 justify-center py-3 rounded-md bg-orange-50 border border-orange-200">
-                                    <Text className="text-orange-700 font-medium">Op de wachtlijst</Text>
+                                <View className="p-4 bg-green-50 rounded-xl">
+                                    <Text className="text-green-700">Ingeschreven op de wachtlijst</Text>
+                                    <Text className="text-green-700 font-bold">Positie: {session.myWaitlistPosition}</Text>
                                 </View>
-                                <Button variant="outline" className="w-full" onPress={handleUnenrollPress}>
-                                    <Text>Van wachtlijst verwijderen</Text>
+                                <Button variant="outline" className="w-full" onPress={handleUnenrollPress} disabled={loadingEnrollment}>
+                                    <Text>Uitschrijven</Text>
                                 </Button>
                             </View>
                         ) : session.hasAvailableSpots ? (
@@ -199,7 +226,7 @@ export default function SessionDetailScreen() {
                                 <Button className="w-full" disabled={loadingEnrollment} onPress={handleEnrollPress}>
                                     {loadingEnrollment
                                         ? <ActivityIndicator size="small" color="#fff" />
-                                        : <Text>Wachtlijst</Text>}
+                                        : <Text>Inschrijven</Text>}
                                 </Button>
                                 <Text variant="muted" className="text-center text-xs">
                                     Sessie is vol — schrijf je in op de wachtlijst
@@ -216,6 +243,36 @@ export default function SessionDetailScreen() {
                     </View>
                 </View>
             </ScrollView>
+
+            <Modal
+                visible={showUnenrollConfirmModal}
+                transparent
+                animationType="slide"
+                onRequestClose={closeUnenrollConfirmModal}
+            >
+                <View className="flex-1 justify-end bg-black/40">
+                    <View className="bg-background rounded-t-2xl p-6">
+                        <Text variant="h3">Bevestig uitschrijving</Text>
+                        <Text variant="p" className="mt-0 pb-4 text-muted-foreground text-base">
+                            {session?.myEnrollmentStatus === 'waitlisted'
+                                ? 'Weet je zeker dat je jezelf van de wachtlijst wilt verwijderen?'
+                                : 'Weet je zeker dat je je wilt uitschrijven voor deze sessie?'}
+                        </Text>
+                        <Button
+                            className="w-full"
+                            onPress={confirmUnenroll}
+                            disabled={loadingEnrollment}
+                        >
+                            {loadingEnrollment
+                                ? <ActivityIndicator size="small" color="#fff" />
+                                : <Text>Bevestigen</Text>}
+                        </Button>
+                        <Button variant="ghost" className="w-full mt-1" onPress={closeUnenrollConfirmModal} disabled={loadingEnrollment}>
+                            <Text>Annuleren</Text>
+                        </Button>
+                    </View>
+                </View>
+            </Modal>
 
             <Modal
                 visible={showConflictModal}
