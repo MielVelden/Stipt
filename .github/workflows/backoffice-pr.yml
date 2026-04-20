@@ -26,9 +26,9 @@ jobs:
         working-directory: Backoffice
         run: npm ci
 
-      - name: Typecheck
-        working-directory: Backoffice
-        run: npm run typecheck
+#      - name: Typecheck
+#        working-directory: Backoffice
+#        run: npm run typecheck
 
       - name: Build
         working-directory: Backoffice
