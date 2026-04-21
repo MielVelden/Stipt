@@ -24,7 +24,7 @@ export default function EventsScreen() {
             contentContainerClassName="px-4 py-8"
             showsVerticalScrollIndicator={false}
         >
-            <Text variant="h1" className="text-2xl text-left mb-2">
+            <Text variant="h1" className="text-3xl text-left mb-2">
                 Evenementen
             </Text>
 
