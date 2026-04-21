@@ -25,9 +25,9 @@ public class EventsController(EventsService eventsService) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<EventRo>>> GetAllEvents(CancellationToken ct)
+    public async Task<ActionResult<List<EventRo>>> GetAllEvents([FromQuery] bool includeArchived = true, CancellationToken ct = default)
     {
-        var response = await eventsService.GetAllAsync(ct);
+        var response = await eventsService.GetAllAsync(includeArchived, ct);
         return Ok(response);
     }
 

@@ -18,12 +18,15 @@ internal sealed class EventRepository(ApplicationDbContext dbContext) : IEventRe
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<List<Event>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<List<Event>> GetAllAsync(bool includeArchived, CancellationToken cancellationToken)
     {
-        return await dbContext.Events
-            .AsNoTracking()
-            .OrderBy(x => x.StartDate)
-            .ToListAsync(cancellationToken);
+        var query = dbContext.Events
+            .AsNoTracking();
+            
+        if (!includeArchived)
+            query = query.Where(x => !x.IsArchived);
+
+        return await query.OrderBy(x => x.StartDate).ToListAsync(cancellationToken);
     }
 
     public async Task<bool> UpdateAsync(Event eventItem, CancellationToken cancellationToken)
