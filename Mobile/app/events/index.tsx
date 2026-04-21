@@ -1,37 +1,48 @@
-import {View} from "react-native"
-import {Text} from "@/components/ui/text"
-import {router} from "expo-router";
-import {Button} from "@/components/ui/button";
-import React, {useEffect, useState} from "react";
-import {EventRo} from "@/generated-types/event-ro";
-import {getEvents} from "@/features/events/api";
-import {ChevronRight} from "lucide-react-native";
-import {Icon} from "@/components/ui/icon";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { EventRo } from "@/generated-types/event-ro";
+import { getEvents } from "@/features/events/api";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/components/ui/text";
+import { EventCard } from "@/features/events/components/EventCard";
 
 export default function EventsScreen() {
+    const [loading, setLoading] = useState(true);
     const [events, setEvents] = useState<EventRo[]>([]);
 
     useEffect(() => {
         getEvents().then(setEvents);
+        setLoading(false);
     }, []);
 
     function handleClick(event: EventRo) {
-        router.push(`/events/${event.id}/(tabs)/sessions`)
+        router.push(`/events/${event.id}/(tabs)/sessions`);
     }
 
     return (
-        <View className="pt-20 px-6">
-            <Text variant="h1" className="text-2xl text-left">Evenementen</Text>
+        <ScrollView
+            contentContainerClassName="px-4 py-8"
+            showsVerticalScrollIndicator={false}
+        >
+            <Text variant="h1" className="text-2xl text-left mb-2">
+                Evenementen
+            </Text>
+
+            {loading ? (
+                <Text className="text-center mt-10">Laden...</Text>
+            ) : events.length === 0 ? (
+                <Text className="text-center mt-10">
+                    Geen evenementen gevonden.
+                </Text>
+            ) : null}
 
             {events.map((event) => (
-                <View key={event.id}>
-                    <Button variant="outline" className="w-full mt-2" onPress={() => handleClick(event)}>
-                        <Text>{event.name}</Text>
-                        <View className="flex-grow" />
-                        <Icon as={ChevronRight} size={18} />
-                    </Button>
-                </View>
+                <EventCard
+                    key={event.id}
+                    event={event}
+                    onPress={() => handleClick(event)}
+                />
             ))}
-        </View>
-    )
+        </ScrollView>
+    );
 }
