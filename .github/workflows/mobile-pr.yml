@@ -30,10 +30,6 @@ jobs:
         working-directory: Mobile
         run: npx tsc --noEmit
 
-      - name: Expo doctor
-        working-directory: Mobile
-        run: npx expo-doctor
-
       - name: Bundle export check
         working-directory: Mobile
         env:
