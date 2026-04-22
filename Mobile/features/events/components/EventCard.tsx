@@ -1,19 +1,21 @@
 import { EventRo } from "@/generated-types/event-ro";
 import { useEffect, useState } from "react";
 import { Image, Pressable, View } from "react-native";
-import { Calendar, ChevronRight, MapPin } from "lucide-react-native";
-import { Icon } from "@/components/ui/icon";
+import { Calendar, MapPin } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { formatDateTimeRange } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 
 const LOGO_HEIGHT = 40;
 
 interface EventCardProps {
     event: EventRo;
     onPress: () => void;
+    className?: string;
 }
 
-export function EventCard({ event, onPress }: EventCardProps) {
+export function EventCard({ event, onPress, className }: EventCardProps) {
     const [logoSize, setLogoSize] = useState<{
         width: number;
         height: number;
@@ -41,43 +43,47 @@ export function EventCard({ event, onPress }: EventCardProps) {
         : LOGO_HEIGHT;
 
     return (
-        <Pressable
-            onPress={onPress}
-            className="flex-row items-center justify-between mb-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm px-4 py-3"
-        >
-            <View className="flex-1 items-start pr-3">
-                {logoImageUrl && (
-                    <Image
-                        source={{ uri: logoImageUrl }}
-                        className="mb-1 self-start"
-                        style={{
-                            height: LOGO_HEIGHT,
-                            width: logoWidth,
-                        }}
-                        resizeMode="contain"
-                    />
-                )}
+        <Pressable onPress={onPress}>
+            <Card className={className}>
+                <CardContent>
+                    {logoImageUrl && (
+                        <Image
+                            source={{ uri: logoImageUrl }}
+                            className="mb-1 self-start"
+                            style={{
+                                height: LOGO_HEIGHT,
+                                width: logoWidth,
+                            }}
+                            resizeMode="contain"
+                        />
+                    )}
 
-                <Text variant="h2" className="text-xl text-left border-0">
-                    {event.name}
-                </Text>
-
-                <View className="flex-row items-center mb-1">
-                    <MapPin size={16} color="#6b7280" />
-                    <Text className="ml-2 font-medium text-gray-500">
-                        {event.location}
+                    <Text variant="h2" className="text-xl text-left border-0">
+                        {event.name}
                     </Text>
-                </View>
 
-                <View className="flex-row items-center">
-                    <Calendar size={16} color="#6b7280" />
-                    <Text className="ml-2 font-medium text-gray-500">
-                        {formatDateTimeRange(event.startDate, event.endDate)}
-                    </Text>
-                </View>
-            </View>
+                    <View className="flex-row items-center mb-1">
+                        <Icon as={MapPin} size={16} className="text-gray-500" />
+                        <Text className="ml-2 font-medium text-gray-500">
+                            {event.location}
+                        </Text>
+                    </View>
 
-            <Icon as={ChevronRight} size={18} />
+                    <View className="flex-row items-center">
+                        <Icon
+                            as={Calendar}
+                            size={16}
+                            className="text-gray-500"
+                        />
+                        <Text className="ml-2 font-medium text-gray-500">
+                            {formatDateTimeRange(
+                                event.startDate,
+                                event.endDate,
+                            )}
+                        </Text>
+                    </View>
+                </CardContent>
+            </Card>
         </Pressable>
     );
 }

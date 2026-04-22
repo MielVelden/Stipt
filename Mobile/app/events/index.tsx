@@ -37,7 +37,7 @@ export default function EventsScreen() {
             contentContainerClassName="px-4 py-8"
             showsVerticalScrollIndicator={false}
         >
-            <Text variant="h1" className="text-3xl text-left mb-2">
+            <Text variant="h1" className="text-2xl text-left mb-4">
                 Evenementen
             </Text>
 
@@ -57,6 +57,7 @@ export default function EventsScreen() {
                         key={event.id}
                         event={event}
                         onPress={() => handleClick(event)}
+                        className="mb-4"
                     />
                 ))
             )}
