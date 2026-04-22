@@ -1,11 +1,12 @@
 import { EventRo } from "@/generated-types/event-ro";
 import { useEffect, useState } from "react";
-import { Image, Pressable } from "react-native";
-import { View } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { Calendar, ChevronRight, MapPin } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { formatDateTimeRange } from "@/lib/utils";
+
+const LOGO_HEIGHT = 40;
 
 interface EventCardProps {
     event: EventRo;
@@ -18,10 +19,10 @@ export function EventCard({ event, onPress }: EventCardProps) {
         height: number;
     } | null>(null);
 
+    const logoImageUrl = event.style?.logoImageUrl;
+
     useEffect(() => {
         setLogoSize(null);
-
-        const logoImageUrl = event.style?.logoImageUrl;
         if (!logoImageUrl) return;
 
         Image.getSize(
@@ -33,12 +34,11 @@ export function EventCard({ event, onPress }: EventCardProps) {
                 setLogoSize(null);
             },
         );
-    }, [event.style?.logoImageUrl]);
+    }, [logoImageUrl]);
 
-    const logoHeight = 40;
     const logoWidth = logoSize
-        ? (logoHeight * logoSize.width) / logoSize.height
-        : logoHeight;
+        ? (LOGO_HEIGHT * logoSize.width) / logoSize.height
+        : LOGO_HEIGHT;
 
     return (
         <Pressable
@@ -46,12 +46,12 @@ export function EventCard({ event, onPress }: EventCardProps) {
             className="flex-row items-center justify-between mb-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm px-4 py-3"
         >
             <View className="flex-1 items-start pr-3">
-                {event.style?.logoImageUrl && (
+                {logoImageUrl && (
                     <Image
-                        source={{ uri: event.style?.logoImageUrl }}
+                        source={{ uri: logoImageUrl }}
                         className="mb-1 self-start"
                         style={{
-                            height: logoHeight,
+                            height: LOGO_HEIGHT,
                             width: logoWidth,
                         }}
                         resizeMode="contain"

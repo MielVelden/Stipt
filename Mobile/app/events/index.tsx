@@ -2,17 +2,30 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { EventRo } from "@/generated-types/event-ro";
 import { getEvents } from "@/features/events/api";
-import { ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
 import { EventCard } from "@/features/events/components/EventCard";
 
 export default function EventsScreen() {
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [events, setEvents] = useState<EventRo[]>([]);
 
+    async function loadEvents() {
+        try {
+            const events = await getEvents();
+            setEvents(events);
+        } catch {
+            setError(
+                "Er is een fout opgetreden bij het laden van evenementen.",
+            );
+        } finally {
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
-        getEvents().then(setEvents);
-        setLoading(false);
+        loadEvents();
     }, []);
 
     function handleClick(event: EventRo) {
@@ -30,19 +43,23 @@ export default function EventsScreen() {
 
             {loading ? (
                 <Text className="text-center mt-10">Laden...</Text>
+            ) : error ? (
+                <Text className="text-center mt-10">
+                    {error ?? "Er is een fout opgetreden."}
+                </Text>
             ) : events.length === 0 ? (
                 <Text className="text-center mt-10">
                     Geen evenementen gevonden.
                 </Text>
-            ) : null}
-
-            {events.map((event) => (
-                <EventCard
-                    key={event.id}
-                    event={event}
-                    onPress={() => handleClick(event)}
-                />
-            ))}
+            ) : (
+                events.map((event) => (
+                    <EventCard
+                        key={event.id}
+                        event={event}
+                        onPress={() => handleClick(event)}
+                    />
+                ))
+            )}
         </ScrollView>
     );
 }
