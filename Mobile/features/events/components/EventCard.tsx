@@ -6,6 +6,7 @@ import { Text } from "@/components/ui/text";
 import { formatDateTimeRange } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LOGO_HEIGHT = 40;
 
@@ -20,6 +21,7 @@ export function EventCard({ event, onPress, className }: EventCardProps) {
         width: number;
         height: number;
     } | null>(null);
+    const [isLogoLoading, setIsLogoLoading] = useState(true);
 
     const logoImageUrl = event.style?.logoImageUrl;
 
@@ -47,15 +49,23 @@ export function EventCard({ event, onPress, className }: EventCardProps) {
             <Card className={className}>
                 <CardContent>
                     {logoImageUrl && (
-                        <Image
-                            source={{ uri: logoImageUrl }}
-                            className="mb-1 self-start"
-                            style={{
-                                height: LOGO_HEIGHT,
-                                width: logoWidth,
-                            }}
-                            resizeMode="contain"
-                        />
+                        <>
+                            {isLogoLoading && (
+                                <Skeleton className="w-1/2 h-10" />
+                            )}
+                            <Image
+                                source={{ uri: logoImageUrl }}
+                                className="mb-1 self-start"
+                                style={{
+                                    height: LOGO_HEIGHT,
+                                    width: logoWidth,
+                                }}
+                                resizeMode="contain"
+                                onLoadEnd={() => {
+                                    setIsLogoLoading(false);
+                                }}
+                            />
+                        </>
                     )}
 
                     <Text variant="h2" className="text-xl text-left border-0">
