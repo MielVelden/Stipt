@@ -39,9 +39,9 @@ public sealed class EventsService(IEventRepository eventRepository)
         return eventItem.ToRo();
     }
 
-    public async Task<List<EventRo>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<List<EventRo>> GetAllAsync(bool includeArchived, CancellationToken cancellationToken)
     {
-        var events = await eventRepository.GetAllAsync(cancellationToken);
+        var events = await eventRepository.GetAllAsync(includeArchived, cancellationToken);
 
         return events.Select(EventMappings.ToRo).ToList();
     }
