@@ -1,5 +1,6 @@
 using Backend.Database.Entities;
 using Backend.Database.Entities.Auth;
+using Backend.Database.Entities.EventParticipants;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Notifications;
 using Backend.Database.Entities.Rooms;
@@ -16,6 +17,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<SessionEnrollment> SessionEnrollments => Set<SessionEnrollment>();
+    public DbSet<EventParticipant> EventParticipants => Set<EventParticipant>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
 
