@@ -11,6 +11,12 @@ internal sealed class EventParticipantRepository(ApplicationDbContext dbContext)
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AddRangeAsync(IEnumerable<EventParticipant> participants, CancellationToken cancellationToken)
+    {
+        await dbContext.EventParticipants.AddRangeAsync(participants, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public Task<EventParticipant?> GetByEventIdAndEmailAsync(Guid eventId, string email, CancellationToken cancellationToken)
     {
         return dbContext.EventParticipants

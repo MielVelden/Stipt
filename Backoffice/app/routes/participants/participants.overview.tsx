@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { type ColumnDef } from "@tanstack/react-table"
-import { Trash2Icon, PlusIcon, SearchIcon } from "lucide-react"
+import { Trash2Icon, PlusIcon, SearchIcon, UploadIcon } from "lucide-react"
 import {
   Link,
   isRouteErrorResponse,
@@ -149,6 +149,12 @@ export default function Page({
               <SearchIcon className="size-4" />
             </InputGroupAddon>
           </InputGroup>
+
+          <Button variant="outline" asChild>
+            <Link to={`${eventBaseUrl}/deelnemers/uploaden`}>
+              <UploadIcon /> Upload deelnemers
+            </Link>
+          </Button>
 
           <Button asChild>
             <Link to={`${eventBaseUrl}/deelnemers/nieuw`}>

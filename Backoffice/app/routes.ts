@@ -37,6 +37,7 @@ export default [
         ...prefix("deelnemers", [
           route("", "routes/participants/participants.overview.tsx"),
           route("nieuw", "routes/participants/participants.create.tsx"),
+          route("uploaden", "routes/participants/participants.upload.tsx"),
         ]),
 
         ...prefix("ruimtes", [

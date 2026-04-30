@@ -26,6 +26,44 @@ public sealed class EventParticipantsService(IEventParticipantRepository eventPa
         return participant.ToRo();
     }
 
+    public async Task<BulkCreateEventParticipantsRo> BulkCreateAsync(Guid eventId, BulkCreateEventParticipantsDto request, CancellationToken cancellationToken)
+    {
+        var totalRows = request.Emails.Length;
+        
+        var uniqueFileEmails = request.Emails
+            .Where(e => !string.IsNullOrWhiteSpace(e))
+            .Select(e => e.Trim().ToLowerInvariant())
+            .Distinct()
+            .ToList();
+
+        var duplicatesInFile = totalRows - uniqueFileEmails.Count;
+
+        var existingParticipants = await eventParticipantRepository.GetAllByEventIdAsync(eventId, cancellationToken);
+        var existingEmails = existingParticipants.Select(p => p.Email).ToHashSet();
+
+        var newEmails = uniqueFileEmails.Where(e => !existingEmails.Contains(e)).ToList();
+        var duplicatesInDatabase = uniqueFileEmails.Count - newEmails.Count;
+
+        var newParticipants = newEmails.Select(e => new EventParticipant
+        {
+            EventId = eventId,
+            Email = e,
+            CreatedAtUtc = DateTime.UtcNow
+        }).ToList();
+
+        if (newParticipants.Any())
+        {
+            await eventParticipantRepository.AddRangeAsync(newParticipants, cancellationToken);
+        }
+
+        return new BulkCreateEventParticipantsRo(
+            totalRows,
+            duplicatesInFile,
+            duplicatesInDatabase,
+            newParticipants.Count
+        );
+    }
+
     public async Task<EventParticipantRo?> GetByEventIdAndEmailAsync(Guid eventId, string email, CancellationToken cancellationToken)
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();

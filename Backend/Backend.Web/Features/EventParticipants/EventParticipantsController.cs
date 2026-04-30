@@ -16,6 +16,13 @@ public class EventParticipantsController(EventParticipantsService eventParticipa
         return CreatedAtAction(nameof(GetEventParticipantByEmail), new { eventId, email = response.Email }, response);
     }
 
+    [HttpPost("bulk")]
+    public async Task<ActionResult<BulkCreateEventParticipantsRo>> BulkCreateEventParticipants(Guid eventId, BulkCreateEventParticipantsDto request, CancellationToken ct)
+    {
+        var response = await eventParticipantsService.BulkCreateAsync(eventId, request, ct);
+        return Ok(response);
+    }
+
     [HttpGet]
     public async Task<ActionResult<List<EventParticipantRo>>> GetAllEventParticipants(Guid eventId, CancellationToken ct)
     {
