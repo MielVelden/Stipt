@@ -1,5 +1,6 @@
 using Backend.Database.Entities.EventParticipants;
 using Backend.Web.Features.EventParticipants.Dtos;
+using Backend.Web.Features.EventParticipants.Exceptions;
 
 namespace Backend.Web.Features.EventParticipants;
 
@@ -11,7 +12,7 @@ public sealed class EventParticipantsService(IEventParticipantRepository eventPa
 
         var exists = await eventParticipantRepository.ExistsAsync(eventId, normalizedEmail, cancellationToken);
         if (exists)
-            throw new InvalidOperationException($"A participant with email '{normalizedEmail}' is already registered for this event.");
+            throw new DuplicateParticipantException();
 
         var participant = new EventParticipant
         {
