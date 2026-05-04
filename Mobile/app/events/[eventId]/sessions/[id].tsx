@@ -10,9 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { ConflictingSessionRo } from '@/generated-types/conflicting-session-ro';
 import { SessionRo } from "@/generated-types/session-ro";
-import { ConnectToHub } from '@/lib/signalr-client';
-import { SessionEnrollmentUpdateRo } from '../../../../generated-types/session-enrollment-update-ro';
-import { HubMessageTypeEnum } from '../../../../generated-types/hub-message-type-enum';
+import { useSessionHub } from '@/hooks/use-session-hub';
 
 type EnrollmentConflictResponse = {
     conflictingSessions?: ConflictingSessionRo[];
@@ -33,7 +31,18 @@ export default function SessionDetailScreen() {
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
-    const { connection, status } = ConnectToHub('/hub/sessions');
+    const { status } = useSessionHub(eventId, {
+        onSessionEnrollmentUpdated: (update) => {
+            if (update.sessionId !== sessionId) return;
+            setSession(prev => prev ? {
+                ...prev,
+                enrolledCount: update.enrolledCount,
+                waitlistCount: update.waitlistCount,
+                hasAvailableSpots: update.hasAvailableSpots,
+                effectiveCapacity: update.effectiveCapacity,
+            } : prev);
+        },
+    });
 
     function closeConflictModal() {
         setShowConflictModal(false);
@@ -71,34 +80,7 @@ export default function SessionDetailScreen() {
         };
     }, [eventId, sessionId]);
 
-    useEffect(() => {
-        if (!connection || !eventId || status !== 'connected')
-            return;
-
-        connection.invoke('JoinEventGroup', eventId).catch(console.error);
-
-        const handler = (update: SessionEnrollmentUpdateRo) => {
-            if (update.sessionId !== sessionId)
-                return;
-
-            setSession(prev => prev ? {
-                ...prev,
-                enrolledCount: update.enrolledCount,
-                waitlistCount: update.waitlistCount,
-                hasAvailableSpots: update.hasAvailableSpots,
-                effectiveCapacity: update.effectiveCapacity,
-            } : prev);
-        };
-
-        connection.on("SessionEnrollmentUpdated", handler);
-
-        return () => {
-            connection.off(HubMessageTypeEnum.SessionEnrollmentUpdated, handler);
-            connection.invoke('LeaveEventGroup', eventId).catch(console.error);
-        };
-    }, [connection, status, eventId, sessionId]);
-
-    if (loading) return <ActivityIndicator className="flex-1" />;
+if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
 
     async function handleEnrollPress() {
