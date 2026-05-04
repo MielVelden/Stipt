@@ -1,7 +1,7 @@
 import type { AxiosResponse } from "axios";
 import apiClient from "@/lib/api-client";
 import { SessionRo } from "@/generated-types/session-ro";
-import type { Session, SessionFilterDto } from "./types";
+import type { SessionFilterDto } from "./types";
 import type { PersonalAgendaRo } from "@/generated-types/personal-agenda-ro";
 
 export async function getAllSessions(
@@ -33,7 +33,7 @@ export async function getSessions(eventId: string): Promise<SessionRo[]> {
 export async function getPersonalAgenda(
     eventId: string,
     filter?: SessionFilterDto,
-): Promise<Session[]> {
+): Promise<SessionRo[]> {
     const response = await apiClient.get<PersonalAgendaRo>(
         `/events/${eventId}/sessions/personal-agenda`,
         {
@@ -47,7 +47,7 @@ export async function getPersonalAgenda(
         },
     );
 
-    return response?.data.sessions.map(toSessionModel) || [];
+    return response?.data.sessions;
 }
 
 export async function getSessionById(
@@ -114,15 +114,4 @@ function toSessionQueryString(filter?: SessionFilterDto) {
     }
 
     return params.toString();
-}
-
-function toSessionModel(session: SessionRo): Session {
-    return {
-        ...session,
-        description: session.description ?? null,
-        capacity: session.capacity ?? null,
-        updatedAtUtc: session.updatedAtUtc ?? null,
-        myEnrollmentStatus: session.myEnrollmentStatus ?? null,
-        myWaitlistPosition: session.myWaitlistPosition ?? null,
-    };
 }

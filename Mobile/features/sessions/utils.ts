@@ -1,5 +1,5 @@
-import type { Session, SessionType } from './types';
+import {SessionRo} from "@/generated-types/session-ro";
 
-export function getAvailableLabels(sessions: Session[]): string[] {
+export function getAvailableLabels(sessions: SessionRo[]): string[] {
     return Array.from(new Set(sessions.flatMap(s => s.labels || [])));
 }
