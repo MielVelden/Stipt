@@ -4,6 +4,7 @@ using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions;
+using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
 
 namespace Backend.Tests.Features.Sessions;
@@ -20,7 +21,8 @@ internal static class SessionsServiceTestHelpers
             enrollmentRepository,
             Substitute.For<IRoomRepository>(),
             Substitute.For<IEventRepository>(),
-            notificationService ?? Substitute.For<INotificationService>());
+            notificationService ?? Substitute.For<INotificationService>(),
+            Substitute.For<IHubContext<SessionsHub>>());
     }
 
     public static Session BuildSession(Guid eventId, Guid sessionId, int capacity)
