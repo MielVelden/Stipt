@@ -8,7 +8,6 @@ export async function loginAsync(data: LoginRequest): Promise<LoginResponse> {
     const response = await apiClient.post<LoginResponse>("/auth/login", data)
     return response.data
   } catch (error) {
-    console.error('Auth error:', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }
 }
@@ -18,7 +17,6 @@ export async function refreshTokensAsync(refreshToken: string): Promise<RefreshR
     const response = await apiClient.post<RefreshResponse>("/auth/refresh", { refreshToken })
     return response.data
   } catch (error) {
-    console.error('Auth error:', error instanceof Error ? error.message : 'Unknown error')
     throw error
   }
 }

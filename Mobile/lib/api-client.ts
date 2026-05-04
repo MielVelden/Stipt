@@ -11,11 +11,12 @@ const apiClient = axios.create({
   },
 })
 
+let refreshingPromise: Promise<string> | null = null
+
 apiClient.interceptors.request.use(async (config) => {
   const token = await getAccessTokenAsync()
   if (token)
     config.headers.Authorization = `Bearer ${token}`;
-  
   return config
 })
 
@@ -28,20 +29,24 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        const refreshToken = await getRefreshTokenAsync()
-        if (!refreshToken) {
-          await deleteTokensAsync()
-          await notifyAuthFailureAsync()
-          return Promise.reject(error)
+        if (!refreshingPromise) {
+          refreshingPromise = (async () => {
+            const refreshToken = await getRefreshTokenAsync()
+            if (!refreshToken) {
+              throw new Error("No refresh token")
+            }
+            const { data } = await axios.post<RefreshResponse>(`${API_BASE_URL}/auth/refresh`, {
+              refreshToken,
+            })
+            await saveTokensAsync(data.accessToken, data.refreshToken)
+            return data.accessToken
+          })().finally(() => {
+            refreshingPromise = null
+          })
         }
 
-        const { data } = await axios.post<RefreshResponse>(`${API_BASE_URL}/auth/refresh`, {
-          refreshToken,
-        })
-
-        await saveTokensAsync(data.accessToken, data.refreshToken)
-
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`
+        const newAccessToken = await refreshingPromise
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
         return apiClient(originalRequest)
       } catch {
         await deleteTokensAsync()
