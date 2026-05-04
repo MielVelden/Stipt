@@ -3,14 +3,12 @@ import apiClient from "@/lib/api-client";
 import { SessionRo } from "@/generated-types/session-ro";
 import type { Session, SessionFilterDto } from "./types";
 import type { PersonalAgendaRo } from "@/generated-types/personal-agenda-ro";
-import { useAuth } from "@/lib/auth-context";
-import { getAccessTokenAsync } from "@/lib/auth";
 
 export async function getAllSessions(
     eventId: string,
     filter?: SessionFilterDto,
-): Promise<Session[]> {
-    const response: AxiosResponse<Session[]> = await apiClient.get(
+): Promise<SessionRo[]> {
+    const response: AxiosResponse<SessionRo[]> = await apiClient.get(
         `/events/${eventId}/sessions`,
         {
             params: filter,
