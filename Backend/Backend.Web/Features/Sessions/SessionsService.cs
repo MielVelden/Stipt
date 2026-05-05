@@ -5,6 +5,7 @@ using Backend.Database.Entities.SessionEnrollments;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
+using NodaTime;
 
 namespace Backend.Web.Features.Sessions;
 
@@ -267,9 +268,12 @@ public sealed class SessionsService(
         return true;
     }
 
-    private static void EnsureWithinEventPeriod(DateTime startDateTime, DateTime endDateTime, Event eventItem)
+    private static void EnsureWithinEventPeriod(LocalDateTime startDateTime, LocalDateTime endDateTime, Event eventItem)
     {
-        if (startDateTime < eventItem.StartDate || endDateTime > eventItem.EndDate)
+        var eventStart = LocalDateTime.FromDateTime(eventItem.StartDate);
+        var eventEnd = LocalDateTime.FromDateTime(eventItem.EndDate);
+
+        if (startDateTime < eventStart || endDateTime > eventEnd)
         {
             throw new BadHttpRequestException(
                 "De sessie moet starten en eindigen binnen de eventperiode.",

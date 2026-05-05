@@ -1,6 +1,7 @@
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
+using NodaTime;
 
 namespace Backend.Database.Entities.Sessions;
 
@@ -15,8 +16,8 @@ public sealed class Session
     public Room Room { get; set; } = null!;
     public Guid EventId { get; set; }
     public Event Event { get; set; } = null!;
-    public DateTime StartDateTime { get; set; }
-    public DateTime EndDateTime { get; set; }
+    public LocalDateTime StartDateTime { get; set; }
+    public LocalDateTime EndDateTime { get; set; }
     public int? Capacity { get; set; }
     public List<string> Labels { get; set; } = [];
     public ICollection<SessionEnrollment> Enrollments { get; set; } = new List<SessionEnrollment>();
