@@ -1,5 +1,6 @@
 using Backend.Database.Entities.Notifications;
 using Backend.Database.Entities.Sessions;
+using Backend.Web.Features.Email;
 
 namespace Backend.Web.Features.Notifications;
 
@@ -8,7 +9,7 @@ internal static class NotificationTypes
     public const string WaitlistPromotion = "waitlist_promotion";
 }
 
-public sealed class NotificationService(IUserNotificationRepository notificationRepository) : INotificationService
+public sealed class NotificationService(IUserNotificationRepository notificationRepository, EmailService emailService ) : INotificationService
 {
     public async Task NotifyWaitlistPromotionAsync(Guid participantId, Session session, CancellationToken ct)
     {
@@ -23,7 +24,8 @@ public sealed class NotificationService(IUserNotificationRepository notification
             SessionId = session.Id,
             CreatedAtUtc = DateTime.UtcNow
         };
-
+        
+        await emailService.SendUserNotificationAsync(notification, ct);
         await notificationRepository.AddAsync(notification, ct);
     }
 }

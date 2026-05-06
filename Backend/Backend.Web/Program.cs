@@ -6,6 +6,7 @@ using Backend.Web.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,16 @@ builder.Services
     .AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+var emailApiToken = builder.Configuration["ApiKeys:Email"];
+if (string.IsNullOrEmpty(emailApiToken))
+    throw new ArgumentException("ApiKeys:Email is not configured");
+
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(x =>
+    x.ApiToken = emailApiToken);
+builder.Services.AddTransient<IResend, ResendClient>();
 
 builder.Services
     .AddAuthentication(options =>
