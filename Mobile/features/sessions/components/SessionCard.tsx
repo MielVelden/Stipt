@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { SessionRo } from "@/generated-types/session-ro";
+import { SessionEnrollmentStatus } from "@/generated-types/session-enrollment-status";
 
 interface SessionCardProps {
     session: SessionRo;
@@ -25,7 +26,7 @@ export function SessionCard({ session, onPress, showEnrollmentStatus = true }: S
     const renderEnrollmentStatus = () => {
         if (!showEnrollmentStatus) return null;
 
-        if (session.myEnrollmentStatus === "enrolled") {
+        if (session.myEnrollmentStatus === SessionEnrollmentStatus.Enrolled) {
             return (
                 <View className="flex-row items-center gap-x-1.5">
                     <Icon as={CheckCircle} size={16} className="text-green-600" />
@@ -36,7 +37,7 @@ export function SessionCard({ session, onPress, showEnrollmentStatus = true }: S
             );
         }
 
-        if (session.myEnrollmentStatus === "waitlisted") {
+        if (session.myEnrollmentStatus === SessionEnrollmentStatus.Waitlisted) {
             return (
                 <View className="flex-row items-center gap-x-1.5">
                     <Icon as={Clock} size={16} className="text-amber-500" />
