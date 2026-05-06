@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505130000_UseLocalDateForEventDates")]
+    partial class UseLocalDateForEventDates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,7 +142,7 @@ namespace Backend.Database.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<NodaTime.LocalDate>("EndDate")
+                    b.Property<LocalDate>("EndDate")
                         .HasColumnType("date");
 
                     b.Property<bool>("IsArchived")
@@ -157,7 +160,7 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<NodaTime.LocalDate>("StartDate")
+                    b.Property<LocalDate>("StartDate")
                         .HasColumnType("date");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
@@ -286,7 +289,7 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<NodaTime.LocalDateTime>("EndDateTime")
+                    b.Property<LocalDateTime>("EndDateTime")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("EventId")
@@ -304,7 +307,7 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<NodaTime.LocalDateTime>("StartDateTime")
+                    b.Property<LocalDateTime>("StartDateTime")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Title")
@@ -634,3 +637,4 @@ namespace Backend.Database.Migrations
         }
     }
 }
+

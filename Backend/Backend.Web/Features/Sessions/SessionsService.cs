@@ -270,10 +270,7 @@ public sealed class SessionsService(
 
     private static void EnsureWithinEventPeriod(LocalDateTime startDateTime, LocalDateTime endDateTime, Event eventItem)
     {
-        var eventStart = LocalDateTime.FromDateTime(eventItem.StartDate);
-        var eventEnd = LocalDateTime.FromDateTime(eventItem.EndDate);
-
-        if (startDateTime < eventStart || endDateTime > eventEnd)
+        if (startDateTime.Date < eventItem.StartDate || endDateTime.Date > eventItem.EndDate)
         {
             throw new BadHttpRequestException(
                 "De sessie moet starten en eindigen binnen de eventperiode.",

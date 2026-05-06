@@ -1,3 +1,4 @@
+using NodaTime;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Events.Dtos;
@@ -7,8 +8,8 @@ public sealed record EventRo(
     Guid Id,
     string Name,
     string Location,
-    DateTime StartDate,
-    DateTime EndDate,
+    LocalDate StartDate,
+    LocalDate EndDate,
     EventStyleRo Style,
     bool IsArchived,
     DateTime CreatedAtUtc,

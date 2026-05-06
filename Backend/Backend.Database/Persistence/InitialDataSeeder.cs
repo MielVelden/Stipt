@@ -141,8 +141,8 @@ internal static class InitialDataSeeder
             Id = MainEventId,
             Name = "Stipt Summit 2026",
             Location = "'s-Hertogenbosch, Onderwijsboulevard",
-            StartDate = new DateTime(2026, 4, 20, 8, 0, 0, DateTimeKind.Utc),
-            EndDate = new DateTime(2026, 4, 30, 18, 0, 0, DateTimeKind.Utc),
+            StartDate = new LocalDate(2026, 4, 20),
+            EndDate = new LocalDate(2026, 4, 30),
             Style = new EventStyle
             {
                 PrimaryBackgroundColor = "#111827",
@@ -237,8 +237,8 @@ internal static class InitialDataSeeder
                 Id = TestEventId,
                 Name = "Stipt Test Event 2026",
                 Location = "Den Bosch - Testlocatie",
-                StartDate = new DateTime(2026, 5, 15, 8, 0, 0, DateTimeKind.Utc),
-                EndDate = new DateTime(2026, 5, 15, 18, 0, 0, DateTimeKind.Utc),
+                StartDate = new LocalDate(2026, 5, 15),
+                EndDate = new LocalDate(2026, 5, 15),
                 Style = new EventStyle
                 {
                     PrimaryBackgroundColor = "#0F172A",
