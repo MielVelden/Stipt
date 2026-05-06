@@ -8,6 +8,10 @@ export const VALIDATION_MESSAGES = {
     capacityGreaterThanZero: "Capaciteit moet groter zijn dan 0",
     notFound: "Deze ruimte kan niet worden gevonden",
   },
+  participant: {
+    maxEmailLength: "Maximaal 320 karakters",
+    invalidEmail: "Voer een geldig e-mailadres in",
+  },
   session: {
     selectType: "Selecteer een sessietype",
     selectRoom: "Selecteer een ruimte",

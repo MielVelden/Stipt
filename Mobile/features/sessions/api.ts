@@ -1,16 +1,14 @@
 import type { AxiosResponse } from "axios";
 import apiClient from "@/lib/api-client";
 import { SessionRo } from "@/generated-types/session-ro";
-import type { Session, SessionFilterDto } from "./types";
+import type { SessionFilterDto } from "./types";
 import type { PersonalAgendaRo } from "@/generated-types/personal-agenda-ro";
-import { useAuth } from "@/lib/auth-context";
-import { getAccessTokenAsync } from "@/lib/auth";
 
 export async function getAllSessions(
     eventId: string,
     filter?: SessionFilterDto,
-): Promise<Session[]> {
-    const response: AxiosResponse<Session[]> = await apiClient.get(
+): Promise<SessionRo[]> {
+    const response: AxiosResponse<SessionRo[]> = await apiClient.get(
         `/events/${eventId}/sessions`,
         {
             params: filter,
@@ -35,7 +33,7 @@ export async function getSessions(eventId: string): Promise<SessionRo[]> {
 export async function getPersonalAgenda(
     eventId: string,
     filter?: SessionFilterDto,
-): Promise<Session[]> {
+): Promise<SessionRo[]> {
     const response = await apiClient.get<PersonalAgendaRo>(
         `/events/${eventId}/sessions/personal-agenda`,
         {
@@ -49,7 +47,7 @@ export async function getPersonalAgenda(
         },
     );
 
-    return response?.data.sessions.map(toSessionModel) || [];
+    return response?.data.sessions;
 }
 
 export async function getSessionById(
@@ -116,15 +114,4 @@ function toSessionQueryString(filter?: SessionFilterDto) {
     }
 
     return params.toString();
-}
-
-function toSessionModel(session: SessionRo): Session {
-    return {
-        ...session,
-        description: session.description ?? null,
-        capacity: session.capacity ?? null,
-        updatedAtUtc: session.updatedAtUtc ?? null,
-        myEnrollmentStatus: session.myEnrollmentStatus ?? null,
-        myWaitlistPosition: session.myWaitlistPosition ?? null,
-    };
 }
