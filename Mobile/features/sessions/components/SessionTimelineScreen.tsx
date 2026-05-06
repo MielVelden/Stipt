@@ -4,13 +4,14 @@ import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { MapPin, Calendar, Filter } from "lucide-react-native";
-import type { Session, SessionFilterDto } from "@/features/sessions/types";
+import type { SessionFilterDto } from "@/features/sessions/types";
 import { getAvailableLabels } from "@/features/sessions/utils";
 import { formatDateTimeRange } from "@/lib/utils";
 import { SessionCard } from "@/features/sessions/components/SessionCard";
 import { SessionFilterModal } from "@/features/sessions/components/SessionFilterModal";
 import { getEventById } from "@/features/events/api";
 import { EventRo } from "@/generated-types/event-ro";
+import {SessionRo} from "@/generated-types/session-ro";
 
 interface SessionTimelineScreenProps {
     eventId: string;
@@ -18,8 +19,9 @@ interface SessionTimelineScreenProps {
     loadSessions: (
         eventId: string,
         filter: SessionFilterDto,
-    ) => Promise<Session[]>;
+    ) => Promise<SessionRo[]>;
     showAvailabilityFilter?: boolean;
+    showEnrollmentStatus?: boolean;
     emptyStateText?: string;
 }
 
@@ -28,11 +30,12 @@ export function SessionTimelineScreen({
     sectionTitle,
     loadSessions,
     showAvailabilityFilter = true,
+    showEnrollmentStatus = true,
     emptyStateText = "Geen sessies gevonden voor deze filters.",
 }: SessionTimelineScreenProps) {
     const router = useRouter();
     const [event, setEvent] = useState<EventRo | null>(null);
-    const [sessions, setSessions] = useState<Session[]>([]);
+    const [sessions, setSessions] = useState<SessionRo[]>([]);
     const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
     const [availableOnly, setAvailableOnly] = useState(false);
     const [allLabels, setAllLabels] = useState<string[]>([]);
@@ -256,6 +259,7 @@ export function SessionTimelineScreen({
                             <SessionCard
                                 key={session.id}
                                 session={session}
+                                showEnrollmentStatus={showEnrollmentStatus}
                                 onPress={() =>
                                     router.push({
                                         pathname:
