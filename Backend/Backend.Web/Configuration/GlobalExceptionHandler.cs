@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Backend.Web.Features.Sessions.Exceptions;
+using Backend.Web.Features.EventParticipants.Exceptions;
 
 namespace Backend.Web.Configuration;
 
@@ -37,6 +38,15 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
                         conflictingSessions = conflictException.ConflictingSessions
                     },
                     statusCode: StatusCodes.Status409Conflict).ExecuteAsync(httpContext);
+
+                return true;
+            }
+            case DuplicateParticipantException duplicateException:
+            {
+                await Results.Problem(
+                    detail: duplicateException.Message,
+                    statusCode: StatusCodes.Status409Conflict
+                ).ExecuteAsync(httpContext);
 
                 return true;
             }

@@ -27,6 +27,7 @@ export default function MyAgendaScreen() {
             sectionTitle="Mijn agenda"
             loadSessions={getPersonalAgenda}
             showAvailabilityFilter={false}
+            showEnrollmentStatus={false}
             emptyStateText="Je hebt je nog niet ingeschreven voor sessies"
         />
     );

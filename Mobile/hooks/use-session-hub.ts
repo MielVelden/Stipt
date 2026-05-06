@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import * as signalR from '@microsoft/signalr';
 import { useSessionHubConnection } from '@/lib/session-hub-context';
 import { SessionEnrollmentUpdatedMessage } from '@/generated-types/session-enrollment-updated-message';
 
@@ -38,7 +39,9 @@ export function useSessionHub(eventId: string | undefined, callbacks: SessionHub
             const remaining = (groupRefCounts.get(eventId) ?? 1) - 1;
             if (remaining <= 0) {
                 groupRefCounts.delete(eventId);
-                connection.invoke('LeaveEventGroup', eventId).catch(console.error);
+                if (connection.state === signalR.HubConnectionState.Connected) {
+                    connection.invoke('LeaveEventGroup', eventId).catch(console.error);
+                }
             } else {
                 groupRefCounts.set(eventId, remaining);
             }
