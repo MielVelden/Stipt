@@ -7,8 +7,8 @@ namespace Backend.Web.Features.Events.Dtos;
 public sealed record UpdateEventDto(
     string Name,
     string Location,
-    LocalDate StartDate,
-    LocalDate EndDate,
+    LocalDateTime StartDate,
+    LocalDateTime EndDate,
     UpdateEventStyleDto Style
 );
 

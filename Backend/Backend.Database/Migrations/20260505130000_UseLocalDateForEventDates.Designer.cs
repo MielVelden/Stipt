@@ -142,8 +142,8 @@ namespace Backend.Database.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<LocalDate>("EndDate")
-                        .HasColumnType("date");
+                    b.Property<LocalDateTime>("EndDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsArchived")
                         .ValueGeneratedOnAdd()
@@ -160,8 +160,8 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<LocalDate>("StartDate")
-                        .HasColumnType("date");
+                    b.Property<LocalDateTime>("StartDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");

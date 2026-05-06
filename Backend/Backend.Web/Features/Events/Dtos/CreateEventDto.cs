@@ -7,8 +7,8 @@ namespace Backend.Web.Features.Events.Dtos;
 public sealed record CreateEventDto(
     string Name,
     string Location,
-    LocalDate StartDate,
-    LocalDate EndDate,
+    LocalDateTime StartDate,
+    LocalDateTime EndDate,
     CreateEventStyleDto Style
 );
 

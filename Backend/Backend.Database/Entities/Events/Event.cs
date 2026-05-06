@@ -9,8 +9,8 @@ public sealed class Event
     public Guid Id { get; init; }
     public required string Name { get; set; }
     public required string Location { get; set; }
-    public LocalDate StartDate { get; set; }
-    public LocalDate EndDate { get; set; }
+    public LocalDateTime StartDate { get; set; }
+    public LocalDateTime EndDate { get; set; }
     public required EventStyle Style { get; set; }
     public bool IsArchived { get; set; }
     public DateTime CreatedAtUtc { get; init; }

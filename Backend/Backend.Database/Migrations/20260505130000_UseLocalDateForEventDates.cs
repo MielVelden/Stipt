@@ -11,16 +11,15 @@ namespace Backend.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Convert from timestamptz to date (wall-clock date at the venue).
-            // AT TIME ZONE 'UTC' extracts the UTC date component, preserving
-            // the calendar date that was originally stored.
+            // Convert from timestamptz to timestamp without time zone (wall-clock time).
+            // AT TIME ZONE 'UTC' strips the timezone, preserving the same wall-clock value.
             migrationBuilder.Sql(
                 """
                 ALTER TABLE events
-                    ALTER COLUMN "StartDate" TYPE date
-                        USING ("StartDate" AT TIME ZONE 'UTC')::date,
-                    ALTER COLUMN "EndDate" TYPE date
-                        USING ("EndDate" AT TIME ZONE 'UTC')::date;
+                    ALTER COLUMN "StartDate" TYPE timestamp without time zone
+                        USING ("StartDate" AT TIME ZONE 'UTC'),
+                    ALTER COLUMN "EndDate" TYPE timestamp without time zone
+                        USING ("EndDate" AT TIME ZONE 'UTC');
                 """);
         }
 
@@ -31,9 +30,9 @@ namespace Backend.Database.Migrations
                 """
                 ALTER TABLE events
                     ALTER COLUMN "StartDate" TYPE timestamp with time zone
-                        USING "StartDate"::timestamp with time zone,
+                        USING "StartDate" AT TIME ZONE 'UTC',
                     ALTER COLUMN "EndDate" TYPE timestamp with time zone
-                        USING "EndDate"::timestamp with time zone;
+                        USING "EndDate" AT TIME ZONE 'UTC';
                 """);
         }
     }
