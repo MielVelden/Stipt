@@ -2,7 +2,6 @@ using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
-using Backend.Web.Configuration;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
@@ -310,17 +309,16 @@ public sealed class SessionsService(
         var effectiveCapacity = session.Capacity ?? session.Room.Capacity;
         var enrolledCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
         var waitlistCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Waitlisted);
-        var hasAvailableSpots = enrolledCount < effectiveCapacity;
 
-        var update = new SessionEnrollmentUpdateRo(
+        var message = new SessionEnrollmentUpdatedMessage(
             session.Id,
             enrolledCount,
             waitlistCount,
-            hasAvailableSpots,
+            enrolledCount < effectiveCapacity,
             effectiveCapacity);
 
         await hubContext.Clients
             .Group($"event-{session.EventId}")
-            .SendAsync(nameof(HubMessageTypeEnum.SessionEnrollmentUpdated), update, cancellationToken);
+            .SendAsync(nameof(SessionEnrollmentUpdatedMessage), message, cancellationToken);
     }
 }

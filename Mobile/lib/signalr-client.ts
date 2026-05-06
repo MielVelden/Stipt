@@ -4,7 +4,7 @@ import { API_BASE_URL } from "@/constants/api";
 import { getAccessTokenAsync, getRefreshTokenAsync, saveTokensAsync } from "@/lib/auth";
 import { refreshTokensAsync } from "@/features/auth/api";
 
-type ConnectionStatus =
+export type ConnectionStatus =
     | "disconnected"
     | "connecting"
     | "connected"
@@ -17,55 +17,41 @@ export function ConnectToHub(path: string) {
 
     useEffect(() => {
         const hubUrl = `${API_BASE_URL}${path}`;
-        const options: signalR.IHttpConnectionOptions = {};
-
-        let token: string | null;
 
         const refreshAccessToken = async () => {
-            const refreshToken = await getRefreshTokenAsync() || ""
-            const response = await refreshTokensAsync(refreshToken)
-            await saveTokensAsync(response.accessToken, response.refreshToken)
-            token = await getAccessTokenAsync()
-        }
-
-        options.accessTokenFactory = async () => {
-            token = await getAccessTokenAsync() || ""
-            return token;
+            const refreshToken = (await getRefreshTokenAsync()) || "";
+            const response = await refreshTokensAsync(refreshToken);
+            await saveTokensAsync(response.accessToken, response.refreshToken);
         };
 
         const nextConnection = new signalR.HubConnectionBuilder()
-            .withUrl(hubUrl, options)
+            .withUrl(hubUrl, {
+                accessTokenFactory: async () => (await getAccessTokenAsync()) || "",
+            })
             .withAutomaticReconnect()
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        setConnection(nextConnection);
-
-        nextConnection.onreconnecting( async () => {
-            setStatus("reconnecting")
-            await refreshAccessToken()
+        nextConnection.onreconnecting(async () => {
+            setStatus("reconnecting");
+            await refreshAccessToken();
         });
         nextConnection.onreconnected(() => setStatus("connected"));
-        nextConnection.onclose( async () => {
-            setStatus("disconnected")
-        });
+        nextConnection.onclose(() => setStatus("disconnected"));
 
-        const start = async () => {
-            try {
-                setStatus("connecting");
-                await nextConnection.start();
-                setStatus("connected");
-            } catch (err) {
+        setConnection(nextConnection);
+        setStatus("connecting");
+
+        nextConnection
+            .start()
+            .then(() => setStatus("connected"))
+            .catch((err) => {
                 console.error("SignalR start error:", err);
                 setStatus("disconnected");
-            }
-        };
-
-        start();
+            });
 
         return () => {
             nextConnection.stop().catch(console.error);
-            setConnection(null);
         };
     }, [path]);
 

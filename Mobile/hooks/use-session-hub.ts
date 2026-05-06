@@ -1,14 +1,15 @@
 import { useEffect, useRef } from 'react';
-import { ConnectToHub } from '@/lib/signalr-client';
-import { HubMessageTypeEnum } from '@/generated-types/hub-message-type-enum';
-import { SessionEnrollmentUpdateRo } from '@/generated-types/session-enrollment-update-ro';
+import { useSessionHubConnection } from '@/lib/session-hub-context';
+import { SessionEnrollmentUpdatedMessage } from '@/generated-types/session-enrollment-updated-message';
 
 interface SessionHubCallbacks {
-    onSessionEnrollmentUpdated?: (update: SessionEnrollmentUpdateRo) => void;
+    onSessionEnrollmentUpdated?: (message: SessionEnrollmentUpdatedMessage) => void;
 }
 
+const groupRefCounts = new Map<string, number>();
+
 export function useSessionHub(eventId: string | undefined, callbacks: SessionHubCallbacks) {
-    const { connection, status } = ConnectToHub('/hub/sessions');
+    const { connection, status } = useSessionHubConnection();
 
     const callbacksRef = useRef(callbacks);
     useEffect(() => {
@@ -18,17 +19,29 @@ export function useSessionHub(eventId: string | undefined, callbacks: SessionHub
     useEffect(() => {
         if (!connection || !eventId || status !== 'connected') return;
 
-        connection.invoke('JoinEventGroup', eventId).catch(console.error);
+        const count = (groupRefCounts.get(eventId) ?? 0) + 1;
+        groupRefCounts.set(eventId, count);
 
-        const handler = (update: SessionEnrollmentUpdateRo) => {
-            callbacksRef.current.onSessionEnrollmentUpdated?.(update);
+        if (count === 1) {
+            connection.invoke('JoinEventGroup', eventId).catch(console.error);
+        }
+
+        const handler = (message: SessionEnrollmentUpdatedMessage) => {
+            callbacksRef.current.onSessionEnrollmentUpdated?.(message);
         };
 
-        connection.on(HubMessageTypeEnum.SessionEnrollmentUpdated, handler);
+        connection.on('SessionEnrollmentUpdatedMessage', handler);
 
         return () => {
-            connection.off(HubMessageTypeEnum.SessionEnrollmentUpdated, handler);
-            connection.invoke('LeaveEventGroup', eventId).catch(console.error);
+            connection.off('SessionEnrollmentUpdatedMessage', handler);
+
+            const remaining = (groupRefCounts.get(eventId) ?? 1) - 1;
+            if (remaining <= 0) {
+                groupRefCounts.delete(eventId);
+                connection.invoke('LeaveEventGroup', eventId).catch(console.error);
+            } else {
+                groupRefCounts.set(eventId, remaining);
+            }
         };
     }, [connection, status, eventId]);
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native';
-import { useLocalSearchParams, useRouter} from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import { formatDateTime, formatTime } from '@/lib/utils';
@@ -32,14 +32,14 @@ export default function SessionDetailScreen() {
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
     const { status } = useSessionHub(eventId, {
-        onSessionEnrollmentUpdated: (update) => {
-            if (update.sessionId !== sessionId) return;
+        onSessionEnrollmentUpdated: (message) => {
+            if (message.sessionId !== sessionId) return;
             setSession(prev => prev ? {
                 ...prev,
-                enrolledCount: update.enrolledCount,
-                waitlistCount: update.waitlistCount,
-                hasAvailableSpots: update.hasAvailableSpots,
-                effectiveCapacity: update.effectiveCapacity,
+                enrolledCount: message.enrolledCount,
+                waitlistCount: message.waitlistCount,
+                hasAvailableSpots: message.hasAvailableSpots,
+                effectiveCapacity: message.effectiveCapacity,
             } : prev);
         },
     });
@@ -80,7 +80,7 @@ export default function SessionDetailScreen() {
         };
     }, [eventId, sessionId]);
 
-if (loading) return <ActivityIndicator className="flex-1" />;
+    if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
 
     async function handleEnrollPress() {
@@ -246,7 +246,7 @@ if (loading) return <ActivityIndicator className="flex-1" />;
                         <View className="flex-row items-center gap-x-2">
                             <Icon className="text-muted-foreground" as={Users} size={18} />
                             <Text className="text-muted-foreground">
-                                { `${session.enrolledCount}/${session.effectiveCapacity} inschrijvingen` }
+                                {`${session.enrolledCount}/${session.effectiveCapacity} inschrijvingen`}
                             </Text>
                         </View>
                     </View>

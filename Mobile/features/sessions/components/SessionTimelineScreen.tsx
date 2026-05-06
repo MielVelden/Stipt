@@ -42,17 +42,17 @@ export function SessionTimelineScreen({
     const [error, setError] = useState<string | null>(null);
 
     useSessionHub(eventId, {
-        onSessionEnrollmentUpdated: (update) => {
+        onSessionEnrollmentUpdated: (message) => {
             setSessions(prev =>
                 prev.map(session =>
-                    session.id === update.sessionId
+                    session.id === message.sessionId
                         ? {
-                              ...session,
-                              enrolledCount: update.enrolledCount,
-                              waitlistCount: update.waitlistCount,
-                              hasAvailableSpots: update.hasAvailableSpots,
-                              effectiveCapacity: update.effectiveCapacity,
-                          }
+                            ...session,
+                            enrolledCount: message.enrolledCount,
+                            waitlistCount: message.waitlistCount,
+                            hasAvailableSpots: message.hasAvailableSpots,
+                            effectiveCapacity: message.effectiveCapacity,
+                        }
                         : session,
                 ),
             );

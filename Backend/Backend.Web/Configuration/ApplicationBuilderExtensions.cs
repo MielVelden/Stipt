@@ -1,13 +1,6 @@
 using Backend.Web.Features.Sessions;
-using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Configuration;
-
-[ExportTsEnum]
-public enum HubMessageTypeEnum
-{
-    SessionEnrollmentUpdated
-}
 
 public static class ApplicationBuilderExtensions
 {
