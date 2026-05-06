@@ -17,10 +17,10 @@ export function NavigationGuard({ children }: { children: ReactNode }) {
 
         if (!isAuthenticated && !inAuthGroup) {
             router.replace("/(auth)/login");
-            return; 
+            return;
         } else if (isAuthenticated && !inEventsGroup) {
             router.replace("/events/");
-            return; 
+            return;
         }
 
         setIsReady(true);
