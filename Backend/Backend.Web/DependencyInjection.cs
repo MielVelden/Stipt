@@ -1,4 +1,5 @@
 using Backend.Web.Features.Auth;
+using Backend.Web.Features.Email;
 using Backend.Web.Features.EventParticipants;
 using Backend.Web.Features.Events;
 using Backend.Web.Features.Notifications;
@@ -20,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<RoomsService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<SessionsService>();
+        services.AddScoped<EmailService>();
         services.AddSingleton<IClock>(SystemClock.Instance);
 
         return services;

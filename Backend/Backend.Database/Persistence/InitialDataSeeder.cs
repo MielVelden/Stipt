@@ -15,7 +15,7 @@ internal static class InitialDataSeeder
 {
     private const string AttendeeRole = "attendee";
     private const string ManagerRole = "manager";
-    private const string ParticipantTestEmail = "deelnemer@test.nl";
+    private const string ParticipantTestEmail = "deelnemer@stipt.slempers.nl";
 
     private static readonly Guid MainEventId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850001");
     private static readonly Guid MainHallId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850002");
@@ -64,7 +64,7 @@ internal static class InitialDataSeeder
         string seedPassword)
     {
         var userEmails = new List<string> { ParticipantTestEmail };
-        userEmails.AddRange(Enumerable.Range(1, 20).Select(i => $"deelnemer{i:00}@test.nl"));
+        userEmails.AddRange(Enumerable.Range(1, 20).Select(i => $"deelnemer{i:00}@stipt.slempers.nl"));
 
         var usersByEmail = new Dictionary<string, ApplicationUser>(StringComparer.OrdinalIgnoreCase);
 
