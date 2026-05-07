@@ -19,7 +19,7 @@ public class EmailService(IUserRepository userRepository, IResend emailClient)
         
         var message = new EmailMessage
         {
-            From = "EventConnect <onboarding@resend.dev>",
+            From = "EventConnect <eventconnect@stipt.slempers.nl>",
             To = participantEmail,
             Subject = template.Subject,
             HtmlBody = template.RenderHtml()
