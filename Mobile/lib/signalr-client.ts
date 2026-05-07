@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { API_BASE_URL } from "@/constants/api";
-import { getAccessTokenAsync, getRefreshTokenAsync, saveTokensAsync } from "@/lib/auth";
-import { refreshTokensAsync } from "@/features/auth/api";
+import { getAccessTokenAsync, refreshAccessTokenAsync } from "@/lib/auth";
 
 export type ConnectionStatus =
     | "disconnected"
@@ -17,11 +16,18 @@ export function ConnectToHub(path: string) {
 
     useEffect(() => {
         const hubUrl = `${API_BASE_URL}${path}`;
+        const options: signalR.IHttpConnectionOptions = {};
+
+        let token: string | null;
 
         const refreshAccessToken = async () => {
-            const refreshToken = (await getRefreshTokenAsync()) || "";
-            const response = await refreshTokensAsync(refreshToken);
-            await saveTokensAsync(response.accessToken, response.refreshToken);
+            await refreshAccessTokenAsync()
+            token = await getAccessTokenAsync()
+        }
+
+        options.accessTokenFactory = async () => {
+            token = await getAccessTokenAsync() || ""
+            return token;
         };
 
         const nextConnection = new signalR.HubConnectionBuilder()

@@ -16,8 +16,8 @@ public sealed class SessionsServiceReplaceEnrollmentAsyncTests
 
         var targetSession = SessionsServiceTestHelpers.BuildSession(eventId, targetSessionId, capacity: 2);
         var oldSession = SessionsServiceTestHelpers.BuildSession(eventId, oldSessionId, capacity: 2);
-        oldSession.StartDateTime = targetSession.StartDateTime.AddMinutes(-10);
-        oldSession.EndDateTime = targetSession.EndDateTime.AddMinutes(-10);
+        oldSession.StartDateTime = targetSession.StartDateTime.PlusMinutes(-10);
+        oldSession.EndDateTime = targetSession.EndDateTime.PlusMinutes(-10);
 
         var currentEnrollment = new SessionEnrollment
         {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
+using NodaTime;
 
 namespace Backend.Database.Persistence;
 
@@ -14,7 +15,7 @@ internal static class InitialDataSeeder
 {
     private const string AttendeeRole = "attendee";
     private const string ManagerRole = "manager";
-    private const string ParticipantTestEmail = "deelnemer@test.nl";
+    private const string ParticipantTestEmail = "deelnemer@stipt.slempers.nl";
 
     private static readonly Guid MainEventId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850001");
     private static readonly Guid MainHallId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850002");
@@ -63,7 +64,7 @@ internal static class InitialDataSeeder
         string seedPassword)
     {
         var userEmails = new List<string> { ParticipantTestEmail };
-        userEmails.AddRange(Enumerable.Range(1, 20).Select(i => $"deelnemer{i:00}@test.nl"));
+        userEmails.AddRange(Enumerable.Range(1, 20).Select(i => $"deelnemer{i:00}@stipt.slempers.nl"));
 
         var usersByEmail = new Dictionary<string, ApplicationUser>(StringComparer.OrdinalIgnoreCase);
 
@@ -140,8 +141,8 @@ internal static class InitialDataSeeder
             Id = MainEventId,
             Name = "Stipt Summit 2026",
             Location = "'s-Hertogenbosch, Onderwijsboulevard",
-            StartDate = new DateTime(2026, 4, 20, 8, 0, 0, DateTimeKind.Utc),
-            EndDate = new DateTime(2026, 4, 30, 18, 0, 0, DateTimeKind.Utc),
+            StartDate = new LocalDateTime(2026, 4, 20, 9, 0, 0),
+            EndDate = new LocalDateTime(2026, 4, 30, 18, 0, 0),
             Style = new EventStyle
             {
                 PrimaryBackgroundColor = "#111827",
@@ -185,8 +186,8 @@ internal static class InitialDataSeeder
                 Speaker = "Ava Thompson",
                 RoomId = MainHallId,
                 EventId = MainEventId,
-                StartDateTime = new DateTime(2026, 4, 20, 9, 0, 0, DateTimeKind.Utc),
-                EndDateTime = new DateTime(2026, 4, 20, 10, 0, 0, DateTimeKind.Utc),
+                StartDateTime = new LocalDateTime(2026, 4, 20, 9, 0, 0),
+                EndDateTime = new LocalDateTime(2026, 4, 20, 10, 0, 0),
                 Capacity = 180,
                 Labels = ["keynote", "architecture"],
                 CreatedAtUtc = new DateTime(2026, 3, 20, 12, 5, 0, DateTimeKind.Utc)
@@ -200,8 +201,8 @@ internal static class InitialDataSeeder
                 Speaker = "Liam Carter",
                 RoomId = WorkshopARoomId,
                 EventId = MainEventId,
-                StartDateTime = new DateTime(2026, 4, 20, 10, 30, 0, DateTimeKind.Utc),
-                EndDateTime = new DateTime(2026, 4, 20, 11, 30, 0, DateTimeKind.Utc),
+                StartDateTime = new LocalDateTime(2026, 4, 20, 10, 30, 0),
+                EndDateTime = new LocalDateTime(2026, 4, 20, 11, 30, 0),
                 Capacity = 60,
                 Labels = ["dotnet", "database"],
                 CreatedAtUtc = new DateTime(2026, 3, 20, 12, 10, 0, DateTimeKind.Utc)
@@ -215,8 +216,8 @@ internal static class InitialDataSeeder
                 Speaker = "Noah de Vries",
                 RoomId = WorkshopBRoomId,
                 EventId = MainEventId,
-                StartDateTime = new DateTime(2026, 4, 20, 13, 30, 0, DateTimeKind.Utc),
-                EndDateTime = new DateTime(2026, 4, 20, 14, 30, 0, DateTimeKind.Utc),
+                StartDateTime = new LocalDateTime(2026, 4, 20, 13, 30, 0),
+                EndDateTime = new LocalDateTime(2026, 4, 20, 14, 30, 0),
                 Capacity = 60,
                 Labels = ["frontend", "react"],
                 CreatedAtUtc = new DateTime(2026, 3, 20, 12, 15, 0, DateTimeKind.Utc)
@@ -236,8 +237,8 @@ internal static class InitialDataSeeder
                 Id = TestEventId,
                 Name = "Stipt Test Event 2026",
                 Location = "Den Bosch - Testlocatie",
-                StartDate = new DateTime(2026, 5, 15, 8, 0, 0, DateTimeKind.Utc),
-                EndDate = new DateTime(2026, 5, 15, 18, 0, 0, DateTimeKind.Utc),
+                StartDate = new LocalDateTime(2026, 5, 15, 9, 0, 0),
+                EndDate = new LocalDateTime(2026, 5, 15, 18, 0, 0),
                 Style = new EventStyle
                 {
                     PrimaryBackgroundColor = "#0F172A",
@@ -281,8 +282,8 @@ internal static class InitialDataSeeder
                     Speaker = "Seed Speaker A",
                     RoomId = TestRoomAId,
                     EventId = TestEventId,
-                    StartDateTime = new DateTime(2026, 5, 15, 10, 0, 0, DateTimeKind.Utc),
-                    EndDateTime = new DateTime(2026, 5, 15, 11, 0, 0, DateTimeKind.Utc),
+                    StartDateTime = new LocalDateTime(2026, 5, 15, 10, 0, 0),
+                    EndDateTime = new LocalDateTime(2026, 5, 15, 11, 0, 0),
                     Capacity = 4,
                     Labels = ["test", "overlap"],
                     CreatedAtUtc = new DateTime(2026, 4, 1, 9, 5, 0, DateTimeKind.Utc)
@@ -296,8 +297,8 @@ internal static class InitialDataSeeder
                     Speaker = "Seed Speaker B",
                     RoomId = TestRoomBId,
                     EventId = TestEventId,
-                    StartDateTime = new DateTime(2026, 5, 15, 10, 30, 0, DateTimeKind.Utc),
-                    EndDateTime = new DateTime(2026, 5, 15, 11, 30, 0, DateTimeKind.Utc),
+                    StartDateTime = new LocalDateTime(2026, 5, 15, 10, 30, 0),
+                    EndDateTime = new LocalDateTime(2026, 5, 15, 11, 30, 0),
                     Capacity = 4,
                     Labels = ["test", "overlap"],
                     CreatedAtUtc = new DateTime(2026, 4, 1, 9, 6, 0, DateTimeKind.Utc)
@@ -311,8 +312,8 @@ internal static class InitialDataSeeder
                     Speaker = "Seed Speaker C",
                     RoomId = TestRoomCId,
                     EventId = TestEventId,
-                    StartDateTime = new DateTime(2026, 5, 15, 12, 0, 0, DateTimeKind.Utc),
-                    EndDateTime = new DateTime(2026, 5, 15, 13, 0, 0, DateTimeKind.Utc),
+                    StartDateTime = new LocalDateTime(2026, 5, 15, 12, 0, 0),
+                    EndDateTime = new LocalDateTime(2026, 5, 15, 13, 0, 0),
                     Capacity = 2,
                     Labels = ["test", "waitlist"],
                     CreatedAtUtc = new DateTime(2026, 4, 1, 9, 7, 0, DateTimeKind.Utc)

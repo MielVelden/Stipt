@@ -1,6 +1,7 @@
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Backend.Database.Entities.SessionEnrollments;
+using NodaTime;
 
 namespace Backend.Database.Entities.Sessions;
 
@@ -91,8 +92,8 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
     public async Task<bool> HasOverlapAsync(
         Guid eventId,
         Guid roomId,
-        DateTime startDateTime,
-        DateTime endDateTime,
+        LocalDateTime startDateTime,
+        LocalDateTime endDateTime,
         Guid? excludedSessionId,
         CancellationToken cancellationToken)
     {

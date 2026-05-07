@@ -1,3 +1,4 @@
+using NodaTime;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;
@@ -6,8 +7,8 @@ namespace Backend.Web.Features.Sessions.Dtos;
 public sealed record ConflictingSessionRo(
     Guid Id,
     string Title,
-    DateTime StartDateTime,
-    DateTime EndDateTime,
+    LocalDateTime StartDateTime,
+    LocalDateTime EndDateTime,
     string RoomName);
 
 

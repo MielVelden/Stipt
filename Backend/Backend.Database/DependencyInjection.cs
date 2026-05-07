@@ -1,5 +1,6 @@
 using Backend.Database.Entities.Events;
 using System.Runtime.CompilerServices;
+using Backend.Database.Entities;
 using Backend.Database.Entities.Auth;
 using Backend.Database.Entities.EventParticipants;
 using Backend.Database.Entities.Notifications;
@@ -34,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

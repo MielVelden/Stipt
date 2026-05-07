@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { loginAsync as loginApi } from "@/features/auth/api"
-import { deleteTokensAsync, getRefreshTokenAsync, saveTokensAsync } from "@/lib/auth"
+import { deleteTokensAsync, getRefreshTokenAsync, saveTokensAsync, getAccessTokenAsync } from "@/lib/auth"
 import { setAuthFailureListener } from "@/lib/auth-event"
 
 type AuthContextValue = {
   isAuthenticated: boolean
   isLoading: boolean
+  sessionExpired: boolean
+  clearSessionExpired: () => void
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -15,17 +17,24 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [sessionExpired, setSessionExpired] = useState(false)
 
   useEffect(() => {
     setAuthFailureListener(async () => {
       await deleteTokensAsync()
       setIsAuthenticated(false)
+      setSessionExpired(true)
     })
 
     async function checkStoredAuth() {
       try {
-        const refreshToken = await getRefreshTokenAsync()
-        setIsAuthenticated(refreshToken !== null)
+        const [accessToken, refreshToken] = await Promise.all([
+          getAccessTokenAsync(),
+          getRefreshTokenAsync(),
+        ])
+        setIsAuthenticated(accessToken !== null || refreshToken !== null)
+      } catch {
+        setIsAuthenticated(false)
       } finally {
         setIsLoading(false)
       }
@@ -38,15 +47,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await loginApi({ email, password })
     await saveTokensAsync(response.accessToken, response.refreshToken)
     setIsAuthenticated(true)
+    setSessionExpired(false)
   }
 
   async function logout() {
     await deleteTokensAsync()
     setIsAuthenticated(false)
+    setSessionExpired(false)
+  }
+
+  function clearSessionExpired() {
+    setSessionExpired(false)
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, sessionExpired, clearSessionExpired, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

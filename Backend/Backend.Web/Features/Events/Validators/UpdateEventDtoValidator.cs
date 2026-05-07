@@ -16,14 +16,6 @@ public sealed class UpdateEventDtoValidator : AbstractValidator<UpdateEventDto>
             .MaximumLength(500);
 
         RuleFor(x => x.StartDate)
-            .Must(x => x.Kind == DateTimeKind.Utc)
-            .WithMessage("StartDate must be in UTC.");
-
-        RuleFor(x => x.EndDate)
-            .Must(x => x.Kind == DateTimeKind.Utc)
-            .WithMessage("EndDate must be in UTC.");
-
-        RuleFor(x => x.StartDate)
             .LessThanOrEqualTo(x => x.EndDate)
             .WithMessage("Start date must be before or equal to end date.");
 

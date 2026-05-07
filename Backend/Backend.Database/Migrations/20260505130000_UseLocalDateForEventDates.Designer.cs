@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505130000_UseLocalDateForEventDates")]
+    partial class UseLocalDateForEventDates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,25 +134,6 @@ namespace Backend.Database.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("Backend.Database.Entities.EventParticipants.EventParticipant", b =>
-                {
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(320)
-                        .HasColumnType("character varying(320)");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("EventId", "Email");
-
-                    b.HasIndex("Email");
-
-                    b.ToTable("event_participants", (string)null);
-                });
-
             modelBuilder.Entity("Backend.Database.Entities.Events.Event", b =>
                 {
                     b.Property<Guid>("Id")
@@ -158,7 +142,7 @@ namespace Backend.Database.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<NodaTime.LocalDateTime>("EndDate")
+                    b.Property<LocalDateTime>("EndDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsArchived")
@@ -176,7 +160,7 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<NodaTime.LocalDateTime>("StartDate")
+                    b.Property<LocalDateTime>("StartDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
@@ -305,7 +289,7 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<NodaTime.LocalDateTime>("EndDateTime")
+                    b.Property<LocalDateTime>("EndDateTime")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("EventId")
@@ -323,7 +307,7 @@ namespace Backend.Database.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<NodaTime.LocalDateTime>("StartDateTime")
+                    b.Property<LocalDateTime>("StartDateTime")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Title")
@@ -494,17 +478,6 @@ namespace Backend.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Database.Entities.EventParticipants.EventParticipant", b =>
-                {
-                    b.HasOne("Backend.Database.Entities.Events.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-                });
-
             modelBuilder.Entity("Backend.Database.Entities.Events.Event", b =>
                 {
                     b.OwnsOne("Backend.Database.Entities.Events.EventStyle", "Style", b1 =>
@@ -664,3 +637,4 @@ namespace Backend.Database.Migrations
         }
     }
 }
+

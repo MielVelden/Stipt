@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Sessions;
+using NodaTime;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;
@@ -10,8 +11,8 @@ public sealed record UpdateSessionDto(
     SessionType Type,
     string Speaker,
     Guid RoomId,
-    DateTime StartDateTime,
-    DateTime EndDateTime,
+    LocalDateTime StartDateTime,
+    LocalDateTime EndDateTime,
     int? Capacity,
     List<string> Labels);
 

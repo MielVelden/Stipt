@@ -5,6 +5,7 @@ using Backend.Database.Entities.Sessions;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
+using NodaTime;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Backend.Web.Features.Sessions;
@@ -275,7 +276,7 @@ public sealed class SessionsService(
         return true;
     }
 
-    private static void EnsureWithinEventPeriod(DateTime startDateTime, DateTime endDateTime, Event eventItem)
+    private static void EnsureWithinEventPeriod(LocalDateTime startDateTime, LocalDateTime endDateTime, Event eventItem)
     {
         if (startDateTime < eventItem.StartDate || endDateTime > eventItem.EndDate)
         {

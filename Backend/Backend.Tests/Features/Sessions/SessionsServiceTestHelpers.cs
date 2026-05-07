@@ -4,6 +4,7 @@ using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions;
+using NodaTime;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
 
@@ -42,8 +43,8 @@ internal static class SessionsServiceTestHelpers
             Title = "Session",
             Speaker = "Speaker",
             Type = SessionType.Breakout,
-            StartDateTime = new DateTime(2026, 4, 4, 10, 0, 0, DateTimeKind.Utc),
-            EndDateTime = new DateTime(2026, 4, 4, 11, 0, 0, DateTimeKind.Utc),
+            StartDateTime = new LocalDateTime(2026, 4, 4, 10, 0, 0),
+            EndDateTime = new LocalDateTime(2026, 4, 4, 11, 0, 0),
             Capacity = capacity,
             Labels = [],
             CreatedAtUtc = DateTime.UtcNow

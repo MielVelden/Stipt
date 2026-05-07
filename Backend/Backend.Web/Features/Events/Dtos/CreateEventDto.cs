@@ -1,3 +1,4 @@
+using NodaTime;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Events.Dtos;
@@ -6,8 +7,8 @@ namespace Backend.Web.Features.Events.Dtos;
 public sealed record CreateEventDto(
     string Name,
     string Location,
-    DateTime StartDate,
-    DateTime EndDate,
+    LocalDateTime StartDate,
+    LocalDateTime EndDate,
     CreateEventStyleDto Style
 );
 
