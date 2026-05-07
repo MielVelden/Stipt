@@ -92,3 +92,12 @@ dotnet user-secrets set "Seeder:SeedUserPassword" "###YOUR_SEED_PASSWORD###"
 
 Vervang `###YOUR_SEED_PASSWORD###` door een wachtwoord dat voldoet aan de ASP.NET Identity vereisten (minimaal 6 tekens, hoofdletter, cijfer en speciaal teken). Zorg ervoor dat dit wachtwoord geheim blijft en niet wordt gedeeld of gecommit naar versiebeheer.
 
+## Email API Key
+In `appsettings.Development.json` staat een veld `ApiKeys:Email`. Deze wordt leeg gelaten, en we gebruiken >
+
+> Run in het project `Backend.Web` het volgende commando om het seed wachtwoord in te stellen:
+```bash
+dotnet user-secrets set "ApiKeys:Email" "###YOUR_API_KEY###"
+```
+
+Vervang `###YOUR_API_KEY###` door de api key die je ontvangen hebt
