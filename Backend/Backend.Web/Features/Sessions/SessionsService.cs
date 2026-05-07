@@ -198,6 +198,20 @@ public sealed class SessionsService(
 
         await BroadcastEnrollmentUpdateAsync(updatedSession, cancellationToken);
 
+        var participantEnrollment = updatedSession.Enrollments.FirstOrDefault(x => x.ParticipantId == participantId);
+        int? waitlistPosition = null;
+        if (participantEnrollment?.Status == SessionEnrollmentStatus.Waitlisted)
+        {
+            var position = updatedSession.Enrollments
+                .Where(x => x.Status == SessionEnrollmentStatus.Waitlisted)
+                .OrderBy(x => x.CreatedAtUtc)
+                .ToList()
+                .FindIndex(x => x.ParticipantId == participantId);
+            waitlistPosition = position >= 0 ? position + 1 : null;
+        }
+
+        await SendUserEnrollmentStatusAsync(sessionId, participantId, participantEnrollment?.Status, waitlistPosition, cancellationToken);
+
         return updatedSession.ToRo(participantId);
     }
 
@@ -273,6 +287,8 @@ public sealed class SessionsService(
         if (updatedSession is not null)
             await BroadcastEnrollmentUpdateAsync(updatedSession, cancellationToken);
 
+        await SendUserEnrollmentStatusAsync(sessionId, participantId, null, null, cancellationToken);
+
         return true;
     }
 
@@ -296,6 +312,7 @@ public sealed class SessionsService(
         nextWaitlisted.UpdatedAtUtc = DateTime.UtcNow;
         await sessionEnrollmentRepository.UpdateEnrollmentAsync(nextWaitlisted, cancellationToken);
         await notificationService.NotifyWaitlistPromotionAsync(nextWaitlisted.ParticipantId, session, cancellationToken);
+        await SendUserEnrollmentStatusAsync(session.Id, nextWaitlisted.ParticipantId, SessionEnrollmentStatus.Enrolled, null, cancellationToken);
     }
 
 
@@ -321,5 +338,18 @@ public sealed class SessionsService(
         await hubContext.Clients
             .Group($"event-{session.EventId}")
             .SendAsync(nameof(SessionEnrollmentUpdatedMessage), message, cancellationToken);
+    }
+
+    private Task SendUserEnrollmentStatusAsync(
+        Guid sessionId,
+        Guid participantId,
+        SessionEnrollmentStatus? status,
+        int? waitlistPosition,
+        CancellationToken cancellationToken)
+    {
+        var message = new UserSessionEnrollmentStatusMessage(sessionId, status, waitlistPosition);
+        return hubContext.Clients
+            .User(participantId.ToString())
+            .SendAsync(nameof(UserSessionEnrollmentStatusMessage), message, cancellationToken);
     }
 }

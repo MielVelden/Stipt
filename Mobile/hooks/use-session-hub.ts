@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react';
 import * as signalR from '@microsoft/signalr';
 import { useSessionHubConnection } from '@/lib/session-hub-context';
 import { SessionEnrollmentUpdatedMessage } from '@/generated-types/session-enrollment-updated-message';
+import { UserSessionEnrollmentStatusMessage } from '@/generated-types/user-session-enrollment-status-message';
 
 interface SessionHubCallbacks {
     onSessionEnrollmentUpdated?: (message: SessionEnrollmentUpdatedMessage) => void;
+    onUserEnrollmentStatusUpdated?: (message: UserSessionEnrollmentStatusMessage) => void;
 }
 
 const groupRefCounts = new Map<string, number>();
@@ -31,10 +33,16 @@ export function useSessionHub(eventId: string | undefined, callbacks: SessionHub
             callbacksRef.current.onSessionEnrollmentUpdated?.(message);
         };
 
+        const userHandler = (message: UserSessionEnrollmentStatusMessage) => {
+            callbacksRef.current.onUserEnrollmentStatusUpdated?.(message);
+        };
+
         connection.on('SessionEnrollmentUpdatedMessage', handler);
+        connection.on('UserSessionEnrollmentStatusMessage', userHandler);
 
         return () => {
             connection.off('SessionEnrollmentUpdatedMessage', handler);
+            connection.off('UserSessionEnrollmentStatusMessage', userHandler);
 
             const remaining = (groupRefCounts.get(eventId) ?? 1) - 1;
             if (remaining <= 0) {

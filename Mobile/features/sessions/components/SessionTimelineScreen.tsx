@@ -60,6 +60,19 @@ export function SessionTimelineScreen({
                 ),
             );
         },
+        onUserEnrollmentStatusUpdated: (message) => {
+            setSessions(prev =>
+                prev.map(session =>
+                    session.id === message.sessionId
+                        ? {
+                            ...session,
+                            myEnrollmentStatus: message.enrollmentStatus,
+                            myWaitlistPosition: message.waitlistPosition,
+                        }
+                        : session,
+                ),
+            );
+        },
     });
 
     const activeFilterCount =
