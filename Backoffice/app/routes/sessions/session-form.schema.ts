@@ -107,8 +107,8 @@ export function mapFormValuesToSessionPayload(
     type: values.type,
     speaker: values.speaker,
     roomId: values.roomId,
-    startDateTime: `${values.startDate}T${values.startTime}:00Z`,
-    endDateTime: `${values.endDate}T${values.endTime}:00Z`,
+    startDateTime: `${values.startDate}T${values.startTime}:00`,
+    endDateTime: `${values.endDate}T${values.endTime}:00`,
     capacity: values.capacity ? Number(values.capacity) : undefined,
     labels: values.labels ?? [],
   }

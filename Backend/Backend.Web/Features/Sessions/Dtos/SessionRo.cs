@@ -1,5 +1,6 @@
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.SessionEnrollments;
+using NodaTime;
 using TypeGen.Core.TypeAnnotations;
 
 namespace Backend.Web.Features.Sessions.Dtos;
@@ -14,8 +15,8 @@ public sealed record SessionRo(
     Guid RoomId,
     SessionRoomRo Room,
     Guid EventId,
-    DateTime StartDateTime,
-    DateTime EndDateTime,
+    LocalDateTime StartDateTime,
+    LocalDateTime EndDateTime,
     int? Capacity,
     IReadOnlyCollection<string> Labels,
     DateTime CreatedAtUtc,

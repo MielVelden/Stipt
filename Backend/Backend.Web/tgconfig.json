@@ -8,7 +8,9 @@
     "enumStringInitializersConverters": ["PascalCaseToCamelCaseConverter"],
     "customTypeMappings": {
         "System.Guid": "string",
-        "System.DateTime": "string"
+        "System.DateTime": "string",
+        "NodaTime.LocalDateTime": "string",
+        "NodaTime.LocalDate": "string"
     },
     "csNullableTranslation": "undefined"
 }

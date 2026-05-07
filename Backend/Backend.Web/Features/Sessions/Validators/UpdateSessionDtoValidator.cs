@@ -26,14 +26,6 @@ public sealed class UpdateSessionDtoValidator : AbstractValidator<UpdateSessionD
             .WithMessage("RoomId is required.");
 
         RuleFor(x => x.StartDateTime)
-            .Must(x => x.Kind == DateTimeKind.Utc)
-            .WithMessage("StartDateTime must be in UTC.");
-
-        RuleFor(x => x.EndDateTime)
-            .Must(x => x.Kind == DateTimeKind.Utc)
-            .WithMessage("EndDateTime must be in UTC.");
-
-        RuleFor(x => x.StartDateTime)
             .LessThan(x => x.EndDateTime)
             .WithMessage("StartDateTime must be before EndDateTime.");
 
