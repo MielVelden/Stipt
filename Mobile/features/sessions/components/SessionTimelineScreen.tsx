@@ -11,7 +11,8 @@ import { SessionCard } from "@/features/sessions/components/SessionCard";
 import { SessionFilterModal } from "@/features/sessions/components/SessionFilterModal";
 import { getEventById } from "@/features/events/api";
 import { EventRo } from "@/generated-types/event-ro";
-import {SessionRo} from "@/generated-types/session-ro";
+import { useSessionHub } from "@/hooks/use-session-hub";
+import { SessionRo } from "@/generated-types/session-ro";
 
 interface SessionTimelineScreenProps {
     eventId: string;
@@ -42,6 +43,37 @@ export function SessionTimelineScreen({
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useSessionHub(eventId, {
+        onSessionEnrollmentUpdated: (message) => {
+            setSessions(prev =>
+                prev.map(session =>
+                    session.id === message.sessionId
+                        ? {
+                            ...session,
+                            enrolledCount: message.enrolledCount,
+                            waitlistCount: message.waitlistCount,
+                            hasAvailableSpots: message.hasAvailableSpots,
+                            effectiveCapacity: message.effectiveCapacity,
+                        }
+                        : session,
+                ),
+            );
+        },
+        onUserEnrollmentStatusUpdated: (message) => {
+            setSessions(prev =>
+                prev.map(session =>
+                    session.id === message.sessionId
+                        ? {
+                            ...session,
+                            myEnrollmentStatus: message.enrollmentStatus,
+                            myWaitlistPosition: message.waitlistPosition,
+                        }
+                        : session,
+                ),
+            );
+        },
+    });
 
     const activeFilterCount =
         selectedLabels.length +

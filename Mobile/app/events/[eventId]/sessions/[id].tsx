@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native';
-import { useLocalSearchParams, useRouter} from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import { formatDateTime, formatTime } from '@/lib/utils';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { ConflictingSessionRo } from '@/generated-types/conflicting-session-ro';
 import { SessionRo } from "@/generated-types/session-ro";
+import { useSessionHub } from '@/hooks/use-session-hub';
 
 type EnrollmentConflictResponse = {
     conflictingSessions?: ConflictingSessionRo[];
@@ -30,6 +31,18 @@ export default function SessionDetailScreen() {
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
+    const { status } = useSessionHub(eventId, {
+        onSessionEnrollmentUpdated: (message) => {
+            if (message.sessionId !== sessionId) return;
+            setSession(prev => prev ? {
+                ...prev,
+                enrolledCount: message.enrolledCount,
+                waitlistCount: message.waitlistCount,
+                hasAvailableSpots: message.hasAvailableSpots,
+                effectiveCapacity: message.effectiveCapacity,
+            } : prev);
+        },
+    });
 
     function closeConflictModal() {
         setShowConflictModal(false);
@@ -107,14 +120,10 @@ export default function SessionDetailScreen() {
             await unenrollSession(eventId, session.id);
             setSession((prevSession) => {
                 if (!prevSession) return null;
-
                 return {
                     ...prevSession,
                     myEnrollmentStatus: undefined,
-                    // TODO: Dit is niet meer nodig na de realtime functie
-                    enrolledCount: wasEnrolled
-                        ? Math.max(0, prevSession.enrolledCount - 1)
-                        : prevSession.enrolledCount,
+                    myWaitlistPosition: undefined,
                 };
             });
             closeUnenrollConfirmModal();
@@ -237,7 +246,7 @@ export default function SessionDetailScreen() {
                         <View className="flex-row items-center gap-x-2">
                             <Icon className="text-muted-foreground" as={Users} size={18} />
                             <Text className="text-muted-foreground">
-                                { `${session.enrolledCount}/${session.effectiveCapacity} inschrijvingen` }
+                                {`${session.enrolledCount}/${session.effectiveCapacity} inschrijvingen`}
                             </Text>
                         </View>
                     </View>

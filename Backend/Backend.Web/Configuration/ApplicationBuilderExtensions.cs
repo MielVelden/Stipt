@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http.Connections;
+using Backend.Web.Features.Sessions;
 
 namespace Backend.Web.Configuration;
 
@@ -15,12 +15,10 @@ public static class ApplicationBuilderExtensions
 
     public static WebApplication AddHubs(this WebApplication app)
     {
-        var options = new HttpConnectionDispatcherOptions()
+        app.MapHub<SessionsHub>("/api/hub/sessions", options =>
         {
-            CloseOnAuthenticationExpiration = true,
-
-        };
-        //app.MapHub<ExampleHub>("/api/hub/examplehub", options);
+            options.CloseOnAuthenticationExpiration = true;
+        });
 
         return app;
     }
