@@ -9,8 +9,20 @@ public static class EventParticipantMappings
     {
         return new EventParticipantRo(
             participant.EventId,
-            participant.Email,
-            participant.CreatedAtUtc
+            participant.User?.Email ?? string.Empty,
+            "Geaccepteerd",
+            participant.CreatedAtUtc,
+            participant.AcceptedAtUtc
+        );
+    }
+
+    public static EventParticipantRo ToRo(this InviteToken inviteToken)
+    {
+        return new EventParticipantRo(
+            inviteToken.EventId,
+            inviteToken.Email,
+            "Uitgenodigd",
+            inviteToken.CreatedAtUtc
         );
     }
 }

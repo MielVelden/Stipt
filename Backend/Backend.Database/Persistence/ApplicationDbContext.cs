@@ -18,6 +18,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<SessionEnrollment> SessionEnrollments => Set<SessionEnrollment>();
     public DbSet<EventParticipant> EventParticipants => Set<EventParticipant>();
+    public DbSet<InviteToken> InviteTokens => Set<InviteToken>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
 
