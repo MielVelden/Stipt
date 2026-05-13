@@ -49,7 +49,7 @@ export default function EventsScreen() {
                 </Text>
             ) : events.length === 0 ? (
                 <Text className="text-center mt-10">
-                    Geen evenementen gevonden.
+                    Geen evenementen gevonden waar je aan deelneemt.
                 </Text>
             ) : (
                 events.map((event) => (

@@ -1,9 +1,10 @@
 using Backend.Database.Entities.Events;
+using Backend.Web.Features.EventParticipants;
 using Backend.Web.Features.Events.Dtos;
 
 namespace Backend.Web.Features.Events;
 
-public sealed class EventsService(IEventRepository eventRepository)
+public sealed class EventsService(IEventRepository eventRepository, EventParticipantsService eventParticipantsService)
 {
     public async Task<EventRo> CreateAsync(CreateEventDto request, CancellationToken cancellationToken)
     {
@@ -29,19 +30,31 @@ public sealed class EventsService(IEventRepository eventRepository)
         return eventItem.ToRo();
     }
 
-    public async Task<EventRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<EventRo?> GetByIdAsync(Guid id, string userEmail, bool isAttendee, CancellationToken cancellationToken)
     {
         var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
 
         if (eventItem is null)
             return null;
 
+        if (isAttendee && !await eventParticipantsService.IsParticipantAsync(id, userEmail, cancellationToken))
+            return null;
+
         return eventItem.ToRo();
     }
 
-    public async Task<List<EventRo>> GetAllAsync(bool includeArchived, CancellationToken cancellationToken)
+    public async Task<List<EventRo>> GetAllAsync(bool includeArchived, string userEmail, bool isAttendee, CancellationToken cancellationToken)
     {
         var events = await eventRepository.GetAllAsync(includeArchived, cancellationToken);
+
+        if (isAttendee)
+        {
+            var participatingEventIds = await eventParticipantsService.GetParticipatingEventIdsAsync(userEmail, cancellationToken);
+            return events
+                .Where(e => participatingEventIds.Contains(e.Id) != false)
+                .Select(EventMappings.ToRo)
+                .ToList();
+        }
 
         return events.Select(EventMappings.ToRo).ToList();
     }

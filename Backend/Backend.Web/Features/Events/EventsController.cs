@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Backend.Web.Features.Events.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,14 +21,18 @@ public class EventsController(EventsService eventsService) : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<EventRo>> GetEventById(Guid id, CancellationToken ct)
     {
-        var response = await eventsService.GetByIdAsync(id, ct);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email)!;
+        var isAttendee = User.IsInRole(AppRoles.Attendee);
+        var response = await eventsService.GetByIdAsync(id, userEmail, isAttendee, ct);
         return response is null ? NotFound() : Ok(response);
     }
 
     [HttpGet]
     public async Task<ActionResult<List<EventRo>>> GetAllEvents(CancellationToken ct, [FromQuery] bool includeArchived = true)
     {
-        var response = await eventsService.GetAllAsync(includeArchived, ct);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email)!;
+        var isAttendee = User.IsInRole(AppRoles.Attendee);
+        var response = await eventsService.GetAllAsync(includeArchived, userEmail, isAttendee, ct);
         return Ok(response);
     }
 
