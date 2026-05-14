@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import { formatDateTime, formatTime } from '@/lib/utils';
+import { API_BASE_URL } from '@/constants/api';
 import { enrollSession, getSessionById, replaceSession, unenrollSession } from '@/features/sessions/api';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
@@ -158,11 +159,19 @@ export default function SessionDetailScreen() {
             <ScrollView>
                 {/* Header Image & Back Button */}
                 <View className="relative h-64 w-full">
-                    <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2' }}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                    />
+                    {session.coverImageId ? (
+                        <Image
+                            source={{ uri: `${API_BASE_URL}/images/${session.coverImageId}` }}
+                            className="h-full w-full"
+                            resizeMode="cover"
+                        />
+                    ) : (
+                        <Image
+                            source={{ uri: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2' }}
+                            className="h-full w-full"
+                            resizeMode="cover"
+                        />
+                    )}
                     <Button
                         variant="ghost"
                         size="icon"
