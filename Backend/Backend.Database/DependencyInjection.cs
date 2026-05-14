@@ -7,6 +7,7 @@ using Backend.Database.Entities.Notifications;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.Images;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IImageRepository, ImageRepository>();
 
         return services;
     }

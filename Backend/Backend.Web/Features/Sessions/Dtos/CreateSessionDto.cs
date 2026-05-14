@@ -14,5 +14,6 @@ public sealed record CreateSessionDto(
     LocalDateTime StartDateTime,
     LocalDateTime EndDateTime,
     int? Capacity,
-    List<string> Labels);
+    List<string> Labels,
+    Guid? CoverImageId = null);
 

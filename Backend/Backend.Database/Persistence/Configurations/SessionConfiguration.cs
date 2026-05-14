@@ -51,6 +51,14 @@ internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 
         builder.Property(x => x.UpdatedAtUtc);
 
+        builder.Property(x => x.CoverImageId);
+
+        builder.HasOne(x => x.CoverImage)
+            .WithMany()
+            .HasForeignKey(x => x.CoverImageId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne(x => x.Room)
             .WithMany(r => r.Sessions)
             .HasForeignKey(x => x.RoomId)
