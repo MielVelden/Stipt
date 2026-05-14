@@ -17,13 +17,13 @@ public sealed class ImagesController(IImageStorageService imageStorageService) :
     public async Task<ActionResult<UploadImageRo>> UploadImage(IFormFile file, CancellationToken ct)
     {
         if (file is null || file.Length == 0)
-            return BadRequest("No file provided.");
+            return BadRequest("Geen bestand toegevoegd.");
 
         if (!AllowedContentTypes.Contains(file.ContentType))
-            return BadRequest("Only JPEG, PNG, and WebP images are allowed.");
+            return BadRequest("Enkel JPEG, PNG, en WebP afbeeldingen zijn toegestaan.");
 
         if (file.Length > MaxFileSizeBytes)
-            return BadRequest("Image size must not exceed 5 MB.");
+            return BadRequest("Grootte van afbeelding mag niet goter zijn dan 5 MB.");
 
         var imageId = await imageStorageService.UploadAsync(file, ct);
         return Ok(new UploadImageRo(imageId));
