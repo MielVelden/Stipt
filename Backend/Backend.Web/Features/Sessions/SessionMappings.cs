@@ -59,7 +59,8 @@ public static class SessionMappings
             waitlistCount,
             hasAvailableSpots,
             myEnrollmentStatus,
-            myWaitlistPosition
+            myWaitlistPosition,
+            session.CoverImageId
         );
     }
 

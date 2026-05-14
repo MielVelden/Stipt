@@ -28,4 +28,5 @@ export interface SessionRo {
   hasAvailableSpots: boolean;
   myEnrollmentStatus: SessionEnrollmentStatus | undefined;
   myWaitlistPosition: number | undefined;
+  coverImageId: string | undefined;
 }

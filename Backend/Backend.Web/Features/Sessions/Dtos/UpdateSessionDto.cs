@@ -14,5 +14,6 @@ public sealed record UpdateSessionDto(
     LocalDateTime StartDateTime,
     LocalDateTime EndDateTime,
     int? Capacity,
-    List<string> Labels);
+    List<string> Labels,
+    Guid? CoverImageId = null);
 

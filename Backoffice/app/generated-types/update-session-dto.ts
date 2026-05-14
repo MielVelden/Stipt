@@ -15,4 +15,5 @@ export interface UpdateSessionDto {
   endDateTime: string;
   capacity: number | undefined;
   labels: string[];
+  coverImageId: string | undefined;
 }

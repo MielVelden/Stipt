@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Events;
+using Backend.Database.Entities.Images;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using NodaTime;
@@ -21,6 +22,8 @@ public sealed class Session
     public int? Capacity { get; set; }
     public List<string> Labels { get; set; } = [];
     public ICollection<SessionEnrollment> Enrollments { get; set; } = new List<SessionEnrollment>();
+    public Guid? CoverImageId { get; set; }
+    public Image? CoverImage { get; set; }
     public DateTime CreatedAtUtc { get; init; }
     public DateTime? UpdatedAtUtc { get; set; }
 }

@@ -48,6 +48,7 @@ public sealed class SessionsService(
             EndDateTime = request.EndDateTime,
             Capacity = request.Capacity,
             Labels = request.Labels.Select(label => label.Trim()).ToList(),
+            CoverImageId = request.CoverImageId,
             CreatedAtUtc = DateTime.UtcNow
         };
 
@@ -120,6 +121,7 @@ public sealed class SessionsService(
         existingSession.EndDateTime = request.EndDateTime;
         existingSession.Capacity = request.Capacity;
         existingSession.Labels = request.Labels.Select(label => label.Trim()).ToList();
+        existingSession.CoverImageId = request.CoverImageId;
         existingSession.UpdatedAtUtc = DateTime.UtcNow;
 
         var updated = await sessionRepository.UpdateAsync(existingSession, cancellationToken);

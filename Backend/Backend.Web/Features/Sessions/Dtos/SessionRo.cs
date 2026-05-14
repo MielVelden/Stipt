@@ -26,7 +26,8 @@ public sealed record SessionRo(
     int WaitlistCount,
     bool HasAvailableSpots,
     SessionEnrollmentStatus? MyEnrollmentStatus = null,
-    int? MyWaitlistPosition = null);
+    int? MyWaitlistPosition = null,
+    Guid? CoverImageId = null);
     
 
 [ExportTsInterface]
