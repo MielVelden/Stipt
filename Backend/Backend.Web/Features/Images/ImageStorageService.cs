@@ -26,7 +26,7 @@ public sealed class ImageStorageService(IImageRepository imageRepository) : IIma
     {
         var image = await imageRepository.GetByIdAsync(imageId, ct);
         if (image is null)
-            throw new BadHttpRequestException("Image not found.", StatusCodes.Status404NotFound);
+            throw new BadHttpRequestException("Afbeelding niet gevonden.", StatusCodes.Status404NotFound);
         return image;
     }
 
@@ -34,6 +34,6 @@ public sealed class ImageStorageService(IImageRepository imageRepository) : IIma
     {
         var deleted = await imageRepository.DeleteAsync(imageId, ct);
         if (!deleted)
-            throw new BadHttpRequestException("Image not found.", StatusCodes.Status404NotFound);
+            throw new BadHttpRequestException("Afbeelding niet gevonden.", StatusCodes.Status404NotFound);
     }
 }
