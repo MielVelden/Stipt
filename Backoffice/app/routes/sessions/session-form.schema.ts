@@ -36,6 +36,7 @@ const sessionBaseObjectSchema = z.object({
     .refine((labels) => new Set(labels).size === labels?.length, {
       message: VALIDATION_MESSAGES.session.labelsUnique,
     }),
+  coverImageId: z.string().optional(),
 })
 
 const dateRefine = {
@@ -74,6 +75,7 @@ export const sessionCreateDefaultValues: SessionCreateFormValues = {
   endDate: "",
   endTime: "",
   labels: [],
+  coverImageId: undefined,
 }
 
 export function mapSessionToEditFormValues(
@@ -95,6 +97,7 @@ export function mapSessionToEditFormValues(
     endDate: end.date,
     endTime: end.time,
     labels: session.labels ?? [],
+    coverImageId: session.coverImageId,
   }
 }
 
@@ -111,6 +114,7 @@ export function mapFormValuesToSessionPayload(
     endDateTime: `${values.endDate}T${values.endTime}:00`,
     capacity: values.capacity ? Number(values.capacity) : undefined,
     labels: values.labels ?? [],
+    coverImageId: values.coverImageId,
   }
 }
 

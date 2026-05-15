@@ -1,8 +1,10 @@
-import { useState, type ReactNode } from "react"
+import { useState, useRef, type ReactNode } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { Link } from "react-router"
-import { Loader2, XIcon } from "lucide-react"
+import { Loader2, XIcon, ImageIcon } from "lucide-react"
+import apiClient from "~/lib/api-client"
+import type { UploadImageRo } from "~/generated-types/upload-image-ro"
 import {
   Field,
   FieldContent,
@@ -67,8 +69,17 @@ type EditSessionFormProps = {
 
 type SessionFormProps = CreateSessionFormProps | EditSessionFormProps
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api"
+
+function getImageUrl(imageId: string) {
+  return `${apiBaseUrl}/images/${imageId}`
+}
+
 export function SessionForm(props: SessionFormProps) {
   const [newLabel, setNewLabel] = useState("")
+  const [imageUploading, setImageUploading] = useState(false)
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const leadingAction = props.mode === "edit" ? props.leadingAction : undefined
 
   const form = useForm<SessionFormValues>({
@@ -98,6 +109,34 @@ export function SessionForm(props: SessionFormProps) {
         shouldValidate: true,
       }
     )
+  }
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setImageUploadError(null)
+    setImageUploading(true)
+
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const response = await apiClient.post<UploadImageRo>("/images", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      form.setValue("coverImageId", response.data.imageId, { shouldDirty: true })
+    } catch {
+      setImageUploadError("Uploaden mislukt. Controleer het bestandstype en de grootte (max 5 MB).")
+    } finally {
+      setImageUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
+  function handleRemoveImage() {
+    form.setValue("coverImageId", undefined, { shouldDirty: true })
+    setImageUploadError(null)
   }
 
   async function handleSubmit(values: SessionFormValues) {
@@ -343,6 +382,60 @@ export function SessionForm(props: SessionFormProps) {
             )}
           />
         </FieldGroup>
+
+        <Controller
+          name="coverImageId"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>Coverfoto</FieldLabel>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              {field.value ? (
+                <div className="relative w-full overflow-hidden rounded-lg border">
+                  <img
+                    src={getImageUrl(field.value)}
+                    alt="Sessie coverfoto"
+                    className="h-48 w-full object-cover"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-7 w-7"
+                    onClick={handleRemoveImage}
+                    disabled={imageUploading}
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={imageUploading}
+                  className="w-full"
+                >
+                  {imageUploading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                  )}
+                  {imageUploading ? "Uploaden..." : "Foto uploaden"}
+                </Button>
+              )}
+              {imageUploadError && (
+                <p className="text-destructive text-sm">{imageUploadError}</p>
+              )}
+            </Field>
+          )}
+        />
 
         <Field>
           <FieldLabel htmlFor="labels">Labels</FieldLabel>
