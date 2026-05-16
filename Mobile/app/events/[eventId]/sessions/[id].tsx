@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
@@ -32,20 +32,6 @@ export default function SessionDetailScreen() {
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
-    const isMountedRef = useRef(false);
-    const latestRequestIdRef = useRef(0);
-
-    useEffect(() => {
-        isMountedRef.current = true;
-        return () => {
-            isMountedRef.current = false;
-        };
-    }, []);
-
-    const beginRequest = useCallback(() => {
-        latestRequestIdRef.current += 1;
-        return latestRequestIdRef.current;
-    }, []);
 
     const fetchSessionData = useCallback(async () => {
         if (!eventId || !sessionId) return null;
@@ -53,16 +39,9 @@ export default function SessionDetailScreen() {
     }, [eventId, sessionId]);
 
     const refreshSessionData = useCallback(async () => {
-        const requestId = beginRequest();
         const data = await fetchSessionData();
-        if (
-            data &&
-            isMountedRef.current &&
-            requestId === latestRequestIdRef.current
-        ) {
-            setSession(data);
-        }
-    }, [beginRequest, fetchSessionData]);
+        setSession(data);
+    }, [fetchSessionData]);
 
     const { isRefreshing, onRefresh } = usePullToRefresh(refreshSessionData);
 
@@ -95,30 +74,24 @@ export default function SessionDetailScreen() {
             return;
         }
 
-        const requestId = beginRequest();
+        let isMounted = true;
         setLoading(true);
 
         fetchSessionData()
             .then((data) => {
-                if (
-                    data &&
-                    isMountedRef.current &&
-                    requestId === latestRequestIdRef.current
-                ) {
-                    setSession(data);
-                }
+                if (isMounted) setSession(data);
             })
             .catch(() => {
-                if (isMountedRef.current && requestId === latestRequestIdRef.current) {
-                    setSession(null);
-                }
+                if (isMounted) setSession(null);
             })
             .finally(() => {
-                if (isMountedRef.current && requestId === latestRequestIdRef.current) {
-                    setLoading(false);
-                }
+                if (isMounted) setLoading(false);
             });
-    }, [beginRequest, eventId, sessionId, fetchSessionData]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [eventId, sessionId, fetchSessionData]);
 
     if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
