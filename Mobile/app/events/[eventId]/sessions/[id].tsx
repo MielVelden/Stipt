@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
@@ -11,6 +11,7 @@ import { Icon } from '@/components/ui/icon';
 import { ConflictingSessionRo } from '@/generated-types/conflicting-session-ro';
 import { SessionRo } from "@/generated-types/session-ro";
 import { useSessionHub } from '@/hooks/use-session-hub';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 
 type EnrollmentConflictResponse = {
     conflictingSessions?: ConflictingSessionRo[];
@@ -27,12 +28,20 @@ export default function SessionDetailScreen() {
     const router = useRouter();
     const [session, setSession] = useState<SessionRo | null>(null);
     const [loading, setLoading] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
     const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
-    const { status } = useSessionHub(eventId, {
+
+    const fetchSessionData = useCallback(async () => {
+        if (!eventId || !sessionId) return;
+        const data = await getSessionById(eventId, sessionId);
+        setSession(data);
+    }, [eventId, sessionId]);
+
+    const { isRefreshing, onRefresh } = usePullToRefresh(fetchSessionData);
+
+    useSessionHub(eventId, {
         onSessionEnrollmentUpdated: (message) => {
             if (message.sessionId !== sessionId) return;
             setSession(prev => prev ? {
@@ -64,33 +73,16 @@ export default function SessionDetailScreen() {
         let isMounted = true;
         setLoading(true);
 
-        getSessionById(eventId, sessionId)
-            .then((data) => {
-                if (isMounted) {
-                    setSession(data);
-                }
-            })
+        fetchSessionData()
+            .catch(() => setSession(null))
             .finally(() => {
-                if (isMounted) {
-                    setLoading(false);
-                }
+                if (isMounted) setLoading(false);
             });
 
         return () => {
             isMounted = false;
         };
-    }, [eventId, sessionId]);
-
-    async function onRefresh() {
-        if (!eventId || !sessionId) return;
-        setRefreshing(true);
-        try {
-            const data = await getSessionById(eventId, sessionId);
-            setSession(data);
-        } finally {
-            setRefreshing(false);
-        }
-    }
+    }, [eventId, sessionId, fetchSessionData]);
 
     if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
@@ -124,8 +116,6 @@ export default function SessionDetailScreen() {
 
     async function confirmUnenroll() {
         if (!session || !eventId) return;
-
-        const wasEnrolled = session.myEnrollmentStatus === 'enrolled';
 
         try {
             setLoadingEnrollment(true);
@@ -169,7 +159,7 @@ export default function SessionDetailScreen() {
         <View className="flex-1 bg-background">
             <ScrollView
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
                 }
             >
                 {/* Header Image & Back Button */}
