@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Image, ActivityIndicator, Modal } from 'react-native';
+import { View, ScrollView, Image, ActivityIndicator, Modal, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
@@ -27,6 +27,7 @@ export default function SessionDetailScreen() {
     const router = useRouter();
     const [session, setSession] = useState<SessionRo | null>(null);
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
@@ -79,6 +80,17 @@ export default function SessionDetailScreen() {
             isMounted = false;
         };
     }, [eventId, sessionId]);
+
+    async function onRefresh() {
+        if (!eventId || !sessionId) return;
+        setRefreshing(true);
+        try {
+            const data = await getSessionById(eventId, sessionId);
+            setSession(data);
+        } finally {
+            setRefreshing(false);
+        }
+    }
 
     if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
@@ -155,7 +167,11 @@ export default function SessionDetailScreen() {
 
     return (
         <View className="flex-1 bg-background">
-            <ScrollView>
+            <ScrollView
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+            >
                 {/* Header Image & Back Button */}
                 <View className="relative h-64 w-full">
                     <Image

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -42,6 +42,7 @@ export function SessionTimelineScreen({
     const [allLabels, setAllLabels] = useState<string[]>([]);
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useSessionHub(eventId, {
@@ -85,53 +86,51 @@ export function SessionTimelineScreen({
         }
     }, [showAvailabilityFilter]);
 
+    async function loadData(options?: { showLoading?: boolean }) {
+        try {
+            if (options?.showLoading) {
+                setIsLoading(true);
+            }
+            setError(null);
+
+            const filter: SessionFilterDto = {
+                labels:
+                    selectedLabels.length > 0 ? selectedLabels : undefined,
+                availableOnly: showAvailabilityFilter
+                    ? availableOnly
+                    : false,
+            };
+
+            const [sessionData, eventData] = await Promise.all([
+                loadSessions(eventId, filter),
+                getEventById(eventId),
+            ]);
+
+            setSessions(sessionData);
+            setEvent(eventData);
+
+            if (
+                allLabels.length === 0 &&
+                selectedLabels.length === 0 &&
+                !availableOnly
+            ) {
+                setAllLabels(getAvailableLabels(sessionData));
+            }
+        } catch {
+            setError("Gegevens konden niet worden geladen.");
+        } finally {
+            if (options?.showLoading) {
+                setIsLoading(false);
+            }
+        }
+    }
+
     useEffect(() => {
         let isMounted = true;
 
-        async function loadData() {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                const filter: SessionFilterDto = {
-                    labels:
-                        selectedLabels.length > 0 ? selectedLabels : undefined,
-                    availableOnly: showAvailabilityFilter
-                        ? availableOnly
-                        : false,
-                };
-
-                const [sessionData, eventData] = await Promise.all([
-                    loadSessions(eventId, filter),
-                    getEventById(eventId),
-                ]);
-
-                if (!isMounted) {
-                    return;
-                }
-
-                setSessions(sessionData);
-                setEvent(eventData);
-
-                if (
-                    allLabels.length === 0 &&
-                    selectedLabels.length === 0 &&
-                    !availableOnly
-                ) {
-                    setAllLabels(getAvailableLabels(sessionData));
-                }
-            } catch {
-                if (isMounted) {
-                    setError("Gegevens konden niet worden geladen.");
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
-            }
-        }
-
-        loadData();
+        loadData({ showLoading: true }).finally(() => {
+            if (!isMounted) return;
+        });
 
         return () => {
             isMounted = false;
@@ -143,6 +142,15 @@ export function SessionTimelineScreen({
         selectedLabels,
         showAvailabilityFilter,
     ]);
+
+    async function onRefresh() {
+        setRefreshing(true);
+        try {
+            await loadData();
+        } finally {
+            setRefreshing(false);
+        }
+    }
 
     const handleApplyFilters = (
         newLabels: string[],
@@ -180,6 +188,9 @@ export function SessionTimelineScreen({
             <ScrollView
                 contentContainerClassName="px-4 py-8"
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
             >
                 {event && (
                     <View

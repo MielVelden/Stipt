@@ -2,12 +2,13 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { EventRo } from "@/generated-types/event-ro";
 import { getEvents } from "@/features/events/api";
-import { ScrollView } from "react-native";
+import { RefreshControl, ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
 import { EventCard } from "@/features/events/components/EventCard";
 
 export default function EventsScreen() {
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [events, setEvents] = useState<EventRo[]>([]);
 
@@ -15,12 +16,28 @@ export default function EventsScreen() {
         try {
             const events = await getEvents();
             setEvents(events);
+            setError(null);
         } catch {
             setError(
                 "Er is een fout opgetreden bij het laden van evenementen.",
             );
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function onRefresh() {
+        setRefreshing(true);
+        try {
+            const events = await getEvents();
+            setEvents(events);
+            setError(null);
+        } catch {
+            setError(
+                "Er is een fout opgetreden bij het laden van evenementen.",
+            );
+        } finally {
+            setRefreshing(false);
         }
     }
 
@@ -36,6 +53,9 @@ export default function EventsScreen() {
         <ScrollView
             contentContainerClassName="px-4 py-8"
             showsVerticalScrollIndicator={false}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
         >
             <Text variant="h1" className="text-2xl text-left mb-4">
                 Evenementen
