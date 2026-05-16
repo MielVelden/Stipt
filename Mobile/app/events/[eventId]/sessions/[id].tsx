@@ -49,7 +49,11 @@ export default function SessionDetailScreen() {
     const refreshSessionData = useCallback(async () => {
         const requestId = ++latestRequestIdRef.current;
         const data = await fetchSessionData();
-        if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+        if (
+            data &&
+            isMountedRef.current &&
+            requestId === latestRequestIdRef.current
+        ) {
             setSession(data);
         }
     }, [fetchSessionData]);
