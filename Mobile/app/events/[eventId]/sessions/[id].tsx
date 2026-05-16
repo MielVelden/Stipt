@@ -32,13 +32,19 @@ export default function SessionDetailScreen() {
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
-    const isMountedRef = useRef(true);
+    const isMountedRef = useRef(false);
     const latestRequestIdRef = useRef(0);
 
     useEffect(() => {
+        isMountedRef.current = true;
         return () => {
             isMountedRef.current = false;
         };
+    }, []);
+
+    const beginRequest = useCallback(() => {
+        latestRequestIdRef.current += 1;
+        return latestRequestIdRef.current;
     }, []);
 
     const fetchSessionData = useCallback(async () => {
@@ -47,8 +53,7 @@ export default function SessionDetailScreen() {
     }, [eventId, sessionId]);
 
     const refreshSessionData = useCallback(async () => {
-        latestRequestIdRef.current += 1;
-        const requestId = latestRequestIdRef.current;
+        const requestId = beginRequest();
         const data = await fetchSessionData();
         if (
             data &&
@@ -57,7 +62,7 @@ export default function SessionDetailScreen() {
         ) {
             setSession(data);
         }
-    }, [fetchSessionData]);
+    }, [beginRequest, fetchSessionData]);
 
     const { isRefreshing, onRefresh } = usePullToRefresh(refreshSessionData);
 
@@ -90,8 +95,7 @@ export default function SessionDetailScreen() {
             return;
         }
 
-        latestRequestIdRef.current += 1;
-        const requestId = latestRequestIdRef.current;
+        const requestId = beginRequest();
         setLoading(true);
 
         fetchSessionData()
@@ -114,7 +118,7 @@ export default function SessionDetailScreen() {
                     setLoading(false);
                 }
             });
-    }, [eventId, sessionId, fetchSessionData]);
+    }, [beginRequest, eventId, sessionId, fetchSessionData]);
 
     if (loading) return <ActivityIndicator className="flex-1" />;
     if (!session) return <Text>Sessie niet gevonden.</Text>;
