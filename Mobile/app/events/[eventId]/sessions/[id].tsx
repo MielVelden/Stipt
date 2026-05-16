@@ -33,6 +33,7 @@ export default function SessionDetailScreen() {
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
     const isMountedRef = useRef(true);
+    const latestRequestIdRef = useRef(0);
 
     useEffect(() => {
         return () => {
@@ -46,8 +47,9 @@ export default function SessionDetailScreen() {
     }, [eventId, sessionId]);
 
     const refreshSessionData = useCallback(async () => {
+        const requestId = ++latestRequestIdRef.current;
         const data = await fetchSessionData();
-        if (isMountedRef.current) {
+        if (isMountedRef.current && requestId === latestRequestIdRef.current) {
             setSession(data);
         }
     }, [fetchSessionData]);
@@ -83,23 +85,25 @@ export default function SessionDetailScreen() {
             return;
         }
 
-        let isMounted = true;
+        const requestId = ++latestRequestIdRef.current;
         setLoading(true);
 
         fetchSessionData()
             .then((data) => {
-                if (isMounted) setSession(data);
+                if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+                    setSession(data);
+                }
             })
             .catch(() => {
-                if (isMounted) setSession(null);
+                if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+                    setSession(null);
+                }
             })
             .finally(() => {
-                if (isMounted) setLoading(false);
+                if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+                    setLoading(false);
+                }
             });
-
-        return () => {
-            isMounted = false;
-        };
     }, [eventId, sessionId, fetchSessionData]);
 
     if (loading) return <ActivityIndicator className="flex-1" />;
