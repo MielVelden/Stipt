@@ -47,7 +47,8 @@ export default function SessionDetailScreen() {
     }, [eventId, sessionId]);
 
     const refreshSessionData = useCallback(async () => {
-        const requestId = ++latestRequestIdRef.current;
+        latestRequestIdRef.current += 1;
+        const requestId = latestRequestIdRef.current;
         const data = await fetchSessionData();
         if (
             data &&
@@ -89,12 +90,17 @@ export default function SessionDetailScreen() {
             return;
         }
 
-        const requestId = ++latestRequestIdRef.current;
+        latestRequestIdRef.current += 1;
+        const requestId = latestRequestIdRef.current;
         setLoading(true);
 
         fetchSessionData()
             .then((data) => {
-                if (isMountedRef.current && requestId === latestRequestIdRef.current) {
+                if (
+                    data &&
+                    isMountedRef.current &&
+                    requestId === latestRequestIdRef.current
+                ) {
                     setSession(data);
                 }
             })
