@@ -34,12 +34,16 @@ export default function SessionDetailScreen() {
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
 
     const fetchSessionData = useCallback(async () => {
-        if (!eventId || !sessionId) return;
-        const data = await getSessionById(eventId, sessionId);
-        setSession(data);
+        if (!eventId || !sessionId) return null;
+        return getSessionById(eventId, sessionId);
     }, [eventId, sessionId]);
 
-    const { isRefreshing, onRefresh } = usePullToRefresh(fetchSessionData);
+    const refreshSessionData = useCallback(async () => {
+        const data = await fetchSessionData();
+        setSession(data);
+    }, [fetchSessionData]);
+
+    const { isRefreshing, onRefresh } = usePullToRefresh(refreshSessionData);
 
     useSessionHub(eventId, {
         onSessionEnrollmentUpdated: (message) => {
@@ -74,7 +78,12 @@ export default function SessionDetailScreen() {
         setLoading(true);
 
         fetchSessionData()
-            .catch(() => setSession(null))
+            .then((data) => {
+                if (isMounted) setSession(data);
+            })
+            .catch(() => {
+                if (isMounted) setSession(null);
+            })
             .finally(() => {
                 if (isMounted) setLoading(false);
             });
