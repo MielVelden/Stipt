@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, ScrollView, Image, ActivityIndicator, Modal, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
@@ -32,6 +32,13 @@ export default function SessionDetailScreen() {
     const [showConflictModal, setShowConflictModal] = useState(false);
     const [conflictingSession, setConflictingSession] = useState<ConflictingSessionRo | null>(null);
     const [showUnenrollConfirmModal, setShowUnenrollConfirmModal] = useState(false);
+    const isMountedRef = useRef(true);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     const fetchSessionData = useCallback(async () => {
         if (!eventId || !sessionId) return null;
@@ -40,7 +47,9 @@ export default function SessionDetailScreen() {
 
     const refreshSessionData = useCallback(async () => {
         const data = await fetchSessionData();
-        setSession(data);
+        if (isMountedRef.current) {
+            setSession(data);
+        }
     }, [fetchSessionData]);
 
     const { isRefreshing, onRefresh } = usePullToRefresh(refreshSessionData);
