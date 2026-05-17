@@ -30,32 +30,35 @@ public sealed class EventsService(IEventRepository eventRepository, EventPartici
         return eventItem.ToRo();
     }
 
-    public async Task<EventRo?> GetByIdAsync(Guid id, string userEmail, bool isAttendee, CancellationToken cancellationToken)
+    public async Task<EventRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
+        return eventItem?.ToRo();
+    }
+
+    public async Task<EventRo?> GetByIdForAttendeeAsync(Guid id, string userEmail, CancellationToken cancellationToken)
     {
         var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
 
         if (eventItem is null)
             return null;
 
-        if (isAttendee && !await eventParticipantsService.IsParticipantAsync(id, userEmail, cancellationToken))
+        if (!await eventParticipantsService.IsParticipantAsync(id, userEmail, cancellationToken))
             return null;
 
         return eventItem.ToRo();
     }
 
-    public async Task<List<EventRo>> GetAllAsync(bool includeArchived, string userEmail, bool isAttendee, CancellationToken cancellationToken)
+    public async Task<List<EventRo>> GetAllAsync(bool includeArchived, CancellationToken cancellationToken)
     {
         var events = await eventRepository.GetAllAsync(includeArchived, cancellationToken);
+        return events.Select(EventMappings.ToRo).ToList();
+    }
 
-        if (isAttendee)
-        {
-            var participatingEventIds = await eventParticipantsService.GetParticipatingEventIdsAsync(userEmail, cancellationToken);
-            return events
-                .Where(e => participatingEventIds.Contains(e.Id) != false)
-                .Select(EventMappings.ToRo)
-                .ToList();
-        }
-
+    public async Task<List<EventRo>> GetAllForAttendeeAsync(string userEmail, bool includeArchived, CancellationToken cancellationToken)
+    {
+        var normalizedEmail = userEmail.Trim().ToLowerInvariant();
+        var events = await eventRepository.GetAllForParticipantAsync(normalizedEmail, includeArchived, cancellationToken);
         return events.Select(EventMappings.ToRo).ToList();
     }
 

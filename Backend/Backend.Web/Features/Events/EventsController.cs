@@ -21,19 +21,29 @@ public class EventsController(EventsService eventsService) : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<EventRo>> GetEventById(Guid id, CancellationToken ct)
     {
-        var userEmail = User.FindFirstValue(ClaimTypes.Email)!;
-        var isAttendee = User.IsInRole(AppRoles.Attendee);
-        var response = await eventsService.GetByIdAsync(id, userEmail, isAttendee, ct);
-        return response is null ? NotFound() : Ok(response);
+        if (!User.IsInRole(AppRoles.Attendee))
+        {
+            var response = await eventsService.GetByIdAsync(id, ct);
+            return response is null ? NotFound() : Ok(response);
+        }
+
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        if (userEmail is null) return Unauthorized();
+
+        var attendeeResponse = await eventsService.GetByIdForAttendeeAsync(id, userEmail, ct);
+        return attendeeResponse is null ? NotFound() : Ok(attendeeResponse);
     }
 
     [HttpGet]
     public async Task<ActionResult<List<EventRo>>> GetAllEvents(CancellationToken ct, [FromQuery] bool includeArchived = true)
     {
-        var userEmail = User.FindFirstValue(ClaimTypes.Email)!;
-        var isAttendee = User.IsInRole(AppRoles.Attendee);
-        var response = await eventsService.GetAllAsync(includeArchived, userEmail, isAttendee, ct);
-        return Ok(response);
+        if (!User.IsInRole(AppRoles.Attendee))
+            return Ok(await eventsService.GetAllAsync(includeArchived, ct));
+
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        if (userEmail is null) return Unauthorized();
+
+        return Ok(await eventsService.GetAllForAttendeeAsync(userEmail, includeArchived, ct));
     }
 
     [HttpPut("{id:guid}")]
