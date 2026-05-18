@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Backend.Web.Configuration;
 using Backend.Web.Features.Sessions.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ namespace Backend.Web.Features.Sessions;
 [ApiController]
 [Route("api/events/{eventId:guid}/sessions")]
 [Authorize]
+[ServiceFilter(typeof(EventParticipantAuthorizationFilter))]
 public class SessionsController(SessionsService sessionsService) : ControllerBase
 {
     [HttpPost]
@@ -73,7 +75,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
             return Unauthorized();
-        
+
         var response = await sessionsService.EnrollAsync(eventId, id, Guid.Parse(userId), ct);
         return Ok(response);
     }
@@ -89,7 +91,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
             return Unauthorized();
-        
+
         var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, Guid.Parse(userId), sessionIdToUnenroll, ct);
         return Ok(response);
     }
@@ -100,7 +102,7 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
-            return Unauthorized();        
+            return Unauthorized();
         var deleted = await sessionsService.UnenrollAsync(eventId, id, Guid.Parse(userId), ct);
         return deleted ? NoContent() : NotFound();
     }
