@@ -20,6 +20,18 @@ public sealed class AuthController(AuthService authService) : ControllerBase
         return Ok(response);
     }
 
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<ActionResult> Register(RegisterRequest request, CancellationToken ct)
+    {
+        var result = await authService.RegisterAsync(request, ct);
+        if (result is null)
+            return Conflict("Email is already in use.");
+        if (!result.Succeeded)
+            return BadRequest();
+        return NoContent();
+    }
+
     [HttpPost("backoffice/login")]
     [AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> BackofficeLogin(LoginRequest request, CancellationToken ct)
