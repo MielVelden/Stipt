@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, View } from "react-native";
+import { API_BASE_URL } from "@/constants/api";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -189,6 +190,14 @@ export function SessionTimelineScreen({
                                 event.style?.primaryBackgroundColor,
                         }}
                     >
+                        {event.style?.logoImageId && (
+                            <Image
+                                source={{ uri: `${API_BASE_URL}/images/${event.style.logoImageId}` }}
+                                className="mb-4 self-start"
+                                style={{ height: 40, width: 120 }}
+                                resizeMode="contain"
+                            />
+                        )}
                         <View className="flex-row justify-between items-start mb-6">
                             <View className="flex-1 mr-4">
                                 <Text

@@ -23,7 +23,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<SessionsService>();
         services.AddScoped<EmailService>();
-        services.AddScoped<IImageStorageService, ImageStorageService>();
+        services.AddScoped<IImagesService, ImageStorageService>();
         services.AddSingleton<IClock>(SystemClock.Instance);
 
         return services;

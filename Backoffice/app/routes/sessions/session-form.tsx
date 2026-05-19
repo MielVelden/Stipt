@@ -134,7 +134,15 @@ export function SessionForm(props: SessionFormProps) {
     }
   }
 
-  function handleRemoveImage() {
+  async function handleRemoveImage() {
+    const imageId = form.getValues("coverImageId")
+    if (imageId) {
+      try {
+        await apiClient.delete(`/images/${imageId}`)
+      } catch {
+        // image may already be gone, proceed regardless
+      }
+    }
     form.setValue("coverImageId", undefined, { shouldDirty: true })
     setImageUploadError(null)
   }
@@ -397,17 +405,19 @@ export function SessionForm(props: SessionFormProps) {
                 onChange={handleFileChange}
               />
               {field.value ? (
-                <div className="relative w-full overflow-hidden rounded-lg border">
-                  <img
-                    src={getImageUrl(field.value)}
-                    alt="Sessie coverfoto"
-                    className="h-48 w-full object-cover"
-                  />
+                <div className="relative max-w-xs">
+                  <div className="max-w-xs overflow-hidden rounded-lg border">
+                    <img
+                      src={getImageUrl(field.value)}
+                      alt="Sessie coverfoto"
+                      className="h-48 w-full object-cover"
+                    />
+                  </div>
                   <Button
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute top-2 right-2 h-7 w-7"
+                    className="absolute -top-2 -right-2 h-7 w-7 bg-white text-black border border-black hover:bg-gray-100 shadow-sm"
                     onClick={handleRemoveImage}
                     disabled={imageUploading}
                   >
@@ -420,7 +430,7 @@ export function SessionForm(props: SessionFormProps) {
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={imageUploading}
-                  className="w-full"
+                  className="w-full max-w-xs"
                 >
                   {imageUploading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

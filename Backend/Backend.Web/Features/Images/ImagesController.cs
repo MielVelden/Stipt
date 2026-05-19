@@ -7,7 +7,7 @@ namespace Backend.Web.Features.Images;
 [ApiController]
 [Route("api/images")]
 [Authorize]
-public sealed class ImagesController(IImageStorageService imageStorageService) : ControllerBase
+public sealed class ImagesController(IImagesService imageStorageService) : ControllerBase
 {
     private static readonly string[] AllowedContentTypes = ["image/jpeg", "image/png", "image/webp"];
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;

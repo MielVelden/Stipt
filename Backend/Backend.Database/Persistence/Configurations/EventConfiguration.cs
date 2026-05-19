@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Events;
+using Backend.Database.Entities.Images;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -39,9 +40,14 @@ internal sealed class EventConfiguration : IEntityTypeConfiguration<Event>
                 .HasMaxLength(7)
                 .HasColumnName("style_primary_foreground_color");
 
-            styleBuilder.Property(s => s.LogoImageUrl)
-                .HasMaxLength(2000)
-                .HasColumnName("style_logo_image_url");
+            styleBuilder.Property(s => s.LogoImageId)
+                .HasColumnName("style_logo_image_id");
+
+            styleBuilder.HasOne(s => s.LogoImage)
+                .WithMany()
+                .HasForeignKey(s => s.LogoImageId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         builder.Property(x => x.IsArchived)

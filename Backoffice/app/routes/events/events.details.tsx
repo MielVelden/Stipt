@@ -17,6 +17,8 @@ import {
 import { formatDate } from "~/lib/utils"
 import { ArrowLeft } from "lucide-react"
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api"
+
 export async function clientLoader({ params }: Route.LoaderArgs) {
   try {
     const response = await apiClient.get<EventRo>("/events/" + params.id)
@@ -104,10 +106,18 @@ export default function Page({ loaderData: event }: Route.ComponentProps) {
             </Field>
           </FieldGroup>
 
-          <Field>
-            <FieldLabel>Logo URL</FieldLabel>
-            <FieldContent>{event.style.logoImageUrl ?? "-"}</FieldContent>
-          </Field>
+          {event.style.logoImageId && (
+            <Field>
+              <FieldLabel>Logo</FieldLabel>
+              <FieldContent>
+                <img
+                  src={`${apiBaseUrl}/images/${event.style.logoImageId}`}
+                  alt="Event logo"
+                  className="h-16 max-w-xs object-contain"
+                />
+              </FieldContent>
+            </Field>
+          )}
         </FieldSet>
       </PageContainer>
     </>

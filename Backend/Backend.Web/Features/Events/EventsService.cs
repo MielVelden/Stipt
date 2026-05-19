@@ -18,7 +18,7 @@ public sealed class EventsService(IEventRepository eventRepository)
             {
                 PrimaryBackgroundColor = request.Style.PrimaryBackgroundColor.Trim(),
                 PrimaryForegroundColor = request.Style.PrimaryForegroundColor.Trim(),
-                LogoImageUrl = request.Style.LogoImageUrl?.Trim()
+                LogoImageId = request.Style.LogoImageId
             },
             IsArchived = false,
             CreatedAtUtc = DateTime.UtcNow
@@ -58,7 +58,7 @@ public sealed class EventsService(IEventRepository eventRepository)
         eventItem.EndDate = request.EndDate;
         eventItem.Style.PrimaryBackgroundColor = request.Style.PrimaryBackgroundColor.Trim();
         eventItem.Style.PrimaryForegroundColor = request.Style.PrimaryForegroundColor.Trim();
-        eventItem.Style.LogoImageUrl = request.Style.LogoImageUrl?.Trim();
+        eventItem.Style.LogoImageId = request.Style.LogoImageId;
         eventItem.UpdatedAtUtc = DateTime.UtcNow;
 
         var updated = await eventRepository.UpdateAsync(eventItem, cancellationToken);

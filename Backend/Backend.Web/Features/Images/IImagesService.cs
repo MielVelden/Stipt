@@ -2,7 +2,7 @@ using Backend.Database.Entities.Images;
 
 namespace Backend.Web.Features.Images;
 
-public interface IImageStorageService
+public interface IImagesService
 {
     Task<Guid> UploadAsync(IFormFile file, CancellationToken ct);
     Task<Image> ReadAsync(Guid imageId, CancellationToken ct);
