@@ -9,7 +9,7 @@ public static class EventParticipantMappings
     {
         return new EventParticipantRo(
             participant.EventId,
-            participant.User?.Email ?? string.Empty,
+            participant.User?.Email ?? throw new global::System.InvalidOperationException("Event participant is missing required user email."),
             "Geaccepteerd",
             participant.CreatedAtUtc,
             participant.AcceptedAtUtc

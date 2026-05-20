@@ -14,8 +14,8 @@ public sealed class EventParticipantAuthorizationFilter(EventParticipantsService
         if (!user.IsInRole(AppRoles.Attendee))
             return;
 
-        var email = user.FindFirstValue(ClaimTypes.Email);
-        if (email is null)
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
         {
             context.Result = new UnauthorizedResult();
             return;
@@ -29,7 +29,7 @@ public sealed class EventParticipantAuthorizationFilter(EventParticipantsService
         }
 
         var isParticipant = await eventParticipantsService.IsParticipantAsync(
-            eventId, email, context.HttpContext.RequestAborted);
+            eventId, userId, context.HttpContext.RequestAborted);
 
         if (!isParticipant)
             context.Result = new ForbidResult();

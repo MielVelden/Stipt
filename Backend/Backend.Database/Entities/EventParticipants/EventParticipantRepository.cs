@@ -64,4 +64,11 @@ internal sealed class EventParticipantRepository(ApplicationDbContext dbContext)
             .AsNoTracking()
             .AnyAsync(x => x.EventId == eventId && x.UserId == userId, cancellationToken);
     }
+
+    public Task<bool> ExistsByEventIdAndEmailAsync(Guid eventId, string email, CancellationToken cancellationToken)
+    {
+        return dbContext.EventParticipants
+            .AsNoTracking()
+            .AnyAsync(x => x.EventId == eventId && x.User.Email == email, cancellationToken);
+    }
 }

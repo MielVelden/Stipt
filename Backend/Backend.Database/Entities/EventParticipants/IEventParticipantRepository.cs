@@ -9,4 +9,5 @@ public interface IEventParticipantRepository
     Task<List<EventParticipant>> GetAllByUserIdAsync(string userId, CancellationToken cancellationToken);
     Task<bool> DeleteAsync(Guid eventId, string userId, CancellationToken cancellationToken);
     Task<bool> ExistsAsync(Guid eventId, string userId, CancellationToken cancellationToken);
+    Task<bool> ExistsByEventIdAndEmailAsync(Guid eventId, string email, CancellationToken cancellationToken);
 }

@@ -7,6 +7,7 @@ using Backend.Web.Features.Email;
 using Backend.Web.Features.EventParticipants.Dtos;
 using Backend.Web.Features.EventParticipants.Exceptions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Web.Features.EventParticipants;
 
@@ -34,12 +35,10 @@ public sealed class EventParticipantsService(
     {
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
-        var participants = await eventParticipantRepository.GetAllByEventIdAsync(eventId, cancellationToken);
-        if (participants.Any(p => string.Equals(p.User.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase)))
+        if (await eventParticipantRepository.ExistsByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken))
             throw new DuplicateParticipantException();
 
-        var existsInInvites = await inviteTokenRepository.ExistsAsync(eventId, normalizedEmail, cancellationToken);
-        if (existsInInvites)
+        if (await inviteTokenRepository.ExistsAsync(eventId, normalizedEmail, cancellationToken))
             throw new DuplicateParticipantException();
 
         var @event = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new ArgumentException("Event not found");
@@ -55,7 +54,15 @@ public sealed class EventParticipantsService(
             ExpiresAtUtc = DateTime.UtcNow.AddDays(14)
         };
 
-        await inviteTokenRepository.AddAsync(inviteToken, cancellationToken);
+        try
+        {
+            await inviteTokenRepository.AddAsync(inviteToken, cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            throw new DuplicateParticipantException();
+        }
+
         await emailService.SendEventInviteAsync(normalizedEmail, @event, plainTextToken, cancellationToken);
 
         return inviteToken.ToRo();
@@ -88,6 +95,7 @@ public sealed class EventParticipantsService(
         var @event = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new ArgumentException("Event not found");
 
         var newInvites = new List<InviteToken>();
+        var plainTextTokensByEmail = new Dictionary<string, string>();
         foreach (var email in newEmails)
         {
             var plainTextToken = GenerateInviteToken();
@@ -100,14 +108,19 @@ public sealed class EventParticipantsService(
                 CreatedAtUtc = DateTime.UtcNow,
                 ExpiresAtUtc = DateTime.UtcNow.AddDays(14)
             };
-            
+
             newInvites.Add(inviteToken);
-            await emailService.SendEventInviteAsync(email, @event, plainTextToken, cancellationToken);
+            plainTextTokensByEmail[email] = plainTextToken;
         }
 
         if (newInvites.Any())
         {
             await inviteTokenRepository.AddRangeAsync(newInvites, cancellationToken);
+        }
+
+        foreach (var (email, plainTextToken) in plainTextTokensByEmail)
+        {
+            await emailService.SendEventInviteAsync(email, @event, plainTextToken, cancellationToken);
         }
 
         return new BulkCreateEventParticipantsRo(

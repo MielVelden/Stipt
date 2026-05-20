@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -19,23 +19,43 @@ namespace Backend.Database.Migrations
                 name: "IX_event_participants_Email",
                 table: "event_participants");
 
-            migrationBuilder.DropColumn(
-                name: "Email",
-                table: "event_participants");
-
             migrationBuilder.AddColumn<string>(
                 name: "UserId",
                 table: "event_participants",
                 type: "text",
-                nullable: false,
-                defaultValue: "");
+                nullable: true);
 
-            migrationBuilder.AddColumn<DateTime>(
+            migrationBuilder.Sql("""
+                UPDATE event_participants
+                SET "UserId" = u."Id"
+                FROM "AspNetUsers" AS u
+                WHERE LOWER(event_participants."Email") = LOWER(u."Email")
+                """);
+
+            migrationBuilder.Sql("""
+                DELETE FROM event_participants
+                WHERE "UserId" IS NULL
+                """);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "UserId",
+                table: "event_participants",
+                type: "text",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.DropColumn(
+                name: "Email",
+                table: "event_participants");
+
+            migrationBuilder.AddColumn<DateTime?>(
                 name: "AcceptedAtUtc",
                 table: "event_participants",
                 type: "timestamp with time zone",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                nullable: true);
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_event_participants",

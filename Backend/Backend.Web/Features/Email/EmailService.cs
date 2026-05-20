@@ -12,7 +12,7 @@ public class EmailService(IUserRepository userRepository, IResend emailClient)
 
     public async Task SendUserNotificationAsync(UserNotification userNotification, CancellationToken ct)
     {
-        var participantEmail = userRepository.GetEmailByIdAsync(userNotification.UserId, ct).Result ?? throw new ArgumentException($"User {userNotification.UserId} not found");
+        var participantEmail = await userRepository.GetEmailByIdAsync(userNotification.UserId, ct) ?? throw new ArgumentException($"User {userNotification.UserId} not found");
         var template = new UserNotificationTemplate(userNotification);
         
         var message = new EmailMessage
