@@ -175,4 +175,17 @@ public sealed class EventParticipantsService(
 
         return false;
     }
+
+    public async Task<bool> IsParticipantAsync(Guid eventId, string email, CancellationToken cancellationToken)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        return await eventParticipantRepository.ExistsAsync(eventId, normalizedEmail, cancellationToken);
+    }
+
+    public async Task<HashSet<Guid>> GetParticipatingEventIdsAsync(string email, CancellationToken cancellationToken)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var participants = await eventParticipantRepository.GetAllByEmailAsync(normalizedEmail, cancellationToken);
+        return participants.Select(p => p.EventId).ToHashSet();
+    }
 }
