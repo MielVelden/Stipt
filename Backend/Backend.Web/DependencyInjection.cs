@@ -1,3 +1,4 @@
+using Backend.Web.Configuration;
 using Backend.Web.Features.Auth;
 using Backend.Web.Features.Email;
 using Backend.Web.Features.EventParticipants;
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<SessionsService>();
         services.AddScoped<EmailService>();
         services.AddScoped<IImagesService, ImageStorageService>();
+        services.AddScoped<EventParticipantAuthorizationFilter>();
         services.AddSingleton<IClock>(SystemClock.Instance);
 
         return services;

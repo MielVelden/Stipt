@@ -22,7 +22,19 @@ internal sealed class EventRepository(ApplicationDbContext dbContext) : IEventRe
     {
         var query = dbContext.Events
             .AsNoTracking();
-            
+
+        if (!includeArchived)
+            query = query.Where(x => !x.IsArchived);
+
+        return await query.OrderBy(x => x.StartDate).ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<Event>> GetAllForParticipantAsync(string email, bool includeArchived, CancellationToken cancellationToken)
+    {
+        var query = dbContext.Events
+            .AsNoTracking()
+            .Where(e => dbContext.EventParticipants.Any(p => p.EventId == e.Id && p.Email == email));
+
         if (!includeArchived)
             query = query.Where(x => !x.IsArchived);
 

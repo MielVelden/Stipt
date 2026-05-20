@@ -1,9 +1,10 @@
 using Backend.Database.Entities.Events;
+using Backend.Web.Features.EventParticipants;
 using Backend.Web.Features.Events.Dtos;
 
 namespace Backend.Web.Features.Events;
 
-public sealed class EventsService(IEventRepository eventRepository)
+public sealed class EventsService(IEventRepository eventRepository, EventParticipantsService eventParticipantsService)
 {
     public async Task<EventRo> CreateAsync(CreateEventDto request, CancellationToken cancellationToken)
     {
@@ -32,8 +33,17 @@ public sealed class EventsService(IEventRepository eventRepository)
     public async Task<EventRo?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
+        return eventItem?.ToRo();
+    }
+
+    public async Task<EventRo?> GetByIdForAttendeeAsync(Guid id, string userEmail, CancellationToken cancellationToken)
+    {
+        var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
 
         if (eventItem is null)
+            return null;
+
+        if (!await eventParticipantsService.IsParticipantAsync(id, userEmail, cancellationToken))
             return null;
 
         return eventItem.ToRo();
@@ -42,7 +52,13 @@ public sealed class EventsService(IEventRepository eventRepository)
     public async Task<List<EventRo>> GetAllAsync(bool includeArchived, CancellationToken cancellationToken)
     {
         var events = await eventRepository.GetAllAsync(includeArchived, cancellationToken);
+        return events.Select(EventMappings.ToRo).ToList();
+    }
 
+    public async Task<List<EventRo>> GetAllForAttendeeAsync(string userEmail, bool includeArchived, CancellationToken cancellationToken)
+    {
+        var normalizedEmail = userEmail.Trim().ToLowerInvariant();
+        var events = await eventRepository.GetAllForParticipantAsync(normalizedEmail, includeArchived, cancellationToken);
         return events.Select(EventMappings.ToRo).ToList();
     }
 

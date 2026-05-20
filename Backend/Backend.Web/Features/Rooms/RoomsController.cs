@@ -1,3 +1,4 @@
+using Backend.Web.Configuration;
 using Backend.Web.Features.Rooms.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ namespace Backend.Web.Features.Rooms;
 [ApiController]
 [Route("api/events/{eventId:guid}/rooms")]
 [Authorize]
+[ServiceFilter(typeof(EventParticipantAuthorizationFilter))]
 public class RoomsController(RoomsService roomsService) : ControllerBase
 {
     [HttpPost]
