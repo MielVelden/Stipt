@@ -143,7 +143,7 @@ export function SessionForm(props: SessionFormProps) {
         // image may already be gone, proceed regardless
       }
     }
-    form.setValue("coverImageId", undefined, { shouldDirty: true })
+    form.setValue("coverImageId", "", { shouldDirty: true })
     setImageUploadError(null)
   }
 

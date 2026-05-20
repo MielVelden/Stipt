@@ -124,19 +124,16 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           <FieldSeparator />
 
           {session.coverImageId && (
-            <>
-              <FieldSeparator />
-              <Field>
-                <FieldLabel>Coverfoto</FieldLabel>
-                <FieldContent>
-                  <img
-                    src={`${apiBaseUrl}/images/${session.coverImageId}`}
-                    alt="Sessie coverfoto"
-                    className="h-48 w-full max-w-md rounded-lg object-cover"
-                  />
-                </FieldContent>
-              </Field>
-            </>
+            <Field>
+              <FieldLabel>Coverfoto</FieldLabel>
+              <FieldContent>
+                <img
+                  src={`${apiBaseUrl}/images/${session.coverImageId}`}
+                  alt="Sessie coverfoto"
+                  className="h-48 w-full max-w-md rounded-lg object-cover"
+                />
+              </FieldContent>
+            </Field>
           )}
 
           <Field>

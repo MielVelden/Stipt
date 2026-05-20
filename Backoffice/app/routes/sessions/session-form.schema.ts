@@ -114,7 +114,7 @@ export function mapFormValuesToSessionPayload(
     endDateTime: `${values.endDate}T${values.endTime}:00`,
     capacity: values.capacity ? Number(values.capacity) : undefined,
     labels: values.labels ?? [],
-    coverImageId: values.coverImageId,
+    coverImageId: values.coverImageId || undefined,
   }
 }
 
