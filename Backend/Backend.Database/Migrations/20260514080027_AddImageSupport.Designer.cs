@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514080027_AddImageSupport")]
+    partial class AddImageSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -546,9 +549,10 @@ namespace Backend.Database.Migrations
                             b1.Property<Guid>("EventId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<Guid?>("LogoImageId")
-                                .HasColumnType("uuid")
-                                .HasColumnName("style_logo_image_id");
+                            b1.Property<string>("LogoImageUrl")
+                                .HasMaxLength(2000)
+                                .HasColumnType("character varying(2000)")
+                                .HasColumnName("style_logo_image_url");
 
                             b1.Property<string>("PrimaryBackgroundColor")
                                 .IsRequired()
@@ -564,19 +568,10 @@ namespace Backend.Database.Migrations
 
                             b1.HasKey("EventId");
 
-                            b1.HasIndex("LogoImageId");
-
                             b1.ToTable("events");
 
                             b1.WithOwner()
                                 .HasForeignKey("EventId");
-
-                            b1.HasOne("Backend.Database.Entities.Images.Image", "LogoImage")
-                                .WithMany()
-                                .HasForeignKey("LogoImageId")
-                                .OnDelete(DeleteBehavior.SetNull);
-
-                            b1.Navigation("LogoImage");
                         });
 
                     b.Navigation("Style")

@@ -20,5 +20,5 @@ public sealed record EventRo(
 public sealed record EventStyleRo(
     string PrimaryBackgroundColor,
     string PrimaryForegroundColor,
-    string? LogoImageUrl
+    Guid? LogoImageId
 );

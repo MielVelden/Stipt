@@ -36,9 +36,6 @@ public sealed class UpdateEventStyleDtoValidator : AbstractValidator<UpdateEvent
             .NotEmpty()
             .Length(7);
 
-        RuleFor(x => x.LogoImageUrl)
-            .Must(url => url is null || url.Length <= 2000)
-            .WithMessage("Logo image URL must be 2000 characters or fewer.");
     }
 }
 

@@ -1,8 +1,10 @@
-import type { ReactNode } from "react"
+import { useState, useRef, type ReactNode } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { Link } from "react-router"
-import { Loader2 } from "lucide-react"
+import { Loader2, XIcon, ImageIcon } from "lucide-react"
+import apiClient from "~/lib/api-client"
+import type { UploadImageRo } from "~/generated-types/upload-image-ro"
 import {
   Field,
   FieldError,
@@ -42,7 +44,17 @@ type EventFormProps = CreateEventFormProps | EditEventFormProps
 
 type EventFormValues = EventCreateFormValues | EventEditFormValues
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api"
+
+function getImageUrl(imageId: string) {
+  return `${apiBaseUrl}/images/${imageId}`
+}
+
 export function EventForm(props: EventFormProps) {
+  const [imageUploading, setImageUploading] = useState(false)
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const form = useForm<EventFormValues>({
     resolver: zodResolver(
       props.mode === "create" ? eventCreateSchema : eventEditSchema
@@ -51,6 +63,42 @@ export function EventForm(props: EventFormProps) {
   })
 
   const leadingAction = props.mode === "edit" ? props.leadingAction : undefined
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setImageUploadError(null)
+    setImageUploading(true)
+
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const response = await apiClient.post<UploadImageRo>("/images", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      form.setValue("logoImageId", response.data.imageId, { shouldDirty: true })
+    } catch {
+      setImageUploadError("Uploaden mislukt. Controleer het bestandstype en de grootte (max 5 MB).")
+    } finally {
+      setImageUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
+  async function handleRemoveImage() {
+    const imageId = form.getValues("logoImageId")
+    if (imageId) {
+      try {
+        await apiClient.delete(`/images/${imageId}`)
+      } catch {
+        // image may already be gone, proceed regardless
+      }
+    }
+    form.setValue("logoImageId", undefined, { shouldDirty: true })
+    setImageUploadError(null)
+  }
 
   async function handleSubmit(values: EventFormValues) {
     if (props.mode === "create") {
@@ -188,18 +236,57 @@ export function EventForm(props: EventFormProps) {
         </FieldGroup>
 
         <Controller
-          name="logoImageUrl"
+          name="logoImageId"
           control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="logoImageUrl">Logo URL</FieldLabel>
-              <Input
-                {...field}
-                id="logoImageUrl"
-                placeholder="https://..."
-                aria-invalid={fieldState.invalid}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>Logo</FieldLabel>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFileChange}
               />
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+              {field.value ? (
+                <div className="relative max-w-xs">
+                  <div className="max-w-xs overflow-hidden rounded-lg border">
+                    <img
+                      src={getImageUrl(field.value)}
+                      alt="Event logo"
+                      className="h-48 w-full object-cover"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-7 w-7 bg-white text-black border border-black hover:bg-gray-100 shadow-sm"
+                    onClick={handleRemoveImage}
+                    disabled={imageUploading}
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={imageUploading}
+                  className="w-full max-w-xs"
+                >
+                  {imageUploading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                  )}
+                  {imageUploading ? "Uploaden..." : "Logo uploaden"}
+                </Button>
+              )}
+              {imageUploadError && (
+                <p className="text-destructive text-sm">{imageUploadError}</p>
+              )}
             </Field>
           )}
         />

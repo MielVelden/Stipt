@@ -16,5 +16,5 @@ public sealed record UpdateEventDto(
 public sealed record UpdateEventStyleDto(
     string PrimaryBackgroundColor,
     string PrimaryForegroundColor,
-    string? LogoImageUrl
+    Guid? LogoImageId
 );

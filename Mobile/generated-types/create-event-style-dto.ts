@@ -6,5 +6,5 @@
 export interface CreateEventStyleDto {
   primaryBackgroundColor: string;
   primaryForegroundColor: string;
-  logoImageUrl: string | undefined;
+  logoImageId: string | undefined;
 }

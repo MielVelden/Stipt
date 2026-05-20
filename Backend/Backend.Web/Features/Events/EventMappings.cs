@@ -25,7 +25,7 @@ public static class EventMappings
         return new EventStyleRo(
             style.PrimaryBackgroundColor,
             style.PrimaryForegroundColor,
-            style.LogoImageUrl
+            style.LogoImageId
         );
     }
 }

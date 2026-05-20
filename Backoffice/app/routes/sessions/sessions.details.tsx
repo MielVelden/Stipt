@@ -19,6 +19,8 @@ import { useAppContext } from "~/contexts/app-context"
 import type { SessionRo } from "~/generated-types/session-ro"
 import { ArrowLeft } from "lucide-react"
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api"
+
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const eventId = params.eventId
   if (!eventId || !params.id) {
@@ -120,6 +122,19 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
           </FieldGroup>
 
           <FieldSeparator />
+
+          {session.coverImageId && (
+            <Field>
+              <FieldLabel>Coverfoto</FieldLabel>
+              <FieldContent>
+                <img
+                  src={`${apiBaseUrl}/images/${session.coverImageId}`}
+                  alt="Sessie coverfoto"
+                  className="h-48 w-full max-w-md rounded-lg object-cover"
+                />
+              </FieldContent>
+            </Field>
+          )}
 
           <Field>
             <FieldLabel>Labels</FieldLabel>
