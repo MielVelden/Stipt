@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { ActivityIndicator, ScrollView, View, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -13,6 +13,7 @@ import { getEventById } from "@/features/events/api";
 import { EventRo } from "@/generated-types/event-ro";
 import { useSessionHub } from "@/hooks/use-session-hub";
 import { SessionRo } from "@/generated-types/session-ro";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 
 interface SessionTimelineScreenProps {
     eventId: string;
@@ -43,6 +44,45 @@ export function SessionTimelineScreen({
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const fetchTimelineData = useCallback(async () => {
+        try {
+            setError(null);
+
+            const filter: SessionFilterDto = {
+                labels: selectedLabels.length > 0 ? selectedLabels : undefined,
+                availableOnly: showAvailabilityFilter ? availableOnly : false,
+            };
+
+            const [sessionData, eventData] = await Promise.all([
+                loadSessions(eventId, filter),
+                getEventById(eventId),
+            ]);
+
+            setSessions(sessionData);
+            setEvent(eventData);
+
+            if (
+                allLabels.length === 0 &&
+                selectedLabels.length === 0 &&
+                !availableOnly
+            ) {
+                setAllLabels(getAvailableLabels(sessionData));
+            }
+        } catch (err) {
+            setError("Gegevens konden niet worden geladen.");
+            throw err;
+        }
+    }, [
+        availableOnly,
+        eventId,
+        loadSessions,
+        selectedLabels,
+        showAvailabilityFilter,
+        allLabels.length
+    ]);
+
+    const { isRefreshing, onRefresh } = usePullToRefresh(fetchTimelineData);
 
     useSessionHub(eventId, {
         onSessionEnrollmentUpdated: (message) => {
@@ -87,62 +127,18 @@ export function SessionTimelineScreen({
 
     useEffect(() => {
         let isMounted = true;
+        setIsLoading(true);
 
-        async function loadData() {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                const filter: SessionFilterDto = {
-                    labels:
-                        selectedLabels.length > 0 ? selectedLabels : undefined,
-                    availableOnly: showAvailabilityFilter
-                        ? availableOnly
-                        : false,
-                };
-
-                const [sessionData, eventData] = await Promise.all([
-                    loadSessions(eventId, filter),
-                    getEventById(eventId),
-                ]);
-
-                if (!isMounted) {
-                    return;
-                }
-
-                setSessions(sessionData);
-                setEvent(eventData);
-
-                if (
-                    allLabels.length === 0 &&
-                    selectedLabels.length === 0 &&
-                    !availableOnly
-                ) {
-                    setAllLabels(getAvailableLabels(sessionData));
-                }
-            } catch {
-                if (isMounted) {
-                    setError("Gegevens konden niet worden geladen.");
-                }
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
+        fetchTimelineData().finally(() => {
+            if (isMounted) {
+                setIsLoading(false);
             }
-        }
-
-        loadData();
+        });
 
         return () => {
             isMounted = false;
         };
-    }, [
-        availableOnly,
-        eventId,
-        loadSessions,
-        selectedLabels,
-        showAvailabilityFilter,
-    ]);
+    }, [fetchTimelineData]);
 
     const handleApplyFilters = (
         newLabels: string[],
@@ -167,7 +163,7 @@ export function SessionTimelineScreen({
         );
     }
 
-    if (error) {
+    if (error && !isRefreshing) {
         return (
             <View className="flex-1 items-center justify-center bg-slate-50/50">
                 <Text className="text-slate-500">{error}</Text>
@@ -180,6 +176,9 @@ export function SessionTimelineScreen({
             <ScrollView
                 contentContainerClassName="px-4 py-8"
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+                }
             >
                 {event && (
                     <View

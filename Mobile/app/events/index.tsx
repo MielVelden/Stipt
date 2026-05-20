@@ -1,32 +1,45 @@
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { EventRo } from "@/generated-types/event-ro";
 import { getEvents } from "@/features/events/api";
-import { ScrollView } from "react-native";
+import { RefreshControl, ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
 import { EventCard } from "@/features/events/components/EventCard";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 
 export default function EventsScreen() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [events, setEvents] = useState<EventRo[]>([]);
 
-    async function loadEvents() {
+    const fetchEventsData = useCallback(async () => {
         try {
-            const events = await getEvents();
-            setEvents(events);
+            const data = await getEvents();
+            setEvents(data);
+            setError(null);
         } catch {
             setError(
                 "Er is een fout opgetreden bij het laden van evenementen.",
             );
-        } finally {
-            setLoading(false);
         }
-    }
+    }, []);
+
+    const { isRefreshing, onRefresh } = usePullToRefresh(fetchEventsData);
 
     useEffect(() => {
-        loadEvents();
-    }, []);
+        let isMounted = true;
+        setLoading(true);
+
+        fetchEventsData().finally(() => {
+            if (isMounted) {
+                setLoading(false);
+            }
+        });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [fetchEventsData]);
 
     function handleClick(event: EventRo) {
         router.push(`/events/${event.id}/(tabs)/sessions`);
@@ -36,6 +49,9 @@ export default function EventsScreen() {
         <ScrollView
             contentContainerClassName="px-4 py-8"
             showsVerticalScrollIndicator={false}
+            refreshControl={
+                <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+            }
         >
             <Text variant="h1" className="text-2xl text-left mb-4">
                 Evenementen
