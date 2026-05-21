@@ -36,14 +36,14 @@ public sealed class EventsService(IEventRepository eventRepository, EventPartici
         return eventItem?.ToRo();
     }
 
-    public async Task<EventRo?> GetByIdForAttendeeAsync(Guid id, string userEmail, CancellationToken cancellationToken)
+    public async Task<EventRo?> GetByIdForAttendeeAsync(Guid id, string userId, CancellationToken cancellationToken)
     {
         var eventItem = await eventRepository.GetByIdAsync(id, cancellationToken);
 
         if (eventItem is null)
             return null;
 
-        if (!await eventParticipantsService.IsParticipantAsync(id, userEmail, cancellationToken))
+        if (!await eventParticipantsService.IsParticipantAsync(id, userId, cancellationToken))
             return null;
 
         return eventItem.ToRo();
@@ -55,10 +55,9 @@ public sealed class EventsService(IEventRepository eventRepository, EventPartici
         return events.Select(EventMappings.ToRo).ToList();
     }
 
-    public async Task<List<EventRo>> GetAllForAttendeeAsync(string userEmail, bool includeArchived, CancellationToken cancellationToken)
+    public async Task<List<EventRo>> GetAllForAttendeeAsync(string userId, bool includeArchived, CancellationToken cancellationToken)
     {
-        var normalizedEmail = userEmail.Trim().ToLowerInvariant();
-        var events = await eventRepository.GetAllForParticipantAsync(normalizedEmail, includeArchived, cancellationToken);
+        var events = await eventRepository.GetAllForParticipantAsync(userId, includeArchived, cancellationToken);
         return events.Select(EventMappings.ToRo).ToList();
     }
 

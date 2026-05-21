@@ -17,35 +17,38 @@ internal sealed class EventParticipantRepository(ApplicationDbContext dbContext)
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public Task<EventParticipant?> GetByEventIdAndEmailAsync(Guid eventId, string email, CancellationToken cancellationToken)
+    public Task<EventParticipant?> GetByEventIdAndUserIdAsync(Guid eventId, string userId, CancellationToken cancellationToken)
     {
         return dbContext.EventParticipants
+            .Include(x => x.User)
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Email == email, cancellationToken);
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.UserId == userId, cancellationToken);
     }
 
     public Task<List<EventParticipant>> GetAllByEventIdAsync(Guid eventId, CancellationToken cancellationToken)
     {
         return dbContext.EventParticipants
+            .Include(x => x.User)
             .AsNoTracking()
             .Where(x => x.EventId == eventId)
-            .OrderBy(x => x.Email)
+            .OrderBy(x => x.User.Email)
             .ToListAsync(cancellationToken);
     }
 
-    public Task<List<EventParticipant>> GetAllByEmailAsync(string email, CancellationToken cancellationToken)
+    public Task<List<EventParticipant>> GetAllByUserIdAsync(string userId, CancellationToken cancellationToken)
     {
         return dbContext.EventParticipants
+            .Include(x => x.User)
             .AsNoTracking()
-            .Where(x => x.Email == email)
+            .Where(x => x.UserId == userId)
             .OrderBy(x => x.CreatedAtUtc)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> DeleteAsync(Guid eventId, string email, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid eventId, string userId, CancellationToken cancellationToken)
     {
         var participant = await dbContext.EventParticipants
-            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Email == email, cancellationToken);
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.UserId == userId, cancellationToken);
 
         if (participant is null)
             return false;
@@ -55,10 +58,17 @@ internal sealed class EventParticipantRepository(ApplicationDbContext dbContext)
         return result > 0;
     }
 
-    public Task<bool> ExistsAsync(Guid eventId, string email, CancellationToken cancellationToken)
+    public Task<bool> ExistsAsync(Guid eventId, string userId, CancellationToken cancellationToken)
     {
         return dbContext.EventParticipants
             .AsNoTracking()
-            .AnyAsync(x => x.EventId == eventId && x.Email == email, cancellationToken);
+            .AnyAsync(x => x.EventId == eventId && x.UserId == userId, cancellationToken);
+    }
+
+    public Task<bool> ExistsByEventIdAndEmailAsync(Guid eventId, string email, CancellationToken cancellationToken)
+    {
+        return dbContext.EventParticipants
+            .AsNoTracking()
+            .AnyAsync(x => x.EventId == eventId && x.User.Email == email, cancellationToken);
     }
 }

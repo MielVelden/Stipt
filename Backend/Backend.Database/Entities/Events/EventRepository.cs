@@ -29,11 +29,11 @@ internal sealed class EventRepository(ApplicationDbContext dbContext) : IEventRe
         return await query.OrderBy(x => x.StartDate).ToListAsync(cancellationToken);
     }
 
-    public async Task<List<Event>> GetAllForParticipantAsync(string email, bool includeArchived, CancellationToken cancellationToken)
+    public async Task<List<Event>> GetAllForParticipantAsync(string userId, bool includeArchived, CancellationToken cancellationToken)
     {
         var query = dbContext.Events
             .AsNoTracking()
-            .Where(e => dbContext.EventParticipants.Any(p => p.EventId == e.Id && p.Email == email));
+            .Where(e => dbContext.EventParticipants.Any(p => p.EventId == e.Id && p.UserId == userId));
 
         if (!includeArchived)
             query = query.Where(x => !x.IsArchived);

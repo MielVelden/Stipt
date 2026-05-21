@@ -10,11 +10,13 @@ internal sealed class EventParticipantConfiguration : IEntityTypeConfiguration<E
     {
         builder.ToTable("event_participants");
 
-        builder.HasKey(x => new { x.EventId, x.Email });
+        builder.HasKey(x => new { x.EventId, x.UserId });
 
-        builder.Property(x => x.Email)
-            .IsRequired()
-            .HasMaxLength(320);
+        builder.Property(x => x.UserId)
+            .IsRequired();
+
+        builder.Property(x => x.AcceptedAtUtc)
+            .IsRequired();
 
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
@@ -25,6 +27,12 @@ internal sealed class EventParticipantConfiguration : IEntityTypeConfiguration<E
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(x => x.Email);
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(x => x.UserId);
     }
 }

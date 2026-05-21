@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<ISessionEnrollmentRepository, SessionEnrollmentRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IEventParticipantRepository, EventParticipantRepository>();
+        services.AddScoped<IInviteTokenRepository, InviteTokenRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
