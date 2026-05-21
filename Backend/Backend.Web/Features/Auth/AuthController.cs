@@ -27,8 +27,16 @@ public sealed class AuthController(AuthService authService) : ControllerBase
         var result = await authService.RegisterAsync(request, ct);
         if (result is null)
             return Conflict("Email is already in use.");
+            
         if (!result.Succeeded)
-            return BadRequest();
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+            return ValidationProblem(ModelState);
+        }
+        
         return NoContent();
     }
 

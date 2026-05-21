@@ -59,7 +59,13 @@ public sealed class AuthService(
         if (!result.Succeeded)
             return result;
 
-        await userManager.AddToRoleAsync(user, AppRoles.Attendee);
+        var roleResult = await userManager.AddToRoleAsync(user, AppRoles.Attendee);
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return roleResult;
+        }
+
         return IdentityResult.Success;
     }
 

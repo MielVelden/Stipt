@@ -30,17 +30,14 @@ export default function RegisterScreen() {
             await register(data.email, data.password, data.firstName, data.lastName)
             router.replace({ pathname: "/(auth)/login", params: { registered: "true" } })
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                if (error.response?.status === 409) {
-                    setError("root", { message: "Dit e-mailadres is al in gebruik." })
-                } else if (error.response?.status === 400) {
-                    setError("root", { message: "Het wachtwoord voldoet niet aan de vereisten. Gebruik minimaal 6 tekens, een hoofdletter, een cijfer en een speciaal teken." })
-                } else {
-                    setError("root", { message: "Er is een fout opgetreden bij het registreren. Probeer het opnieuw." })
+            if (axios.isAxiosError(error) && error.response) {
+                if (error.response.status === 409 || error.response.status === 400) {
+                    setError("root", { message: "Account aanmaken is mislukt. Controleer je gegevens of probeer een ander e-mailadres." })
+                    return
                 }
-            } else {
-                setError("root", { message: "Er is een fout opgetreden bij het registreren. Probeer het opnieuw." })
             }
+            
+            setError("root", { message: "Er is een fout opgetreden bij het registreren. Probeer het opnieuw." })
         }
     }
 
