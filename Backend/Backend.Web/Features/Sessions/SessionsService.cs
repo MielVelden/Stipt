@@ -2,6 +2,7 @@ using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.Speakers;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
@@ -15,6 +16,7 @@ public sealed class SessionsService(
     ISessionEnrollmentRepository sessionEnrollmentRepository,
     IRoomRepository roomRepository,
     IEventRepository eventRepository,
+    ISpeakerRepository speakerRepository,
     INotificationService notificationService,
     IHubContext<SessionsHub> hubContext)
 {
@@ -35,13 +37,16 @@ public sealed class SessionsService(
         if (hasOverlap)
             throw new SessionTimeSlotOverlapException();
 
+        var speakers = request.SpeakerIds is { Count: > 0 }
+            ? await speakerRepository.GetByIdsAsync(eventId, request.SpeakerIds, cancellationToken)
+            : [];
+
         var session = new Session
         {
             Id = Guid.NewGuid(),
             Title = request.Title.Trim(),
             Description = request.Description?.Trim(),
             Type = request.Type,
-            Speaker = request.Speaker.Trim(),
             RoomId = request.RoomId,
             EventId = eventId,
             StartDateTime = request.StartDateTime,
@@ -49,7 +54,8 @@ public sealed class SessionsService(
             Capacity = request.Capacity,
             Labels = request.Labels.Select(label => label.Trim()).ToList(),
             CoverImageId = request.CoverImageId,
-            CreatedAtUtc = DateTime.UtcNow
+            CreatedAtUtc = DateTime.UtcNow,
+            Speakers = speakers
         };
 
         await sessionRepository.AddAsync(session, cancellationToken);
@@ -92,7 +98,7 @@ public sealed class SessionsService(
 
     public async Task<SessionRo?> UpdateAsync(Guid eventId, Guid id, UpdateSessionDto request, CancellationToken cancellationToken)
     {
-        var existingSession = await sessionRepository.GetByIdAsync(eventId, id, cancellationToken);
+        var existingSession = await sessionRepository.GetTrackedWithSpeakersAsync(eventId, id, cancellationToken);
         if (existingSession is null)
             return null;
 
@@ -114,7 +120,6 @@ public sealed class SessionsService(
         existingSession.Title = request.Title.Trim();
         existingSession.Description = request.Description?.Trim();
         existingSession.Type = request.Type;
-        existingSession.Speaker = request.Speaker.Trim();
         existingSession.RoomId = request.RoomId;
         existingSession.EventId = eventId;
         existingSession.StartDateTime = request.StartDateTime;
@@ -123,6 +128,14 @@ public sealed class SessionsService(
         existingSession.Labels = request.Labels.Select(label => label.Trim()).ToList();
         existingSession.CoverImageId = request.CoverImageId;
         existingSession.UpdatedAtUtc = DateTime.UtcNow;
+
+        var newSpeakers = request.SpeakerIds is { Count: > 0 }
+            ? await speakerRepository.GetByIdsAsync(eventId, request.SpeakerIds, cancellationToken)
+            : [];
+
+        existingSession.Speakers.Clear();
+        foreach (var speaker in newSpeakers)
+            existingSession.Speakers.Add(speaker);
 
         var updated = await sessionRepository.UpdateAsync(existingSession, cancellationToken);
         if (!updated)

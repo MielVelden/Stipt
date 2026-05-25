@@ -37,7 +37,9 @@ import { TimeField } from "~/components/ui/time-field"
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { Label } from "~/components/ui/label"
 import type { RoomRo } from "~/generated-types/room-ro"
+import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import { SessionType } from "~/generated-types/session-type"
+import { Checkbox } from "~/components/ui/checkbox"
 import {
   sessionCreateSchema,
   sessionEditSchema,
@@ -50,6 +52,7 @@ type CreateSessionFormProps = {
   mode: "create"
   formId: string
   rooms: RoomRo[]
+  speakers: SpeakerRo[]
   defaultValues: SessionCreateFormValues
   cancelTo: string
   submitLabel?: string
@@ -60,6 +63,7 @@ type EditSessionFormProps = {
   mode: "edit"
   formId: string
   rooms: RoomRo[]
+  speakers: SpeakerRo[]
   defaultValues: SessionEditFormValues
   cancelTo: string
   submitLabel?: string
@@ -239,18 +243,46 @@ export function SessionForm(props: SessionFormProps) {
         </FieldGroup>
 
         <Controller
-          name="speaker"
+          name="speakerIds"
           control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
-              <Input
-                {...field}
-                id="speaker"
-                placeholder="Naam van de spreker"
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>Sprekers</FieldLabel>
+              {props.speakers.length === 0 ? (
+                <FieldDescription className="text-xs">
+                  Geen sprekers beschikbaar. Voeg eerst sprekers toe via het Sprekers menu.
+                </FieldDescription>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {props.speakers.map((speaker) => {
+                    const checked = field.value?.includes(speaker.id) ?? false
+                    return (
+                      <label
+                        key={speaker.id}
+                        className="flex cursor-pointer items-center gap-2"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(value) => {
+                            const next = value
+                              ? [...(field.value ?? []), speaker.id]
+                              : (field.value ?? []).filter((id) => id !== speaker.id)
+                            field.onChange(next)
+                          }}
+                        />
+                        <span className="text-sm">
+                          {speaker.name}
+                          {speaker.title && (
+                            <span className="ml-1 text-muted-foreground">
+                              — {speaker.title}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
             </Field>
           )}
         />

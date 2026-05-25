@@ -19,6 +19,7 @@ import {
 } from "./session-form.schema"
 import type { CreateSessionDto } from "~/generated-types/create-session-dto"
 import type { RoomRo } from "~/generated-types/room-ro"
+import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import { SessionForm } from "./session-form"
 import { getApiErrorDetail } from "~/lib/utils"
 
@@ -29,14 +30,17 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await apiClient.get<RoomRo[]>(`/events/${eventId}/rooms`)
-    return response.data
+    const [roomsResponse, speakersResponse] = await Promise.all([
+      apiClient.get<RoomRo[]>(`/events/${eventId}/rooms`),
+      apiClient.get<SpeakerRo[]>(`/events/${eventId}/speakers`),
+    ])
+    return { rooms: roomsResponse.data, speakers: speakersResponse.data }
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
 }
 
-export default function Page({ loaderData: rooms }: Route.ComponentProps) {
+export default function Page({ loaderData: { rooms, speakers } }: Route.ComponentProps) {
   const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
   const { eventId } = useParams()
@@ -74,6 +78,7 @@ export default function Page({ loaderData: rooms }: Route.ComponentProps) {
           mode="create"
           formId="form-session-create"
           rooms={rooms}
+          speakers={speakers}
           defaultValues={sessionCreateDefaultValues}
           cancelTo={`${eventBaseUrl}/sessies/`}
           onSubmit={onSubmit}

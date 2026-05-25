@@ -1,5 +1,6 @@
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.Speakers;
 using NodaTime;
 
 namespace Backend.Database.Entities.Events;
@@ -18,5 +19,6 @@ public sealed class Event
     
     public ICollection<Room> Rooms { get; set; } = new List<Room>();
     public ICollection<Session> Sessions { get; set; } = new List<Session>();
+    public ICollection<Speaker> Speakers { get; set; } = new List<Speaker>();
 }
 

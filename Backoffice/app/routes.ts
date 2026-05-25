@@ -46,6 +46,13 @@ export default [
           route(":id", "routes/rooms/rooms.details.tsx"),
           route(":id/bewerken", "routes/rooms/rooms.edit.tsx"),
         ]),
+
+        ...prefix("sprekers", [
+          route("", "routes/speakers/speakers.overview.tsx"),
+          route("nieuw", "routes/speakers/speakers.create.tsx"),
+          route(":id", "routes/speakers/speakers.details.tsx"),
+          route(":id/bewerken", "routes/speakers/speakers.edit.tsx"),
+        ]),
       ]),
     ])
   ),

@@ -24,10 +24,6 @@ internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
             .HasConversion<string>()
             .IsRequired();
 
-        builder.Property(x => x.Speaker)
-            .IsRequired()
-            .HasMaxLength(200);
-
         builder.Property(x => x.RoomId)
             .IsRequired();
 

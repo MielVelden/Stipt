@@ -9,11 +9,11 @@ export interface CreateSessionDto {
   title: string;
   description: string | undefined;
   type: SessionType;
-  speaker: string;
   roomId: string;
   startDateTime: string;
   endDateTime: string;
   capacity: number | undefined;
   labels: string[];
+  speakerIds: string[] | undefined;
   coverImageId: string | undefined;
 }
