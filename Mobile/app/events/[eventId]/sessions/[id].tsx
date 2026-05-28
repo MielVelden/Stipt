@@ -240,7 +240,7 @@ export default function SessionDetailScreen() {
                         </View>
                         <View className="flex-row items-center gap-x-2">
                             <Icon as={User} className="text-muted-foreground" size={18} />
-                            <Text variant="p" className="text-muted-foreground mt-0">{session.speaker}</Text>
+                            <Text variant="p" className="text-muted-foreground mt-0">{session.speakers.map(s => s.name).join(", ")}</Text>
                         </View>
                     </View>
 
