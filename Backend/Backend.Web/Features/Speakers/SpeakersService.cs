@@ -1,9 +1,10 @@
 using Backend.Database.Entities.Speakers;
+using Backend.Web.Features.Images;
 using Backend.Web.Features.Speakers.Dtos;
 
 namespace Backend.Web.Features.Speakers;
 
-public sealed class SpeakersService(ISpeakerRepository speakerRepository)
+public sealed class SpeakersService(ISpeakerRepository speakerRepository, IImagesService imagesService)
 {
     public async Task<SpeakerRo> CreateAsync(Guid eventId, CreateSpeakerDto request, CancellationToken cancellationToken)
     {
@@ -56,6 +57,22 @@ public sealed class SpeakersService(ISpeakerRepository speakerRepository)
 
     public async Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
+        var speaker = await speakerRepository.GetByIdAsync(eventId, id, cancellationToken);
+        if (speaker is null)
+            return false;
+
+        if (speaker.PhotoId.HasValue)
+        {
+            try
+            {
+                await imagesService.DeleteAsync(speaker.PhotoId.Value, cancellationToken);
+            }
+            catch
+            {
+                // Photo may already be gone, proceed regardless
+            }
+        }
+
         return await speakerRepository.DeleteAsync(eventId, id, cancellationToken);
     }
 }

@@ -111,10 +111,12 @@ export default function Page({ loaderData: speakers }: Route.ComponentProps) {
     {
       accessorKey: "title",
       header: "Functie",
+      cell: ({ row }) => row.original.title ?? "-",
     },
     {
       accessorKey: "company",
       header: "Bedrijf",
+      cell: ({ row }) => row.original.company ?? "-",
     },
     {
       id: "actions",
@@ -182,7 +184,8 @@ export default function Page({ loaderData: speakers }: Route.ComponentProps) {
             <AlertDialogDescription>
               Je staat op het punt om de spreker{" "}
               <strong>{speakerToDelete?.name}</strong> te verwijderen. Dit kan
-              niet ongedaan worden gemaakt.
+              niet ongedaan worden gemaakt. Let op: de spreker wordt ook van
+              alle gekoppelde sessies verwijderd.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

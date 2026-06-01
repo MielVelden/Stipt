@@ -39,7 +39,7 @@ import { Label } from "~/components/ui/label"
 import type { RoomRo } from "~/generated-types/room-ro"
 import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import { SessionType } from "~/generated-types/session-type"
-import { Checkbox } from "~/components/ui/checkbox"
+import { SpeakerMultiSelect } from "~/components/speaker-multi-select"
 import {
   sessionCreateSchema,
   sessionEditSchema,
@@ -253,35 +253,11 @@ export function SessionForm(props: SessionFormProps) {
                   Geen sprekers beschikbaar. Voeg eerst sprekers toe via het Sprekers menu.
                 </FieldDescription>
               ) : (
-                <div className="flex flex-col gap-2">
-                  {props.speakers.map((speaker) => {
-                    const checked = field.value?.includes(speaker.id) ?? false
-                    return (
-                      <label
-                        key={speaker.id}
-                        className="flex cursor-pointer items-center gap-2"
-                      >
-                        <Checkbox
-                          checked={checked}
-                          onCheckedChange={(value) => {
-                            const next = value
-                              ? [...(field.value ?? []), speaker.id]
-                              : (field.value ?? []).filter((id) => id !== speaker.id)
-                            field.onChange(next)
-                          }}
-                        />
-                        <span className="text-sm">
-                          {speaker.name}
-                          {speaker.title && (
-                            <span className="ml-1 text-muted-foreground">
-                              — {speaker.title}
-                            </span>
-                          )}
-                        </span>
-                      </label>
-                    )
-                  })}
-                </div>
+                <SpeakerMultiSelect
+                  speakers={props.speakers}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               )}
             </Field>
           )}
