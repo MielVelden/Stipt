@@ -19,5 +19,7 @@ export const VALIDATION_MESSAGES = {
     labelsUnique: "Labels moeten uniek zijn",
     endAfterStart: "De sessie moet eindigen na dat deze is begonnen",
     notFound: "Deze sessie kan niet worden gevonden",
+    dateBeforeEventStart: "Datum mag niet voor de startdatum van het event vallen",
+    dateAfterEventEnd: "Datum mag niet na de einddatum van het event vallen",
   },
 }

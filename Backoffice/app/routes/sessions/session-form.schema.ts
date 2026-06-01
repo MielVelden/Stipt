@@ -54,14 +54,61 @@ const dateRefine = {
   },
 } as const
 
-export const sessionCreateSchema = sessionBaseObjectSchema.refine(
-  dateRefine.fn,
-  dateRefine.opts
-)
+function addEventBoundsRefinement<T extends z.ZodTypeAny>(
+  schema: T,
+  eventStartDate?: string,
+  eventEndDate?: string
+) {
+  return schema.superRefine(
+    (
+      data: { startDate: string; endDate: string },
+      ctx: z.RefinementCtx
+    ) => {
+      if (eventStartDate && data.startDate < eventStartDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: VALIDATION_MESSAGES.session.dateBeforeEventStart,
+          path: ["startDate"],
+        })
+      }
+      if (eventEndDate && data.startDate > eventEndDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
+          path: ["startDate"],
+        })
+      }
+      if (eventEndDate && data.endDate > eventEndDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
+          path: ["endDate"],
+        })
+      }
+    }
+  )
+}
 
-export const sessionEditSchema = sessionBaseObjectSchema
-  .extend({ id: z.string().min(1, VALIDATION_MESSAGES.session.notFound) })
-  .refine(dateRefine.fn, dateRefine.opts)
+export function makeSessionCreateSchema(eventStartDate?: string, eventEndDate?: string) {
+  return addEventBoundsRefinement(
+    sessionBaseObjectSchema.refine(dateRefine.fn, dateRefine.opts),
+    eventStartDate,
+    eventEndDate
+  )
+}
+
+export function makeSessionEditSchema(eventStartDate?: string, eventEndDate?: string) {
+  return addEventBoundsRefinement(
+    sessionBaseObjectSchema
+      .extend({ id: z.string().min(1, VALIDATION_MESSAGES.session.notFound) })
+      .refine(dateRefine.fn, dateRefine.opts),
+    eventStartDate,
+    eventEndDate
+  )
+}
+
+export const sessionCreateSchema = makeSessionCreateSchema()
+export const sessionEditSchema = makeSessionEditSchema()
 
 export const sessionCreateDefaultValues: SessionCreateFormValues = {
   title: "",
