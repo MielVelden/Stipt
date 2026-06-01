@@ -1,17 +1,25 @@
 import { router } from "expo-router"
+import * as ImagePicker from "expo-image-picker"
 import { useEffect, useMemo, useState } from "react"
-import { ScrollView, TextInput, View } from "react-native"
+import { Image, Pressable, ScrollView, TextInput, View } from "react-native"
 
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import { useAuth } from "@/lib/auth-context"
-import { getProfileAsync, updateProfileAsync, type UserProfile } from "@/features/profile/api"
+import {
+  getProfileAsync,
+  updateProfileAsync,
+  uploadProfilePhotoAsync,
+  type UserProfile,
+} from "@/features/profile/api"
+import { API_BASE_URL } from "@/constants/api"
 
 const EMPTY_PROFILE: UserProfile = {
   firstName: "",
   lastName: "",
   email: "",
   phone: "",
+  profileImageId: null,
 }
 
 export default function SettingsScreen() {
@@ -87,6 +95,44 @@ export default function SettingsScreen() {
     router.replace("/(auth)/login")
   }
 
+  async function handlePhotoUpload() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== ImagePicker.PermissionStatus.GRANTED) {
+      setError("Toegang tot je fotobibliotheek is nodig om een profielfoto te kiezen.")
+      return
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+    })
+
+    if (result.canceled || !result.assets.length) return
+
+    const asset = result.assets[0]
+    const extension = asset.uri.split(".").pop() ?? "jpg"
+    const formData = new FormData()
+    formData.append("file", {
+      uri: asset.uri,
+      name: asset.fileName ?? `profile.${extension}`,
+      type: asset.mimeType ?? "image/jpeg",
+    } as any)
+
+    setIsSaving(true)
+    try {
+      const updatedProfile = await uploadProfilePhotoAsync(formData)
+      setProfile(updatedProfile)
+      setSavedProfile(updatedProfile)
+      setShowSavedToast(true)
+      setError(null)
+    } catch {
+      setError("Profielfoto kon niet worden geupload.")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   function updateField<Key extends keyof UserProfile>(key: Key, value: UserProfile[Key]) {
     setProfile((current) => ({ ...current, [key]: value }))
   }
@@ -102,12 +148,23 @@ export default function SettingsScreen() {
       </Text>
 
       <View className="items-center mb-8">
-        <View className="h-24 w-24 rounded-full bg-muted items-center justify-center">
-          <Text className="text-muted-foreground">Foto</Text>
+        <View className="h-24 w-24 rounded-full bg-muted items-center justify-center overflow-hidden">
+          {profile.profileImageId ? (
+            <Image
+              source={{ uri: `${API_BASE_URL}/images/${profile.profileImageId}` }}
+              className="h-24 w-24"
+              resizeMode="cover"
+            />
+          ) : (
+            <Text className="text-muted-foreground">Foto</Text>
+          )}
         </View>
         <Text className="text-xs text-muted-foreground mt-2">
           Profielfoto (placeholder)
         </Text>
+        <Pressable className="mt-3" onPress={handlePhotoUpload} disabled={isSaving}>
+          <Text className="text-primary">Foto wijzigen</Text>
+        </Pressable>
       </View>
 
       {showSavedToast && (

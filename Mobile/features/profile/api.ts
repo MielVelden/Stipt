@@ -5,6 +5,7 @@ export type UserProfile = {
   firstName: string
   lastName: string
   phone: string
+  profileImageId?: string | null
 }
 
 export async function getProfileAsync(): Promise<UserProfile> {
@@ -17,3 +18,9 @@ export async function updateProfileAsync(profile: UserProfile): Promise<UserProf
   return response.data
 }
 
+export async function uploadProfilePhotoAsync(file: FormData): Promise<UserProfile> {
+  const response = await apiClient.post<UserProfile>("/users/me/photo", file, {
+    headers: { "Content-Type": "multipart/form-data" },
+  })
+  return response.data
+}

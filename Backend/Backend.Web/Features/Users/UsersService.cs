@@ -16,7 +16,8 @@ public sealed class UsersService(UserManager<ApplicationUser> userManager)
             user.Email ?? string.Empty,
             user.FirstName,
             user.LastName,
-            user.PhoneNumber ?? string.Empty);
+            user.PhoneNumber ?? string.Empty,
+            user.ProfileImageId);
     }
 
     public async Task<(UserProfileRo? profile, IdentityResult? result)> UpdateProfileAsync(
@@ -51,8 +52,31 @@ public sealed class UsersService(UserManager<ApplicationUser> userManager)
             user.Email ?? string.Empty,
             user.FirstName,
             user.LastName,
-            user.PhoneNumber ?? string.Empty),
+            user.PhoneNumber ?? string.Empty,
+            user.ProfileImageId),
+            updateResult);
+    }
+
+    public async Task<(UserProfileRo? profile, IdentityResult? result)> UpdateProfileImageAsync(
+        string userId,
+        Guid imageId,
+        CancellationToken ct)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user is null)
+            return (null, null);
+
+        user.ProfileImageId = imageId;
+        var updateResult = await userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            return (null, updateResult);
+
+        return (new UserProfileRo(
+            user.Email ?? string.Empty,
+            user.FirstName,
+            user.LastName,
+            user.PhoneNumber ?? string.Empty,
+            user.ProfileImageId),
             updateResult);
     }
 }
-

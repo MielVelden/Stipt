@@ -29,7 +29,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "We hebben toegang nodig tot je fotobibliotheek om een profielfoto te kiezen."
+        }
+      ]
     ]
   }
 }
