@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, Image, ActivityIndicator, Modal, RefreshControl } from 'react-native';
+import { View, ScrollView, Image, Pressable, ActivityIndicator, Modal, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
@@ -238,10 +238,32 @@ export default function SessionDetailScreen() {
                             <Icon as={MapPin} className="text-muted-foreground" size={18} />
                             <Text variant="p" className="text-muted-foreground mt-0">{session.room.name}</Text>
                         </View>
-                        <View className="flex-row items-center gap-x-2">
-                            <Icon as={User} className="text-muted-foreground" size={18} />
-                            <Text variant="p" className="text-muted-foreground mt-0">{session.speakers.map(s => s.name).join(", ")}</Text>
-                        </View>
+                        {session.speakers.map((speaker) => (
+                            <Pressable
+                                key={speaker.id}
+                                onPress={() => router.push({ pathname: "/events/[eventId]/speakers/[id]", params: { eventId, id: speaker.id } })}
+                            >
+                                <View className="flex-row items-center gap-x-3">
+                                    {speaker.photoId ? (
+                                        <Image
+                                            source={{ uri: `${API_BASE_URL}/images/${speaker.photoId}` }}
+                                            className="h-10 w-10 rounded-full"
+                                            resizeMode="cover"
+                                        />
+                                    ) : (
+                                        <View className="h-10 w-10 rounded-full bg-slate-200 items-center justify-center">
+                                            <Icon as={User} size={20} className="text-slate-500" />
+                                        </View>
+                                    )}
+                                    <View>
+                                        <Text className="font-medium text-foreground">{speaker.name}</Text>
+                                        {speaker.title && (
+                                            <Text className="text-sm text-muted-foreground">{speaker.title}</Text>
+                                        )}
+                                    </View>
+                                </View>
+                            </Pressable>
+                        ))}
                     </View>
 
                     <View className="border-t border-border pt-4 gap-y-2">
