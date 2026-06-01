@@ -24,3 +24,8 @@ export async function uploadProfilePhotoAsync(file: FormData): Promise<UserProfi
   })
   return response.data
 }
+
+export async function deleteProfilePhotoAsync(): Promise<UserProfile> {
+  const response = await apiClient.delete<UserProfile>("/users/me/photo")
+  return response.data
+}

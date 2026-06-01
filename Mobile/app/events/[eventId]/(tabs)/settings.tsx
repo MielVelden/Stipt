@@ -1,247 +1,40 @@
-import { router } from "expo-router"
-import * as ImagePicker from "expo-image-picker"
-import { useEffect, useMemo, useState } from "react"
-import { Image, Pressable, ScrollView, TextInput, View } from "react-native"
+import {router, useGlobalSearchParams, useLocalSearchParams} from "expo-router"
+import { View } from "react-native"
 
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import { useAuth } from "@/lib/auth-context"
-import {
-  getProfileAsync,
-  updateProfileAsync,
-  uploadProfilePhotoAsync,
-  type UserProfile,
-} from "@/features/profile/api"
-import { API_BASE_URL } from "@/constants/api"
-
-const EMPTY_PROFILE: UserProfile = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  phone: "",
-  profileImageId: null,
-}
 
 export default function SettingsScreen() {
   const { logout } = useAuth()
-  const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE)
-  const [savedProfile, setSavedProfile] = useState<UserProfile>(EMPTY_PROFILE)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [showSavedToast, setShowSavedToast] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const isDirty = useMemo(() => {
-    return (
-      profile.firstName !== savedProfile.firstName ||
-      profile.lastName !== savedProfile.lastName ||
-      profile.email !== savedProfile.email ||
-      profile.phone !== savedProfile.phone
-    )
-  }, [profile, savedProfile])
-
-  useEffect(() => {
-    let isMounted = true
-
-    async function loadProfile() {
-      try {
-        const storedProfile = await getProfileAsync()
-        if (isMounted) {
-          setProfile(storedProfile)
-          setSavedProfile(storedProfile)
-          setError(null)
-        }
-      } catch {
-        if (isMounted) setError("Profielgegevens konden niet worden geladen.")
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    loadProfile()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!showSavedToast) return
-
-    const timer = setTimeout(() => {
-      setShowSavedToast(false)
-    }, 2000)
-
-    return () => clearTimeout(timer)
-  }, [showSavedToast])
-
-  async function handleSave() {
-    setIsSaving(true)
-    try {
-      const updatedProfile = await updateProfileAsync(profile)
-      setProfile(updatedProfile)
-      setSavedProfile(updatedProfile)
-      setShowSavedToast(true)
-      setError(null)
-    } catch {
-      setError("Profielgegevens konden niet worden opgeslagen.")
-    } finally {
-      setIsSaving(false)
-    }
-  }
+  const { eventId: rawEventId } = useGlobalSearchParams<{
+    eventId?: string | string[];
+  }>();
+  const eventId = Array.isArray(rawEventId) ? rawEventId[0] : rawEventId;
 
   async function handleLogout() {
     await logout()
     router.replace("/(auth)/login")
   }
 
-  async function handlePhotoUpload() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
-    if (status !== ImagePicker.PermissionStatus.GRANTED) {
-      setError("Toegang tot je fotobibliotheek is nodig om een profielfoto te kiezen.")
-      return
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.8,
-    })
-
-    if (result.canceled || !result.assets.length) return
-
-    const asset = result.assets[0]
-    const extension = asset.uri.split(".").pop() ?? "jpg"
-    const formData = new FormData()
-    formData.append("file", {
-      uri: asset.uri,
-      name: asset.fileName ?? `profile.${extension}`,
-      type: asset.mimeType ?? "image/jpeg",
-    } as any)
-
-    setIsSaving(true)
-    try {
-      const updatedProfile = await uploadProfilePhotoAsync(formData)
-      setProfile(updatedProfile)
-      setSavedProfile(updatedProfile)
-      setShowSavedToast(true)
-      setError(null)
-    } catch {
-      setError("Profielfoto kon niet worden geupload.")
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  function updateField<Key extends keyof UserProfile>(key: Key, value: UserProfile[Key]) {
-    setProfile((current) => ({ ...current, [key]: value }))
+  function handleProfileEdit() {
+    if (!eventId) return
+    router.push(`/events/${eventId}/profile`)
   }
 
   return (
-    <ScrollView
-      contentContainerClassName="flex-grow bg-background px-6 py-10"
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      <Text variant="h1" className="text-2xl text-left mb-6">
-        Profiel
-      </Text>
+    <View className="flex-1 bg-background px-6 py-12">
+      <Text variant="h1" className="text-2xl text-left mb-4">Instellingen</Text>
 
-      <View className="items-center mb-8">
-        <View className="h-24 w-24 rounded-full bg-muted items-center justify-center overflow-hidden">
-          {profile.profileImageId ? (
-            <Image
-              source={{ uri: `${API_BASE_URL}/images/${profile.profileImageId}` }}
-              className="h-24 w-24"
-              resizeMode="cover"
-            />
-          ) : (
-            <Text className="text-muted-foreground">Foto</Text>
-          )}
-        </View>
-        <Text className="text-xs text-muted-foreground mt-2">
-          Profielfoto (placeholder)
-        </Text>
-        <Pressable className="mt-3" onPress={handlePhotoUpload} disabled={isSaving}>
-          <Text className="text-primary">Foto wijzigen</Text>
-        </Pressable>
-      </View>
-
-      {showSavedToast && (
-        <View className="mb-4 rounded-md bg-emerald-100 px-3 py-2">
-          <Text className="text-emerald-800">Profiel bijgewerkt</Text>
-        </View>
-      )}
-
-      {error && (
-        <View className="mb-4 rounded-md bg-rose-100 px-3 py-2">
-          <Text className="text-rose-800">{error}</Text>
-        </View>
-      )}
-
-      <View className="gap-4">
-        <View>
-          <Text className="text-sm text-muted-foreground mb-1">Voornaam</Text>
-          <TextInput
-            className="rounded-md border border-border bg-background px-3 py-2 text-base text-foreground"
-            placeholder="Voornaam"
-            value={profile.firstName}
-            editable={!isLoading}
-            onChangeText={(value) => updateField("firstName", value)}
-          />
-        </View>
-
-        <View>
-          <Text className="text-sm text-muted-foreground mb-1">Achternaam</Text>
-          <TextInput
-            className="rounded-md border border-border bg-background px-3 py-2 text-base text-foreground"
-            placeholder="Achternaam"
-            value={profile.lastName}
-            editable={!isLoading}
-            onChangeText={(value) => updateField("lastName", value)}
-          />
-        </View>
-
-        <View>
-          <Text className="text-sm text-muted-foreground mb-1">E-mail</Text>
-          <TextInput
-            className="rounded-md border border-border bg-background px-3 py-2 text-base text-foreground"
-            placeholder="E-mail"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={profile.email}
-            editable={!isLoading}
-            onChangeText={(value) => updateField("email", value)}
-          />
-        </View>
-
-        <View>
-          <Text className="text-sm text-muted-foreground mb-1">Telefoonnummer</Text>
-          <TextInput
-            className="rounded-md border border-border bg-background px-3 py-2 text-base text-foreground"
-            placeholder="Telefoonnummer"
-            keyboardType="phone-pad"
-            value={profile.phone}
-            editable={!isLoading}
-            onChangeText={(value) => updateField("phone", value)}
-          />
-        </View>
-      </View>
-
-      <Button
-        variant="default"
-        className="mt-6"
-        disabled={!isDirty || isSaving || isLoading}
-        onPress={handleSave}
-      >
-        <Text>{isSaving ? "Opslaan..." : "Opslaan"}</Text>
+      <Button variant="outline" className="w-full" onPress={handleProfileEdit}>
+        <Text>Profiel bewerken</Text>
       </Button>
 
-      <View className="mt-auto pt-8">
-        <Button variant="outline" className="w-full" onPress={handleLogout}>
+      <View className="mt-auto">
+        <Button variant="default" className="w-full" onPress={handleLogout}>
           <Text>Uitloggen</Text>
         </Button>
       </View>
-    </ScrollView>
+    </View>
   )
 }

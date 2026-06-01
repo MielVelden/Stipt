@@ -84,6 +84,43 @@ public sealed class UsersController(UsersService usersService, IImagesService im
         return Ok(profile);
     }
 
+    [HttpDelete("me/photo")]
+    public async Task<ActionResult<UserProfileRo>> DeleteProfilePhoto(CancellationToken ct)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+            return Unauthorized();
+
+        var profile = await usersService.GetProfileAsync(userId, ct);
+        if (profile is null)
+            return NotFound();
+
+        if (profile.ProfileImageId is { } imageId)
+        {
+            var image = await imagesService.ReadAsync(imageId, ct);
+            if (image.UploadedByUserId is not null && image.UploadedByUserId.Value.ToString() != userId)
+                return Forbid();
+
+            await imagesService.DeleteAsync(imageId, ct);
+        }
+
+        var (updatedProfile, result) = await usersService.ClearProfileImageAsync(userId, ct);
+        if (result is null)
+            return NotFound();
+
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+
+            return ValidationProblem(ModelState);
+        }
+
+        return Ok(updatedProfile);
+    }
+
     private string? GetUserId()
     {
         return User.FindFirstValue(JwtRegisteredClaimNames.Sub)
