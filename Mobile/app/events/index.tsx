@@ -10,12 +10,14 @@ import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { CheckCircle, Plus } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { getPendingInviteTokenAsync, clearPendingInviteTokenAsync } from "@/lib/invite-storage";
 
 export default function EventsScreen() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [events, setEvents] = useState<EventRo[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [pendingToken, setPendingToken] = useState<string | undefined>(undefined);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const fetchEventsData = useCallback(async () => {
@@ -47,12 +49,22 @@ export default function EventsScreen() {
         };
     }, [fetchEventsData]);
 
+    useEffect(() => {
+        getPendingInviteTokenAsync().then((token) => {
+            if (!token) return;
+            clearPendingInviteTokenAsync();
+            setPendingToken(token);
+            setDialogOpen(true);
+        });
+    }, []);
+
     function handleClick(event: EventRo) {
         router.push(`/events/${event.id}/(tabs)/sessions`);
     }
 
     function handleRedeemSuccess() {
         setSuccessMessage("Evenement succesvol gekoppeld aan je account!");
+        setPendingToken(undefined);
         fetchEventsData();
 
         setTimeout(() => setSuccessMessage(null), 5000);
@@ -113,6 +125,7 @@ export default function EventsScreen() {
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 onSuccess={handleRedeemSuccess}
+                initialToken={pendingToken}
             />
         </View>
     );

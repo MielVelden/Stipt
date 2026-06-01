@@ -8,7 +8,7 @@ public class EventInviteTemplate(Event @event, string plainTextToken) : EmailTem
 
     protected override string RenderContent()
     {
-        var appLink = $"Mobile://event-invite/{@event.Id}?token={plainTextToken}"; // TODO: change app name / full url to work with accepting invite in app
+        var appLink = $"event-connect://invite?token={plainTextToken}";
         
         return $"""
         <h2 style="margin-top: 0; color: #222222; font-size: 24px;">Je bent uitgenodigd!</h2>

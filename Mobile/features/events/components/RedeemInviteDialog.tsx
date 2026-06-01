@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, TextInput, View } from "react-native";
 import axios from "axios";
 import {
@@ -27,15 +27,25 @@ interface RedeemInviteDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSuccess: () => void;
+    initialToken?: string;
 }
 
-export function RedeemInviteDialog({ open, onOpenChange, onSuccess }: RedeemInviteDialogProps) {
+export function RedeemInviteDialog({ open, onOpenChange, onSuccess, initialToken }: RedeemInviteDialogProps) {
     const [token, setToken] = useState("");
     const [state, setState] = useState<DialogState>({ step: "input" });
+    const hasAutoVerified = useRef(false);
+
+    useEffect(() => {
+        if (!open || !initialToken || hasAutoVerified.current) return;
+        hasAutoVerified.current = true;
+        setToken(initialToken);
+        verifyToken(initialToken);
+    }, [open, initialToken]);
 
     function reset() {
         setToken("");
         setState({ step: "input" });
+        hasAutoVerified.current = false;
     }
 
     function handleClose() {
@@ -43,19 +53,22 @@ export function RedeemInviteDialog({ open, onOpenChange, onSuccess }: RedeemInvi
         onOpenChange(false);
     }
 
-    async function handleVerify() {
-        const trimmed = token.trim();
-        if (!trimmed) return;
-
+    async function verifyToken(tokenValue: string) {
         setState({ step: "loading" });
 
         try {
-            const details = await getInviteDetails(trimmed);
+            const details = await getInviteDetails(tokenValue);
             setState({ step: "confirm", details });
         } catch (error) {
             const message = extractErrorMessage(error);
             setState({ step: "error", message });
         }
+    }
+
+    function handleVerify() {
+        const trimmed = token.trim();
+        if (!trimmed) return;
+        verifyToken(trimmed);
     }
 
     async function handleRedeem() {
