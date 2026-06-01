@@ -20,7 +20,6 @@ const EMPTY_PROFILE: UserProfile = {
   firstName: "",
   lastName: "",
   email: "",
-  phone: "",
   profileImageId: null,
 }
 
