@@ -7,5 +7,4 @@ public sealed record UserProfileRo(
     string Email,
     string FirstName,
     string LastName,
-    string Phone,
     Guid? ProfileImageId);

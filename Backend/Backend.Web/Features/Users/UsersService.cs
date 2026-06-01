@@ -16,7 +16,6 @@ public sealed class UsersService(UserManager<ApplicationUser> userManager)
             user.Email ?? string.Empty,
             user.FirstName,
             user.LastName,
-            user.PhoneNumber ?? string.Empty,
             user.ProfileImageId);
     }
 
@@ -29,20 +28,9 @@ public sealed class UsersService(UserManager<ApplicationUser> userManager)
         if (user is null)
             return (null, null);
 
-        if (!string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase))
-        {
-            var setEmailResult = await userManager.SetEmailAsync(user, request.Email);
-            if (!setEmailResult.Succeeded)
-                return (null, setEmailResult);
-
-            var setUserNameResult = await userManager.SetUserNameAsync(user, request.Email);
-            if (!setUserNameResult.Succeeded)
-                return (null, setUserNameResult);
-        }
 
         user.FirstName = request.FirstName.Trim();
         user.LastName = request.LastName.Trim();
-        user.PhoneNumber = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim();
 
         var updateResult = await userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
@@ -52,7 +40,6 @@ public sealed class UsersService(UserManager<ApplicationUser> userManager)
             user.Email ?? string.Empty,
             user.FirstName,
             user.LastName,
-            user.PhoneNumber ?? string.Empty,
             user.ProfileImageId),
             updateResult);
     }
@@ -75,7 +62,6 @@ public sealed class UsersService(UserManager<ApplicationUser> userManager)
             user.Email ?? string.Empty,
             user.FirstName,
             user.LastName,
-            user.PhoneNumber ?? string.Empty,
             user.ProfileImageId),
             updateResult);
     }
@@ -97,7 +83,6 @@ public sealed class UsersService(UserManager<ApplicationUser> userManager)
             user.Email ?? string.Empty,
             user.FirstName,
             user.LastName,
-            user.PhoneNumber ?? string.Empty,
             user.ProfileImageId),
             updateResult);
     }
