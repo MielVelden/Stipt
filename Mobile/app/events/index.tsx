@@ -7,8 +7,9 @@ import { Text } from "@/components/ui/text";
 import { EventCard } from "@/features/events/components/EventCard";
 import { RedeemInviteDialog } from "@/features/events/components/RedeemInviteDialog";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
-import { Plus } from "lucide-react-native";
+import { CheckCircle, Plus } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 
 export default function EventsScreen() {
     const [loading, setLoading] = useState(true);
@@ -71,9 +72,9 @@ export default function EventsScreen() {
                 </Text>
 
                 {successMessage && (
-                    <View className="bg-primary/10 border border-primary rounded-xl px-4 py-3 mb-4">
-                        <Text className="text-primary font-medium">{successMessage}</Text>
-                    </View>
+                    <Alert icon={CheckCircle} variant={"success"} className="mb-4">
+                        <AlertTitle>{successMessage}</AlertTitle>
+                    </Alert>
                 )}
 
                 {loading ? (
