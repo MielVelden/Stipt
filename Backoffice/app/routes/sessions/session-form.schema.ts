@@ -59,34 +59,30 @@ function addEventBoundsRefinement<T extends z.ZodTypeAny>(
   eventStartDate?: string,
   eventEndDate?: string
 ) {
-  return schema.superRefine(
-    (
-      data: { startDate: string; endDate: string },
-      ctx: z.RefinementCtx
-    ) => {
-      if (eventStartDate && data.startDate < eventStartDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: VALIDATION_MESSAGES.session.dateBeforeEventStart,
-          path: ["startDate"],
-        })
-      }
-      if (eventEndDate && data.startDate > eventEndDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
-          path: ["startDate"],
-        })
-      }
-      if (eventEndDate && data.endDate > eventEndDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
-          path: ["endDate"],
-        })
-      }
+  return schema.superRefine((data, ctx) => {
+    const { startDate, endDate } = data as { startDate: string; endDate: string }
+    if (eventStartDate && startDate < eventStartDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: VALIDATION_MESSAGES.session.dateBeforeEventStart,
+        path: ["startDate"],
+      })
     }
-  )
+    if (eventEndDate && startDate > eventEndDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
+        path: ["startDate"],
+      })
+    }
+    if (eventEndDate && endDate > eventEndDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
+        path: ["endDate"],
+      })
+    }
+  })
 }
 
 export function makeSessionCreateSchema(eventStartDate?: string, eventEndDate?: string) {
