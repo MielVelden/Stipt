@@ -6,7 +6,7 @@ using Resend;
 
 namespace Backend.Web.Features.Email;
 
-public class EmailService(IUserRepository userRepository, IResend emailClient)
+public class EmailService(IUserRepository userRepository, IResend emailClient, IConfiguration configuration)
 {
     const string SENDER = "EventConnect <eventconnect@stipt.slempers.nl>";
 
@@ -27,7 +27,8 @@ public class EmailService(IUserRepository userRepository, IResend emailClient)
 
     public async Task SendEventInviteAsync(string email, Event @event, string plainTextToken, CancellationToken ct)
     {
-        var template = new EventInviteTemplate(@event, plainTextToken);
+        var backofficeUrl = configuration.GetValue<string>("BackofficeUrl") ?? "http://localhost:5173";
+        var template = new EventInviteTemplate(@event, plainTextToken, backofficeUrl);
         
         var message = new EmailMessage
         {

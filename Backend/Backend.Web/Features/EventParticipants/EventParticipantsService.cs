@@ -199,4 +199,49 @@ public sealed class EventParticipantsService(
         var participants = await eventParticipantRepository.GetAllByUserIdAsync(userId, cancellationToken);
         return participants.Select(p => p.EventId).ToHashSet();
     }
+
+    public async Task<InviteDetailsRo> GetInviteDetailsAsync(string plainToken, string currentUserId, CancellationToken cancellationToken)
+    {
+        var (invite, isAlreadyLinked) = await ValidateAndGetInviteAsync(plainToken, currentUserId, cancellationToken);
+        var @event = await eventRepository.GetByIdAsync(invite.EventId, cancellationToken)
+                     ?? throw new ArgumentException("Event not found");
+
+        return new InviteDetailsRo(invite.EventId, @event.Name, isAlreadyLinked);
+    }
+
+    public async Task RedeemInviteAsync(string plainToken, string currentUserId, CancellationToken cancellationToken)
+    {
+        var (invite, isAlreadyLinked) = await ValidateAndGetInviteAsync(plainToken, currentUserId, cancellationToken);
+
+        if (!isAlreadyLinked)
+        {
+            var participant = new EventParticipant
+            {
+                EventId = invite.EventId,
+                UserId = currentUserId,
+                AcceptedAtUtc = DateTime.UtcNow,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+            await eventParticipantRepository.AddAsync(participant, cancellationToken);
+        }
+
+        await inviteTokenRepository.DeleteAsync(invite.Id, cancellationToken);
+    }
+
+    private async Task<(InviteToken Invite, bool IsAlreadyLinked)> ValidateAndGetInviteAsync(
+        string plainToken, string currentUserId, CancellationToken cancellationToken)
+    {
+        var hash = HashToken(plainToken);
+        var invite = await inviteTokenRepository.GetByTokenHashAsync(hash, cancellationToken)
+                     ?? throw new InviteNotFoundException();
+
+        if (invite.ExpiresAtUtc < DateTime.UtcNow)
+        {
+            await inviteTokenRepository.DeleteAsync(invite.Id, cancellationToken);
+            throw new InviteExpiredException();
+        }
+
+        var isAlreadyLinked = await eventParticipantRepository.ExistsAsync(invite.EventId, currentUserId, cancellationToken);
+        return (invite, isAlreadyLinked);
+    }
 }

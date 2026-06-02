@@ -1,16 +1,23 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ActivityIndicator, View } from "react-native";
-import { useRouter, useSegments } from "expo-router";
+import { useRouter, useSegments, useGlobalSearchParams } from "expo-router";
 import { useAuth } from "@/lib/auth-context";
 
 export function NavigationGuard({ children }: { children: ReactNode }) {
     const { isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
     const segments = useSegments();
+    const params = useGlobalSearchParams<{ token?: string }>();
+    const { setPendingInviteToken } = useAuth();
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
         if (isLoading) return;
+
+        if (params.token) {
+            setPendingInviteToken(params.token);
+            router.setParams({ token: "" });
+        }
 
         const inAuthGroup = segments[0] === "(auth)";
         const inEventsGroup = segments[0] === "events";
@@ -24,7 +31,7 @@ export function NavigationGuard({ children }: { children: ReactNode }) {
         }
 
         setIsReady(true);
-    }, [isAuthenticated, isLoading, segments]);
+    }, [isAuthenticated, isLoading, segments, params.token, setPendingInviteToken]);
 
     if (!isReady || isLoading) {
         return (
