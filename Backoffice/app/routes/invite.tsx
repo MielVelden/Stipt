@@ -28,7 +28,8 @@ export default function InviteRoute() {
         )
     }
 
-    const appLink = `exp://192.168.2.36:8081/--/?token=${token}` // TODO: Replace with actual app link
+    const appLinkBase = import.meta.env.VITE_MOBILE_APP_LINK_BASE ?? "event-connect://"
+    const appLink = `${appLinkBase}?token=${encodeURIComponent(token)}`
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
