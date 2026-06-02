@@ -25,7 +25,7 @@ public class EventInviteTemplate(Event @event, string plainTextToken, string bac
         </div>
 
         <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
-            <a href="{appLink}" style="background-color: #007bff; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: bold; display: inline-block;">
+            <a href="{appLink}" target="_blank" rel="noopener noreferrer" style="background-color: #007bff; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: bold; display: inline-block;">
                 Uitnodiging accepteren
             </a>
         </div>
