@@ -3,6 +3,9 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-export interface UploadImageRo {
-  imageId: string;
+export interface UserProfileRo {
+  email: string;
+  firstName: string;
+  lastName: string;
+  profileImageId: string | undefined;
 }
