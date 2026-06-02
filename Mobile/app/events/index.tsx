@@ -10,14 +10,14 @@ import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { CheckCircle, Plus } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { getPendingInviteTokenAsync, clearPendingInviteTokenAsync } from "@/lib/invite-storage";
+import { useAuth } from "@/lib/auth-context";
 
 export default function EventsScreen() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [events, setEvents] = useState<EventRo[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [pendingToken, setPendingToken] = useState<string | undefined>(undefined);
+    const { pendingInviteToken, setPendingInviteToken } = useAuth();
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const fetchEventsData = useCallback(async () => {
@@ -50,13 +50,10 @@ export default function EventsScreen() {
     }, [fetchEventsData]);
 
     useEffect(() => {
-        getPendingInviteTokenAsync().then((token) => {
-            if (!token) return;
-            clearPendingInviteTokenAsync();
-            setPendingToken(token);
+        if (pendingInviteToken) {
             setDialogOpen(true);
-        });
-    }, []);
+        }
+    }, [pendingInviteToken]);
 
     function handleClick(event: EventRo) {
         router.push(`/events/${event.id}/(tabs)/sessions`);
@@ -64,7 +61,7 @@ export default function EventsScreen() {
 
     function handleRedeemSuccess() {
         setSuccessMessage("Evenement succesvol gekoppeld aan je account!");
-        setPendingToken(undefined);
+        setPendingInviteToken(null);
         fetchEventsData();
 
         setTimeout(() => setSuccessMessage(null), 5000);
@@ -123,9 +120,12 @@ export default function EventsScreen() {
 
             <RedeemInviteDialog
                 open={dialogOpen}
-                onOpenChange={setDialogOpen}
+                onOpenChange={(open) => {
+                    setDialogOpen(open);
+                    if (!open) setPendingInviteToken(null);
+                }}
                 onSuccess={handleRedeemSuccess}
-                initialToken={pendingToken}
+                initialToken={pendingInviteToken ?? undefined}
             />
         </View>
     );

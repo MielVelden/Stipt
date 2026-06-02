@@ -4,13 +4,11 @@ import { PortalHost } from "@rn-primitives/portal";
 import { AuthProvider } from "@/lib/auth-context";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { NavigationGuard } from "@/components/NavigationGuard";
-import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 
 export default function RootLayout() {
     return (
         <SafeAreaProvider>
             <AuthProvider>
-                <DeepLinkHandler />
                 <SafeAreaView
                     style={{ flex: 1 }}
                     edges={["top", "left", "right"]}
