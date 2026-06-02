@@ -147,7 +147,7 @@ internal static class InitialDataSeeder
             {
                 PrimaryBackgroundColor = "#111827",
                 PrimaryForegroundColor = "#F9FAFB",
-                LogoImageUrl = null
+                LogoImageId = null
             },
             IsArchived = false,
             CreatedAtUtc = new DateTime(2026, 3, 20, 12, 0, 0, DateTimeKind.Utc)
@@ -243,7 +243,7 @@ internal static class InitialDataSeeder
                 {
                     PrimaryBackgroundColor = "#0F172A",
                     PrimaryForegroundColor = "#E2E8F0",
-                    LogoImageUrl = null
+                    LogoImageId = null
                 },
                 IsArchived = false,
                 CreatedAtUtc = new DateTime(2026, 4, 1, 9, 0, 0, DateTimeKind.Utc)

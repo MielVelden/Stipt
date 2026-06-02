@@ -6,6 +6,7 @@ using Backend.Web.Features.Events;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Rooms;
 using Backend.Web.Features.Sessions;
+using Backend.Web.Features.Images;
 using FluentValidation;
 using NodaTime;
 
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<SessionsService>();
         services.AddScoped<EmailService>();
+        services.AddScoped<IImagesService, ImageStorageService>();
         services.AddScoped<EventParticipantAuthorizationFilter>();
         services.AddSingleton<IClock>(SystemClock.Instance);
 

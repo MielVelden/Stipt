@@ -7,6 +7,7 @@ import { formatDateTimeRange } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_BASE_URL } from "@/constants/api";
 
 const LOGO_HEIGHT = 40;
 
@@ -23,7 +24,8 @@ export function EventCard({ event, onPress, className }: EventCardProps) {
     } | null>(null);
     const [isLogoLoading, setIsLogoLoading] = useState(true);
 
-    const logoImageUrl = event.style?.logoImageUrl;
+    const logoImageId = event.style?.logoImageId;
+    const logoImageUrl = logoImageId ? `${API_BASE_URL}/images/${logoImageId}` : undefined;
 
     useEffect(() => {
         setLogoSize(null);

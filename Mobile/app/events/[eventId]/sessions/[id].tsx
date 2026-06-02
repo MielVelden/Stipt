@@ -4,7 +4,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isAxiosError } from 'axios';
 import { CheckCircle, ChevronLeft, MapPin, User, Users } from 'lucide-react-native';
 import { formatDateTime, formatTime } from '@/lib/utils';
+import { API_BASE_URL } from '@/constants/api';
 import { enrollSession, getSessionById, replaceSession, unenrollSession } from '@/features/sessions/api';
+import { getEventById } from '@/features/events/api';
+import { EventRo } from '@/generated-types/event-ro';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
@@ -27,6 +30,7 @@ export default function SessionDetailScreen() {
     const sessionId = Array.isArray(rawSessionId) ? rawSessionId[0] : rawSessionId;
     const router = useRouter();
     const [session, setSession] = useState<SessionRo | null>(null);
+    const [event, setEvent] = useState<EventRo | null>(null);
     const [loading, setLoading] = useState(false);
     const [loadingEnrollment, setLoadingEnrollment] = useState(false);
     const [showConflictModal, setShowConflictModal] = useState(false);
@@ -77,9 +81,15 @@ export default function SessionDetailScreen() {
         let isMounted = true;
         setLoading(true);
 
-        fetchSessionData()
-            .then((data) => {
-                if (isMounted) setSession(data);
+        Promise.all([
+            fetchSessionData(),
+            getEventById(eventId),
+        ])
+            .then(([sessionData, eventData]) => {
+                if (isMounted) {
+                    setSession(sessionData);
+                    setEvent(eventData);
+                }
             })
             .catch(() => {
                 if (isMounted) setSession(null);
@@ -173,11 +183,19 @@ export default function SessionDetailScreen() {
             >
                 {/* Header Image & Back Button */}
                 <View className="relative h-64 w-full">
-                    <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2' }}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                    />
+                    {session.coverImageId ? (
+                        <Image
+                            source={{ uri: `${API_BASE_URL}/images/${session.coverImageId}` }}
+                            className="h-full w-full"
+                            resizeMode="cover"
+                        />
+                    ) : (
+                        <Image
+                            source={{ uri: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2' }}
+                            className="h-full w-full"
+                            resizeMode="cover"
+                        />
+                    )}
                     <Button
                         variant="ghost"
                         size="icon"
@@ -186,6 +204,14 @@ export default function SessionDetailScreen() {
                     >
                         <Icon as={ChevronLeft} className="text-white" size={24} />
                     </Button>
+                    {event?.style?.logoImageId && (
+                        <Image
+                            source={{ uri: `${API_BASE_URL}/images/${event.style.logoImageId}` }}
+                            className="absolute right-4 top-12 rounded"
+                            style={{ height: 36, width: 96 }}
+                            resizeMode="contain"
+                        />
+                    )}
                 </View>
 
                 {/* Content */}

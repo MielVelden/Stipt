@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514080027_AddImageSupport")]
+    partial class AddImageSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,56 +139,18 @@ namespace Backend.Database.Migrations
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AcceptedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("EventId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("event_participants", (string)null);
-                });
-
-            modelBuilder.Entity("Backend.Database.Entities.EventParticipants.InviteToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
 
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ExpiresAtUtc")
+                    b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                    b.HasKey("EventId", "Email");
 
-                    b.HasKey("Id");
+                    b.HasIndex("Email");
 
-                    b.HasIndex("TokenHash")
-                        .IsUnique();
-
-                    b.HasIndex("EventId", "Email")
-                        .IsUnique();
-
-                    b.ToTable("invite_tokens", (string)null);
+                    b.ToTable("event_participants", (string)null);
                 });
 
             modelBuilder.Entity("Backend.Database.Entities.Events.Event", b =>
@@ -574,25 +539,6 @@ namespace Backend.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Database.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Backend.Database.Entities.EventParticipants.InviteToken", b =>
-                {
-                    b.HasOne("Backend.Database.Entities.Events.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Event");
                 });
 
@@ -603,9 +549,10 @@ namespace Backend.Database.Migrations
                             b1.Property<Guid>("EventId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<Guid?>("LogoImageId")
-                                .HasColumnType("uuid")
-                                .HasColumnName("style_logo_image_id");
+                            b1.Property<string>("LogoImageUrl")
+                                .HasMaxLength(2000)
+                                .HasColumnType("character varying(2000)")
+                                .HasColumnName("style_logo_image_url");
 
                             b1.Property<string>("PrimaryBackgroundColor")
                                 .IsRequired()
@@ -621,19 +568,10 @@ namespace Backend.Database.Migrations
 
                             b1.HasKey("EventId");
 
-                            b1.HasIndex("LogoImageId");
-
                             b1.ToTable("events");
 
                             b1.WithOwner()
                                 .HasForeignKey("EventId");
-
-                            b1.HasOne("Backend.Database.Entities.Images.Image", "LogoImage")
-                                .WithMany()
-                                .HasForeignKey("LogoImageId")
-                                .OnDelete(DeleteBehavior.SetNull);
-
-                            b1.Navigation("LogoImage");
                         });
 
                     b.Navigation("Style")

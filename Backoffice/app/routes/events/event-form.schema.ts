@@ -11,7 +11,7 @@ const eventBaseObjectSchema = z.object({
   endDate: z.string().min(1, VALIDATION_MESSAGES.required),
   primaryBackgroundColor: z.string().min(1, VALIDATION_MESSAGES.required),
   primaryForegroundColor: z.string().min(1, VALIDATION_MESSAGES.required),
-  logoImageUrl: z.string().optional(),
+  logoImageId: z.string().optional(),
 })
 
 const dateRefine = {
@@ -39,7 +39,7 @@ export const eventCreateDefaultValues: EventCreateFormValues = {
   endDate: "",
   primaryBackgroundColor: "#2b7fff",
   primaryForegroundColor: "#ffffff",
-  logoImageUrl: "",
+  logoImageId: undefined,
 }
 
 export function mapEventToEditFormValues(event: EventRo): EventEditFormValues {
@@ -51,7 +51,7 @@ export function mapEventToEditFormValues(event: EventRo): EventEditFormValues {
     endDate: event.endDate,
     primaryBackgroundColor: event.style.primaryBackgroundColor,
     primaryForegroundColor: event.style.primaryForegroundColor,
-    logoImageUrl: event.style.logoImageUrl ?? "",
+    logoImageId: event.style.logoImageId,
   }
 }
 
@@ -66,7 +66,7 @@ export function mapFormValuesToEventPayload(
     style: {
       primaryBackgroundColor: values.primaryBackgroundColor,
       primaryForegroundColor: values.primaryForegroundColor,
-      logoImageUrl: values.logoImageUrl || undefined,
+      logoImageId: values.logoImageId || undefined,
     },
   }
 }

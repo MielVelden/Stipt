@@ -37,8 +37,6 @@ public sealed class CreateEventStyleDtoValidator : AbstractValidator<CreateEvent
             .NotEmpty()
             .Length(7);
 
-        RuleFor(x => x.LogoImageUrl)
-            .MaximumLength(2000);
     }
 }
 

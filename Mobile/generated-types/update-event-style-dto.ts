@@ -6,5 +6,5 @@
 export interface UpdateEventStyleDto {
   primaryBackgroundColor: string;
   primaryForegroundColor: string;
-  logoImageUrl: string | undefined;
+  logoImageId: string | undefined;
 }
