@@ -4,19 +4,19 @@ import { useRouter, useSegments, useGlobalSearchParams } from "expo-router";
 import { useAuth } from "@/lib/auth-context";
 
 export function NavigationGuard({ children }: { children: ReactNode }) {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, setPendingInviteToken } = useAuth();
     const router = useRouter();
     const segments = useSegments();
-    const params = useGlobalSearchParams<{ token?: string }>();
-    const { setPendingInviteToken } = useAuth();
+    const params = useGlobalSearchParams<{ token?: string | string[] }>();
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
         if (isLoading) return;
 
         if (params.token) {
-            setPendingInviteToken(params.token);
-            router.setParams({ token: "" });
+            const tokenValue = Array.isArray(params.token) ? params.token[0] : params.token;
+            setPendingInviteToken(tokenValue);
+            router.setParams({ token: undefined });
         }
 
         const inAuthGroup = segments[0] === "(auth)";

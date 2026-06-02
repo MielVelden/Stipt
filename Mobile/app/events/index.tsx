@@ -59,12 +59,20 @@ export default function EventsScreen() {
         router.push(`/events/${event.id}/(tabs)/sessions`);
     }
 
+    useEffect(() => {
+        if (!successMessage) return;
+
+        const timer = setTimeout(() => {
+            setSuccessMessage(null);
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [successMessage]);
+
     function handleRedeemSuccess() {
         setSuccessMessage("Evenement succesvol gekoppeld aan je account!");
         setPendingInviteToken(null);
         fetchEventsData();
-
-        setTimeout(() => setSuccessMessage(null), 5000);
     }
 
     return (

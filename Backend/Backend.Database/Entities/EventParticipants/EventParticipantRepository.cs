@@ -69,6 +69,6 @@ internal sealed class EventParticipantRepository(ApplicationDbContext dbContext)
     {
         return dbContext.EventParticipants
             .AsNoTracking()
-            .AnyAsync(x => x.EventId == eventId && x.User.Email == email, cancellationToken);
+            .AnyAsync(x => x.EventId == eventId && x.User.Email.ToLower() == email.ToLower(), cancellationToken);
     }
 }
