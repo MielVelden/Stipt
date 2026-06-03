@@ -11,7 +11,7 @@ public sealed record SessionRo(
     string Title,
     string? Description,
     SessionType Type,
-    string Speaker,
+    IReadOnlyCollection<SessionSpeakerRo> Speakers,
     Guid RoomId,
     SessionRoomRo Room,
     Guid EventId,
@@ -28,10 +28,16 @@ public sealed record SessionRo(
     SessionEnrollmentStatus? MyEnrollmentStatus = null,
     int? MyWaitlistPosition = null,
     Guid? CoverImageId = null);
-    
 
 [ExportTsInterface]
 public sealed record SessionRoomRo(
     Guid Id,
     string Name,
     int Capacity);
+
+[ExportTsInterface]
+public sealed record SessionSpeakerRo(
+    Guid Id,
+    string Name,
+    string? Title,
+    Guid? PhotoId);

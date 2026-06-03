@@ -3,6 +3,7 @@ using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.Speakers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -30,6 +31,14 @@ internal static class InitialDataSeeder
     private static readonly Guid OverlapSessionAId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850111");
     private static readonly Guid OverlapSessionBId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850112");
     private static readonly Guid WaitlistSessionId = Guid.Parse("f1f32d97-4a28-47fd-bf3c-c7b90c850113");
+
+    private static readonly Guid AvaThompsonId = Guid.Parse("a0000001-0000-0000-0000-000000000001");
+    private static readonly Guid LiamCarterId = Guid.Parse("a0000001-0000-0000-0000-000000000002");
+    private static readonly Guid NoahDeVriesId = Guid.Parse("a0000001-0000-0000-0000-000000000003");
+
+    private static readonly Guid SeedSpeakerAId = Guid.Parse("a0000002-0000-0000-0000-000000000001");
+    private static readonly Guid SeedSpeakerBId = Guid.Parse("a0000002-0000-0000-0000-000000000002");
+    private static readonly Guid SeedSpeakerCId = Guid.Parse("a0000002-0000-0000-0000-000000000003");
 
     public static async Task SeedAsync(ApplicationDbContext dbContext, IConfiguration configuration, CancellationToken cancellationToken = default)
     {
@@ -176,6 +185,11 @@ internal static class InitialDataSeeder
                 EventId = MainEventId
             });
 
+        var avaThompson = new Speaker { Id = AvaThompsonId, Name = "Ava Thompson", EventId = MainEventId, CreatedAtUtc = new DateTime(2026, 3, 20, 12, 4, 0, DateTimeKind.Utc) };
+        var liamCarter = new Speaker { Id = LiamCarterId, Name = "Liam Carter", EventId = MainEventId, CreatedAtUtc = new DateTime(2026, 3, 20, 12, 4, 0, DateTimeKind.Utc) };
+        var noahDeVries = new Speaker { Id = NoahDeVriesId, Name = "Noah de Vries", EventId = MainEventId, CreatedAtUtc = new DateTime(2026, 3, 20, 12, 4, 0, DateTimeKind.Utc) };
+        dbContext.Speakers.AddRange(avaThompson, liamCarter, noahDeVries);
+
         dbContext.Sessions.AddRange(
             new Session
             {
@@ -183,7 +197,7 @@ internal static class InitialDataSeeder
                 Title = "Keynote: Building Reliable APIs",
                 Description = "Patterns and trade-offs for resilient web APIs.",
                 Type = SessionType.Keynote,
-                Speaker = "Ava Thompson",
+                Speakers = [avaThompson],
                 RoomId = MainHallId,
                 EventId = MainEventId,
                 StartDateTime = new LocalDateTime(2026, 4, 20, 9, 0, 0),
@@ -198,7 +212,7 @@ internal static class InitialDataSeeder
                 Title = "Hands-on: EF Core 10",
                 Description = "Practical modeling, performance, and migrations.",
                 Type = SessionType.Breakout,
-                Speaker = "Liam Carter",
+                Speakers = [liamCarter],
                 RoomId = WorkshopARoomId,
                 EventId = MainEventId,
                 StartDateTime = new LocalDateTime(2026, 4, 20, 10, 30, 0),
@@ -213,7 +227,7 @@ internal static class InitialDataSeeder
                 Title = "Workshop: React Router in Production",
                 Description = "Routing and data APIs for complex frontends.",
                 Type = SessionType.Breakout,
-                Speaker = "Noah de Vries",
+                Speakers = [noahDeVries],
                 RoomId = WorkshopBRoomId,
                 EventId = MainEventId,
                 StartDateTime = new LocalDateTime(2026, 4, 20, 13, 30, 0),
@@ -272,6 +286,11 @@ internal static class InitialDataSeeder
                     EventId = TestEventId
                 });
 
+            var seedSpeakerA = new Speaker { Id = SeedSpeakerAId, Name = "Seed Speaker A", EventId = TestEventId, CreatedAtUtc = new DateTime(2026, 4, 1, 9, 4, 0, DateTimeKind.Utc) };
+            var seedSpeakerB = new Speaker { Id = SeedSpeakerBId, Name = "Seed Speaker B", EventId = TestEventId, CreatedAtUtc = new DateTime(2026, 4, 1, 9, 4, 0, DateTimeKind.Utc) };
+            var seedSpeakerC = new Speaker { Id = SeedSpeakerCId, Name = "Seed Speaker C", EventId = TestEventId, CreatedAtUtc = new DateTime(2026, 4, 1, 9, 4, 0, DateTimeKind.Utc) };
+            dbContext.Speakers.AddRange(seedSpeakerA, seedSpeakerB, seedSpeakerC);
+
             dbContext.Sessions.AddRange(
                 new Session
                 {
@@ -279,7 +298,7 @@ internal static class InitialDataSeeder
                     Title = "Test Overlap Session A",
                     Description = "Overlaps with session B for conflict and replacement tests.",
                     Type = SessionType.Breakout,
-                    Speaker = "Seed Speaker A",
+                    Speakers = [seedSpeakerA],
                     RoomId = TestRoomAId,
                     EventId = TestEventId,
                     StartDateTime = new LocalDateTime(2026, 5, 15, 10, 0, 0),
@@ -294,7 +313,7 @@ internal static class InitialDataSeeder
                     Title = "Test Overlap Session B",
                     Description = "Overlaps with session A for conflict and replacement tests.",
                     Type = SessionType.Breakout,
-                    Speaker = "Seed Speaker B",
+                    Speakers = [seedSpeakerB],
                     RoomId = TestRoomBId,
                     EventId = TestEventId,
                     StartDateTime = new LocalDateTime(2026, 5, 15, 10, 30, 0),
@@ -309,7 +328,7 @@ internal static class InitialDataSeeder
                     Title = "Test Waitlist Session",
                     Description = "Session with full capacity and waiting list entries.",
                     Type = SessionType.Breakout,
-                    Speaker = "Seed Speaker C",
+                    Speakers = [seedSpeakerC],
                     RoomId = TestRoomCId,
                     EventId = TestEventId,
                     StartDateTime = new LocalDateTime(2026, 5, 15, 12, 0, 0),

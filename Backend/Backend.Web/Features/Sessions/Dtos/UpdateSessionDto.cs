@@ -9,11 +9,11 @@ public sealed record UpdateSessionDto(
     string Title,
     string? Description,
     SessionType Type,
-    string Speaker,
     Guid RoomId,
     LocalDateTime StartDateTime,
     LocalDateTime EndDateTime,
     int? Capacity,
     List<string> Labels,
+    List<Guid>? SpeakerIds = null,
     Guid? CoverImageId = null);
 
