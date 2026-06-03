@@ -22,11 +22,19 @@ public class EmailService(IUserRepository userRepository, IResend emailClient, I
             Subject = template.Subject,
             HtmlBody = template.RenderHtml()
         };
-        await emailClient.EmailSendAsync(message, ct);
+
+        try
+        {
+            await emailClient.EmailSendAsync(message, ct);
+        }
+        catch (Exception)
+        {
+            throw new Exception($"Failed to send email");
+        }
     }
 
     public async Task SendEventInviteAsync(string email, Event @event, string plainTextToken, CancellationToken ct)
-    {
+    {        
         var backofficeUrl = configuration.GetValue<string>("BackofficeUrl") ?? "http://localhost:5173";
         var template = new EventInviteTemplate(@event, plainTextToken, backofficeUrl);
         
@@ -37,6 +45,14 @@ public class EmailService(IUserRepository userRepository, IResend emailClient, I
             Subject = template.Subject,
             HtmlBody = template.RenderHtml()
         };
-        await emailClient.EmailSendAsync(message, ct);
+
+        try
+        {
+            await emailClient.EmailSendAsync(message, ct);
+        }
+        catch (Exception)
+        {
+            throw new Exception($"Failed to send email");
+        }
     }
 }

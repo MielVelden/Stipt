@@ -54,6 +54,8 @@ public sealed class EventParticipantsService(
             ExpiresAtUtc = DateTime.UtcNow.AddDays(14)
         };
 
+        await emailService.SendEventInviteAsync(normalizedEmail, @event, plainTextToken, cancellationToken);
+
         try
         {
             await inviteTokenRepository.AddAsync(inviteToken, cancellationToken);
@@ -62,8 +64,6 @@ public sealed class EventParticipantsService(
         {
             throw new DuplicateParticipantException();
         }
-
-        await emailService.SendEventInviteAsync(normalizedEmail, @event, plainTextToken, cancellationToken);
 
         return inviteToken.ToRo();
     }
