@@ -1,5 +1,6 @@
-import { useState, useRef, type ReactNode } from "react"
+import { useState, useRef, useMemo, useEffect, type ReactNode } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { parse, isValid } from "date-fns"
 import { Controller, useForm } from "react-hook-form"
 import { Link } from "react-router"
 import { Loader2, XIcon, ImageIcon } from "lucide-react"
@@ -41,8 +42,8 @@ import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import { SessionType } from "~/generated-types/session-type"
 import { SpeakerMultiSelect } from "~/components/speaker-multi-select"
 import {
-  sessionCreateSchema,
-  sessionEditSchema,
+  makeSessionCreateSchema,
+  makeSessionEditSchema,
   type SessionCreateFormValues,
   type SessionEditFormValues,
   type SessionFormValues,
@@ -56,6 +57,8 @@ type CreateSessionFormProps = {
   defaultValues: SessionCreateFormValues
   cancelTo: string
   submitLabel?: string
+  eventStartDate?: string
+  eventEndDate?: string
   onSubmit: (data: SessionCreateFormValues) => Promise<void>
 }
 
@@ -68,6 +71,8 @@ type EditSessionFormProps = {
   cancelTo: string
   submitLabel?: string
   leadingAction?: ReactNode
+  eventStartDate?: string
+  eventEndDate?: string
   onSubmit: (data: SessionEditFormValues) => Promise<void>
 }
 
@@ -86,12 +91,43 @@ export function SessionForm(props: SessionFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const leadingAction = props.mode === "edit" ? props.leadingAction : undefined
 
+  const schema = useMemo(
+    () =>
+      props.mode === "create"
+        ? makeSessionCreateSchema(props.eventStartDate, props.eventEndDate)
+        : makeSessionEditSchema(props.eventStartDate, props.eventEndDate),
+    [props.mode, props.eventStartDate, props.eventEndDate]
+  )
+
+  const eventMinDate = useMemo(
+    () =>
+      props.eventStartDate
+        ? parse(props.eventStartDate, "yyyy-MM-dd", new Date())
+        : undefined,
+    [props.eventStartDate]
+  )
+  const eventMaxDate = useMemo(
+    () =>
+      props.eventEndDate
+        ? parse(props.eventEndDate, "yyyy-MM-dd", new Date())
+        : undefined,
+    [props.eventEndDate]
+  )
+  const eventDefaultMonth = useMemo(
+    () => (eventMinDate && isValid(eventMinDate) ? eventMinDate : undefined),
+    [eventMinDate]
+  )
+
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(
-      props.mode === "create" ? sessionCreateSchema : sessionEditSchema
-    ),
+    resolver: zodResolver(schema),
     defaultValues: props.defaultValues,
   })
+
+  useEffect(() => {
+    if (props.mode === "edit" && (props.eventStartDate || props.eventEndDate)) {
+      form.trigger(["startDate", "endDate"])
+    }
+  }, [])
 
   const currentLabels = form.watch("labels") ?? []
 
@@ -335,6 +371,9 @@ export function SessionForm(props: SessionFormProps) {
                   onBlur={field.onBlur}
                   disabled={field.disabled}
                   aria-invalid={fieldState.invalid}
+                  minDate={eventMinDate}
+                  maxDate={eventMaxDate}
+                  defaultMonth={eventDefaultMonth}
                 />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -373,6 +412,9 @@ export function SessionForm(props: SessionFormProps) {
                   onBlur={field.onBlur}
                   disabled={field.disabled}
                   aria-invalid={fieldState.invalid}
+                  minDate={eventMinDate}
+                  maxDate={eventMaxDate}
+                  defaultMonth={eventDefaultMonth}
                 />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>

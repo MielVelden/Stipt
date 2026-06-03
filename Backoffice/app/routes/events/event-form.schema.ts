@@ -47,8 +47,8 @@ export function mapEventToEditFormValues(event: EventRo): EventEditFormValues {
     id: event.id,
     name: event.name,
     location: event.location,
-    startDate: event.startDate,
-    endDate: event.endDate,
+    startDate: event.startDate.substring(0, 10),
+    endDate: event.endDate.substring(0, 10),
     primaryBackgroundColor: event.style.primaryBackgroundColor,
     primaryForegroundColor: event.style.primaryForegroundColor,
     logoImageId: event.style.logoImageId,
@@ -61,8 +61,8 @@ export function mapFormValuesToEventPayload(
   return {
     name: values.name,
     location: values.location,
-    startDate: values.startDate,
-    endDate: values.endDate,
+    startDate: `${values.startDate}T00:00:00`,
+    endDate: `${values.endDate}T00:00:00`,
     style: {
       primaryBackgroundColor: values.primaryBackgroundColor,
       primaryForegroundColor: values.primaryForegroundColor,
