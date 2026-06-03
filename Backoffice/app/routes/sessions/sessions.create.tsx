@@ -20,6 +20,7 @@ import {
 import type { CreateSessionDto } from "~/generated-types/create-session-dto"
 import type { RoomRo } from "~/generated-types/room-ro"
 import type { EventRo } from "~/generated-types/event-ro"
+import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import { SessionForm } from "./session-form"
 import { getApiErrorDetail } from "~/lib/utils"
 
@@ -30,17 +31,24 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const [roomsResponse, eventResponse] = await Promise.all([
+    const [roomsResponse, eventResponse, speakersResponse] = await Promise.all([
       apiClient.get<RoomRo[]>(`/events/${eventId}/rooms`),
       apiClient.get<EventRo>(`/events/${eventId}`),
+      apiClient.get<SpeakerRo[]>(`/events/${eventId}/speakers`),
     ])
-    return { rooms: roomsResponse.data, event: eventResponse.data }
+    return {
+      rooms: roomsResponse.data,
+      event: eventResponse.data,
+      speakers: speakersResponse.data,
+    }
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
   }
 }
 
-export default function Page({ loaderData: { rooms, event } }: Route.ComponentProps) {
+export default function Page({
+  loaderData: { rooms, speakers, event },
+}: Route.ComponentProps) {
   const { eventBaseUrl } = useAppContext()
   const navigate = useNavigate()
   const { eventId } = useParams()
@@ -87,6 +95,7 @@ export default function Page({ loaderData: { rooms, event } }: Route.ComponentPr
           mode="create"
           formId="form-session-create"
           rooms={rooms}
+          speakers={speakers}
           defaultValues={defaultValues}
           cancelTo={`${eventBaseUrl}/sessies/`}
           eventStartDate={eventStartDate}

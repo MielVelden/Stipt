@@ -6,7 +6,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar"
-import { LayoutDashboardIcon, SplitIcon, DoorOpenIcon, UsersIcon } from "lucide-react"
+import { LayoutDashboardIcon, SplitIcon, DoorOpenIcon, UsersIcon, MicIcon } from "lucide-react"
 import { Link } from "react-router"
 import { useAppContext } from "~/contexts/app-context"
 
@@ -30,6 +30,11 @@ const eventBasedItems = [
     title: "Ruimtes",
     url: `/ruimtes`,
     icon: <DoorOpenIcon />,
+  },
+  {
+    title: "Sprekers",
+    url: `/sprekers`,
+    icon: <MicIcon />,
   },
 ]
 

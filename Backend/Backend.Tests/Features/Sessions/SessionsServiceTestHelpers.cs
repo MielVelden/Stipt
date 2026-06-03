@@ -2,6 +2,7 @@ using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.Speakers;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions;
 using NodaTime;
@@ -22,6 +23,7 @@ internal static class SessionsServiceTestHelpers
             enrollmentRepository,
             Substitute.For<IRoomRepository>(),
             Substitute.For<IEventRepository>(),
+            Substitute.For<ISpeakerRepository>(),
             notificationService ?? Substitute.For<INotificationService>(),
             Substitute.For<IHubContext<SessionsHub>>());
     }
@@ -41,7 +43,6 @@ internal static class SessionsServiceTestHelpers
                 EventId = eventId
             },
             Title = "Session",
-            Speaker = "Speaker",
             Type = SessionType.Breakout,
             StartDateTime = new LocalDateTime(2026, 4, 4, 10, 0, 0),
             EndDateTime = new LocalDateTime(2026, 4, 4, 11, 0, 0),

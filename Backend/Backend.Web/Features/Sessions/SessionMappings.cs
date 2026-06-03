@@ -41,7 +41,7 @@ public static class SessionMappings
             session.Title,
             session.Description,
             session.Type,
-            session.Speaker,
+            session.Speakers.Select(s => new SessionSpeakerRo(s.Id, s.Name, s.Title, s.PhotoId)).ToList().AsReadOnly(),
             session.RoomId,
             new SessionRoomRo(
                 session.Room.Id,

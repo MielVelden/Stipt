@@ -38,7 +38,9 @@ import { TimeField } from "~/components/ui/time-field"
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { Label } from "~/components/ui/label"
 import type { RoomRo } from "~/generated-types/room-ro"
+import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import { SessionType } from "~/generated-types/session-type"
+import { SpeakerMultiSelect } from "~/components/speaker-multi-select"
 import {
   makeSessionCreateSchema,
   makeSessionEditSchema,
@@ -51,6 +53,7 @@ type CreateSessionFormProps = {
   mode: "create"
   formId: string
   rooms: RoomRo[]
+  speakers: SpeakerRo[]
   defaultValues: SessionCreateFormValues
   cancelTo: string
   submitLabel?: string
@@ -63,6 +66,7 @@ type EditSessionFormProps = {
   mode: "edit"
   formId: string
   rooms: RoomRo[]
+  speakers: SpeakerRo[]
   defaultValues: SessionEditFormValues
   cancelTo: string
   submitLabel?: string
@@ -275,18 +279,22 @@ export function SessionForm(props: SessionFormProps) {
         </FieldGroup>
 
         <Controller
-          name="speaker"
+          name="speakerIds"
           control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
-              <Input
-                {...field}
-                id="speaker"
-                placeholder="Naam van de spreker"
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>Sprekers</FieldLabel>
+              {props.speakers.length === 0 ? (
+                <FieldDescription className="text-xs">
+                  Geen sprekers beschikbaar. Voeg eerst sprekers toe via het Sprekers menu.
+                </FieldDescription>
+              ) : (
+                <SpeakerMultiSelect
+                  speakers={props.speakers}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             </Field>
           )}
         />
