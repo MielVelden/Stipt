@@ -28,6 +28,7 @@ export default function ProfileScreen() {
   const [savedProfile, setSavedProfile] = useState<UserProfileRo>(EMPTY_PROFILE)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isPickingPhoto, setIsPickingPhoto] = useState(false)
   const [showSavedToast, setShowSavedToast] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -89,8 +90,10 @@ export default function ProfileScreen() {
   }
 
   async function handlePhotoUpload() {
+    setIsPickingPhoto(true)
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== ImagePicker.PermissionStatus.GRANTED) {
+      setIsPickingPhoto(false)
       setError("Toegang tot je fotobibliotheek is nodig om een profielfoto te kiezen.")
       return
     }
@@ -101,7 +104,10 @@ export default function ProfileScreen() {
       quality: 0.8,
     })
 
-    if (result.canceled || !result.assets.length) return
+    if (result.canceled || !result.assets.length) {
+      setIsPickingPhoto(false)
+      return
+    }
 
     const asset = result.assets[0]
     const extension = asset.uri.split(".").pop() ?? "jpg"
@@ -123,6 +129,7 @@ export default function ProfileScreen() {
       setError("Profielfoto kon niet worden geupload.")
     } finally {
       setIsSaving(false)
+      setIsPickingPhoto(false)
     }
   }
 
@@ -180,11 +187,15 @@ export default function ProfileScreen() {
           )}
         </View>
         <View className="mt-4 flex-row gap-2 mx-auto">
-          <Button variant="outline" onPress={handlePhotoUpload} disabled={isSaving}>
-            <Text>Foto wijzigen</Text>
+          <Button
+            variant="outline"
+            onPress={handlePhotoUpload}
+            disabled={isSaving || isPickingPhoto}
+          >
+            <Text>{isPickingPhoto ? "Foto openen..." : "Foto wijzigen"}</Text>
           </Button>
           {profile.profileImageId && (
-            <Button variant="outline" onPress={handlePhotoDelete} disabled={isSaving}>
+            <Button variant="outline" onPress={handlePhotoDelete} disabled={isSaving || isPickingPhoto}>
               <Text className="text-destructive">Foto verwijderen</Text>
             </Button>
           )}
