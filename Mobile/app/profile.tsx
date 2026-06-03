@@ -1,7 +1,7 @@
 import { router } from "expo-router"
 import * as ImagePicker from "expo-image-picker"
 import React, { useEffect, useMemo, useState } from "react"
-import { Image, Pressable, ScrollView, TextInput, View } from "react-native"
+import { Image, ScrollView, TextInput, View } from "react-native"
 
 import { Button } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
@@ -180,17 +180,13 @@ export default function ProfileScreen() {
           )}
         </View>
         <View className="mt-4 flex-row gap-2 mx-auto">
-          <Pressable onPress={handlePhotoUpload} disabled={isSaving}>
-            <Button variant="outline">
-              <Text>Foto wijzigen</Text>
-            </Button>
-          </Pressable>
+          <Button variant="outline" onPress={handlePhotoUpload} disabled={isSaving}>
+            <Text>Foto wijzigen</Text>
+          </Button>
           {profile.profileImageId && (
-            <Pressable onPress={handlePhotoDelete} disabled={isSaving}>
-              <Button variant="outline">
-                <Text className="text-destructive">Foto verwijderen</Text>
-              </Button>
-            </Pressable>
+            <Button variant="outline" onPress={handlePhotoDelete} disabled={isSaving}>
+              <Text className="text-destructive">Foto verwijderen</Text>
+            </Button>
           )}
         </View>
       </View>
@@ -253,4 +249,3 @@ export default function ProfileScreen() {
     </ScrollView>
   )
 }
-
