@@ -27,10 +27,10 @@ public class EventsController(EventsService eventsService) : ControllerBase
             return response is null ? NotFound() : Ok(response);
         }
 
-        var userEmail = User.FindFirstValue(ClaimTypes.Email);
-        if (userEmail is null) return Unauthorized();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
 
-        var attendeeResponse = await eventsService.GetByIdForAttendeeAsync(id, userEmail, ct);
+        var attendeeResponse = await eventsService.GetByIdForAttendeeAsync(id, userId, ct);
         return attendeeResponse is null ? NotFound() : Ok(attendeeResponse);
     }
 
@@ -40,10 +40,10 @@ public class EventsController(EventsService eventsService) : ControllerBase
         if (!User.IsInRole(AppRoles.Attendee))
             return Ok(await eventsService.GetAllAsync(includeArchived, ct));
 
-        var userEmail = User.FindFirstValue(ClaimTypes.Email);
-        if (userEmail is null) return Unauthorized();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
 
-        return Ok(await eventsService.GetAllForAttendeeAsync(userEmail, includeArchived, ct));
+        return Ok(await eventsService.GetAllForAttendeeAsync(userId, includeArchived, ct));
     }
 
     [HttpPut("{id:guid}")]

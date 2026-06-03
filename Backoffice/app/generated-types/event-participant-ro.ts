@@ -6,5 +6,7 @@
 export interface EventParticipantRo {
   eventId: string;
   email: string;
+  status: string;
   createdAtUtc: string;
+  acceptedAtUtc: string | undefined;
 }

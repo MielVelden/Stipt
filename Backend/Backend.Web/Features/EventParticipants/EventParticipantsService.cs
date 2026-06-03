@@ -1,29 +1,71 @@
+using System.Security.Cryptography;
+using System.Text;
+using Backend.Database.Entities;
 using Backend.Database.Entities.EventParticipants;
+using Backend.Database.Entities.Events;
+using Backend.Web.Features.Email;
 using Backend.Web.Features.EventParticipants.Dtos;
 using Backend.Web.Features.EventParticipants.Exceptions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Web.Features.EventParticipants;
 
-public sealed class EventParticipantsService(IEventParticipantRepository eventParticipantRepository)
+public sealed class EventParticipantsService(
+    IEventParticipantRepository eventParticipantRepository,
+    IInviteTokenRepository inviteTokenRepository,
+    IEventRepository eventRepository,
+    EmailService emailService,
+    UserManager<ApplicationUser> userManager)
 {
+    private static string GenerateInviteToken()
+    {
+        const string validChars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";
+        return RandomNumberGenerator.GetString(validChars, 15);
+    }
+
+    private static string HashToken(string token)
+    {
+        var bytes = Encoding.UTF8.GetBytes(token);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToBase64String(hash);
+    }
+
     public async Task<EventParticipantRo> CreateAsync(Guid eventId, CreateEventParticipantDto request, CancellationToken cancellationToken)
     {
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
-        var exists = await eventParticipantRepository.ExistsAsync(eventId, normalizedEmail, cancellationToken);
-        if (exists)
+        if (await eventParticipantRepository.ExistsByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken))
             throw new DuplicateParticipantException();
 
-        var participant = new EventParticipant
+        if (await inviteTokenRepository.ExistsAsync(eventId, normalizedEmail, cancellationToken))
+            throw new DuplicateParticipantException();
+
+        var @event = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new ArgumentException("Event not found");
+
+        var plainTextToken = GenerateInviteToken();
+        var inviteToken = new InviteToken
         {
+            Id = Guid.NewGuid(),
             EventId = eventId,
             Email = normalizedEmail,
-            CreatedAtUtc = DateTime.UtcNow
+            TokenHash = HashToken(plainTextToken),
+            CreatedAtUtc = DateTime.UtcNow,
+            ExpiresAtUtc = DateTime.UtcNow.AddDays(14)
         };
 
-        await eventParticipantRepository.AddAsync(participant, cancellationToken);
+        await emailService.SendEventInviteAsync(normalizedEmail, @event, plainTextToken, cancellationToken);
 
-        return participant.ToRo();
+        try
+        {
+            await inviteTokenRepository.AddAsync(inviteToken, cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            throw new DuplicateParticipantException();
+        }
+
+        return inviteToken.ToRo();
     }
 
     public async Task<BulkCreateEventParticipantsRo> BulkCreateAsync(Guid eventId, BulkCreateEventParticipantsDto request, CancellationToken cancellationToken)
@@ -39,73 +81,165 @@ public sealed class EventParticipantsService(IEventParticipantRepository eventPa
         var duplicatesInFile = totalRows - uniqueFileEmails.Count;
 
         var existingParticipants = await eventParticipantRepository.GetAllByEventIdAsync(eventId, cancellationToken);
-        var existingEmails = existingParticipants.Select(p => p.Email).ToHashSet();
+        var existingParticipantEmails = existingParticipants.Select(p => p.User.Email?.ToLowerInvariant() ?? string.Empty).ToHashSet();
 
-        var newEmails = uniqueFileEmails.Where(e => !existingEmails.Contains(e)).ToList();
+        var existingInvites = await inviteTokenRepository.GetAllByEventIdAsync(eventId, cancellationToken);
+        var existingInviteEmails = existingInvites.Select(i => i.Email.ToLowerInvariant()).ToHashSet();
+
+        var newEmails = uniqueFileEmails
+            .Where(e => !existingParticipantEmails.Contains(e) && !existingInviteEmails.Contains(e))
+            .ToList();
+            
         var duplicatesInDatabase = uniqueFileEmails.Count - newEmails.Count;
 
-        var newParticipants = newEmails.Select(e => new EventParticipant
-        {
-            EventId = eventId,
-            Email = e,
-            CreatedAtUtc = DateTime.UtcNow
-        }).ToList();
+        var @event = await eventRepository.GetByIdAsync(eventId, cancellationToken) ?? throw new ArgumentException("Event not found");
 
-        if (newParticipants.Any())
+        var newInvites = new List<InviteToken>();
+        var plainTextTokensByEmail = new Dictionary<string, string>();
+        foreach (var email in newEmails)
         {
-            await eventParticipantRepository.AddRangeAsync(newParticipants, cancellationToken);
+            var plainTextToken = GenerateInviteToken();
+            var inviteToken = new InviteToken
+            {
+                Id = Guid.NewGuid(),
+                EventId = eventId,
+                Email = email,
+                TokenHash = HashToken(plainTextToken),
+                CreatedAtUtc = DateTime.UtcNow,
+                ExpiresAtUtc = DateTime.UtcNow.AddDays(14)
+            };
+
+            newInvites.Add(inviteToken);
+            plainTextTokensByEmail[email] = plainTextToken;
+        }
+
+        if (newInvites.Any())
+        {
+            await inviteTokenRepository.AddRangeAsync(newInvites, cancellationToken);
+        }
+
+        foreach (var (email, plainTextToken) in plainTextTokensByEmail)
+        {
+            await emailService.SendEventInviteAsync(email, @event, plainTextToken, cancellationToken);
         }
 
         return new BulkCreateEventParticipantsRo(
             totalRows,
             duplicatesInFile,
             duplicatesInDatabase,
-            newParticipants.Count
+            newInvites.Count
         );
     }
 
     public async Task<EventParticipantRo?> GetByEventIdAndEmailAsync(Guid eventId, string email, CancellationToken cancellationToken)
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();
+        
+        var invite = await inviteTokenRepository.GetByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken);
+        if (invite != null)
+            return invite.ToRo();
+
         var participant = await eventParticipantRepository.GetByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken);
 
-        if (participant is null)
-            return null;
-
-        return participant.ToRo();
+        return participant?.ToRo();
     }
 
     public async Task<List<EventParticipantRo>> GetAllByEventIdAsync(Guid eventId, CancellationToken cancellationToken)
     {
         var participants = await eventParticipantRepository.GetAllByEventIdAsync(eventId, cancellationToken);
+        var invites = await inviteTokenRepository.GetAllByEventIdAsync(eventId, cancellationToken);
 
-        return participants.Select(EventParticipantMappings.ToRo).ToList();
+        return participants.Select(EventParticipantMappings.ToRo)
+            .Concat(invites.Select(EventParticipantMappings.ToRo))
+            .OrderBy(ro => ro.CreatedAtUtc)
+            .ToList();
     }
 
     public async Task<List<EventParticipantRo>> GetEventsByEmailAsync(string email, CancellationToken cancellationToken)
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();
-        var participants = await eventParticipantRepository.GetAllByEmailAsync(normalizedEmail, cancellationToken);
+        var user = await userManager.FindByEmailAsync(normalizedEmail);
+        
+        if (user == null)
+            return new List<EventParticipantRo>();
 
+        var participants = await eventParticipantRepository.GetAllByUserIdAsync(user.Id, cancellationToken);
         return participants.Select(EventParticipantMappings.ToRo).ToList();
     }
 
     public async Task<bool> DeleteAsync(Guid eventId, string email, CancellationToken cancellationToken)
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();
-        return await eventParticipantRepository.DeleteAsync(eventId, normalizedEmail, cancellationToken);
+        
+        var invite = await inviteTokenRepository.GetByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken);
+        if (invite != null)
+        {
+            return await inviteTokenRepository.DeleteAsync(invite.Id, cancellationToken);
+        }
+
+        var participant = await eventParticipantRepository.GetByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken);
+        
+        if (participant != null)
+        {
+            return await eventParticipantRepository.DeleteAsync(eventId, participant.UserId, cancellationToken);
+        }
+
+        return false;
     }
 
-    public async Task<bool> IsParticipantAsync(Guid eventId, string email, CancellationToken cancellationToken)
+    public async Task<bool> IsParticipantAsync(Guid eventId, string userId, CancellationToken cancellationToken)
     {
-        var normalizedEmail = email.Trim().ToLowerInvariant();
-        return await eventParticipantRepository.ExistsAsync(eventId, normalizedEmail, cancellationToken);
+        return await eventParticipantRepository.ExistsAsync(eventId, userId, cancellationToken);
     }
 
-    public async Task<HashSet<Guid>> GetParticipatingEventIdsAsync(string email, CancellationToken cancellationToken)
+    public async Task<HashSet<Guid>> GetParticipatingEventIdsAsync(string userId, CancellationToken cancellationToken)
     {
-        var normalizedEmail = email.Trim().ToLowerInvariant();
-        var participants = await eventParticipantRepository.GetAllByEmailAsync(normalizedEmail, cancellationToken);
+        var participants = await eventParticipantRepository.GetAllByUserIdAsync(userId, cancellationToken);
         return participants.Select(p => p.EventId).ToHashSet();
+    }
+
+    public async Task<InviteDetailsRo> GetInviteDetailsAsync(string plainToken, string currentUserId, CancellationToken cancellationToken)
+    {
+        var (invite, isAlreadyLinked) = await ValidateAndGetInviteAsync(plainToken, currentUserId, cancellationToken);
+        var @event = await eventRepository.GetByIdAsync(invite.EventId, cancellationToken)
+                     ?? throw new ArgumentException("Event not found");
+
+        return new InviteDetailsRo(invite.EventId, @event.Name, isAlreadyLinked);
+    }
+
+    public async Task RedeemInviteAsync(string plainToken, string currentUserId, CancellationToken cancellationToken)
+    {
+        var (invite, isAlreadyLinked) = await ValidateAndGetInviteAsync(plainToken, currentUserId, cancellationToken);
+
+        if (!isAlreadyLinked)
+        {
+            var participant = new EventParticipant
+            {
+                EventId = invite.EventId,
+                UserId = currentUserId,
+                AcceptedAtUtc = DateTime.UtcNow,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+            await eventParticipantRepository.AddAsync(participant, cancellationToken);
+        }
+
+        await inviteTokenRepository.DeleteAsync(invite.Id, cancellationToken);
+    }
+
+    private async Task<(InviteToken Invite, bool IsAlreadyLinked)> ValidateAndGetInviteAsync(
+        string plainToken, string currentUserId, CancellationToken cancellationToken)
+    {
+        var hash = HashToken(plainToken);
+        var invite = await inviteTokenRepository.GetByTokenHashAsync(hash, cancellationToken)
+                     ?? throw new InviteNotFoundException();
+
+        if (invite.ExpiresAtUtc < DateTime.UtcNow)
+        {
+            await inviteTokenRepository.DeleteAsync(invite.Id, cancellationToken);
+            throw new InviteExpiredException();
+        }
+
+        var isAlreadyLinked = await eventParticipantRepository.ExistsAsync(invite.EventId, currentUserId, cancellationToken);
+        return (invite, isAlreadyLinked);
     }
 }

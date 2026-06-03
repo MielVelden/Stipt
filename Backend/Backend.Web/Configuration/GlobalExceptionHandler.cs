@@ -41,6 +41,24 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
                 return true;
             }
+            case InviteNotFoundException inviteNotFoundException:
+            {
+                await Results.Problem(
+                    detail: inviteNotFoundException.Message,
+                    statusCode: StatusCodes.Status404NotFound
+                ).ExecuteAsync(httpContext);
+
+                return true;
+            }
+            case InviteExpiredException inviteExpiredException:
+            {
+                await Results.Problem(
+                    detail: inviteExpiredException.Message,
+                    statusCode: StatusCodes.Status410Gone
+                ).ExecuteAsync(httpContext);
+
+                return true;
+            }
             case DuplicateParticipantException duplicateException:
             {
                 await Results.Problem(
