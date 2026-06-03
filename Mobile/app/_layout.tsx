@@ -16,7 +16,7 @@ export default function RootLayout() {
                     <NavigationGuard>
                         <Stack screenOptions={{ headerShown: false }}>
                             <Stack.Screen name="(auth)" />
-                            <Stack.Screen name="events/index" />
+                            <Stack.Screen name="events/(tabs)" />
                         </Stack>
                     </NavigationGuard>
                 </SafeAreaView>
