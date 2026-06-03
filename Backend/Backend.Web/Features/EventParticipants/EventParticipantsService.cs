@@ -139,8 +139,7 @@ public sealed class EventParticipantsService(
         if (invite != null)
             return invite.ToRo();
 
-        var existingParticipants = await eventParticipantRepository.GetAllByEventIdAsync(eventId, cancellationToken);
-        var participant = existingParticipants.FirstOrDefault(p => string.Equals(p.User.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase));
+        var participant = await eventParticipantRepository.GetByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken);
 
         return participant?.ToRo();
     }
@@ -178,8 +177,7 @@ public sealed class EventParticipantsService(
             return await inviteTokenRepository.DeleteAsync(invite.Id, cancellationToken);
         }
 
-        var existingParticipants = await eventParticipantRepository.GetAllByEventIdAsync(eventId, cancellationToken);
-        var participant = existingParticipants.FirstOrDefault(p => string.Equals(p.User.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase));
+        var participant = await eventParticipantRepository.GetByEventIdAndEmailAsync(eventId, normalizedEmail, cancellationToken);
         
         if (participant != null)
         {
