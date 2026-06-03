@@ -17,7 +17,7 @@ const sessionBaseObjectSchema = z.object({
   title: z.string().min(1, VALIDATION_MESSAGES.required),
   description: z.string().min(1, VALIDATION_MESSAGES.required),
   type: sessionTypeSchema,
-  speaker: z.string().min(1, VALIDATION_MESSAGES.required),
+  speakerIds: z.array(z.string()),
   roomId: z.string().min(1, VALIDATION_MESSAGES.session.selectRoom),
   capacity: z
     .string()
@@ -54,20 +54,63 @@ const dateRefine = {
   },
 } as const
 
-export const sessionCreateSchema = sessionBaseObjectSchema.refine(
-  dateRefine.fn,
-  dateRefine.opts
-)
+function addEventBoundsRefinement<T extends z.ZodTypeAny>(
+  schema: T,
+  eventStartDate?: string,
+  eventEndDate?: string
+) {
+  return schema.superRefine((data, ctx) => {
+    const { startDate, endDate } = data as { startDate: string; endDate: string }
+    if (eventStartDate && startDate < eventStartDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: VALIDATION_MESSAGES.session.dateBeforeEventStart,
+        path: ["startDate"],
+      })
+    }
+    if (eventEndDate && startDate > eventEndDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
+        path: ["startDate"],
+      })
+    }
+    if (eventEndDate && endDate > eventEndDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: VALIDATION_MESSAGES.session.dateAfterEventEnd,
+        path: ["endDate"],
+      })
+    }
+  })
+}
 
-export const sessionEditSchema = sessionBaseObjectSchema
-  .extend({ id: z.string().min(1, VALIDATION_MESSAGES.session.notFound) })
-  .refine(dateRefine.fn, dateRefine.opts)
+export function makeSessionCreateSchema(eventStartDate?: string, eventEndDate?: string) {
+  return addEventBoundsRefinement(
+    sessionBaseObjectSchema.refine(dateRefine.fn, dateRefine.opts),
+    eventStartDate,
+    eventEndDate
+  )
+}
+
+export function makeSessionEditSchema(eventStartDate?: string, eventEndDate?: string) {
+  return addEventBoundsRefinement(
+    sessionBaseObjectSchema
+      .extend({ id: z.string().min(1, VALIDATION_MESSAGES.session.notFound) })
+      .refine(dateRefine.fn, dateRefine.opts),
+    eventStartDate,
+    eventEndDate
+  )
+}
+
+export const sessionCreateSchema = makeSessionCreateSchema()
+export const sessionEditSchema = makeSessionEditSchema()
 
 export const sessionCreateDefaultValues: SessionCreateFormValues = {
   title: "",
   description: "",
   type: SessionType.Breakout,
-  speaker: "",
+  speakerIds: [],
   roomId: "",
   capacity: undefined,
   startDate: "",
@@ -89,7 +132,7 @@ export function mapSessionToEditFormValues(
     title: session.title,
     description: session.description ?? "",
     type: session.type,
-    speaker: session.speaker,
+    speakerIds: session.speakers?.map((s) => s.id) ?? [],
     roomId: session.roomId,
     capacity: session.capacity?.toString(),
     startDate: start.date,
@@ -108,7 +151,7 @@ export function mapFormValuesToSessionPayload(
     title: values.title,
     description: values.description,
     type: values.type,
-    speaker: values.speaker,
+    speakerIds: values.speakerIds,
     roomId: values.roomId,
     startDateTime: `${values.startDate}T${values.startTime}:00`,
     endDateTime: `${values.endDate}T${values.endTime}:00`,

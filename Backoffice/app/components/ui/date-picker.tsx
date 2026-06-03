@@ -15,6 +15,9 @@ interface DatePickerProps {
   placeholder?: string
   disabled?: boolean
   "aria-invalid"?: boolean
+  minDate?: Date
+  maxDate?: Date
+  defaultMonth?: Date
 }
 
 export function DatePicker({
@@ -25,6 +28,9 @@ export function DatePicker({
   placeholder = "Kies een datum",
   disabled,
   "aria-invalid": ariaInvalid,
+  minDate,
+  maxDate,
+  defaultMonth,
 }: DatePickerProps) {
   const selected =
     value && value.length === 10
@@ -35,6 +41,11 @@ export function DatePicker({
     selected && isValid(selected)
       ? format(selected, "d MMMM yyyy", { locale: nl })
       : undefined
+
+  const disabledDays = [
+    ...(minDate ? [{ before: minDate }] : []),
+    ...(maxDate ? [{ after: maxDate }] : []),
+  ]
 
   return (
     <Popover>
@@ -62,6 +73,12 @@ export function DatePicker({
           onSelect={(date) => {
             if (date) onChange?.(format(date, "yyyy-MM-dd"))
           }}
+          disabled={disabledDays.length > 0 ? disabledDays : undefined}
+          defaultMonth={
+            (selected && isValid(selected) ? selected : undefined) ??
+            defaultMonth ??
+            minDate
+          }
           autoFocus
         />
       </PopoverContent>

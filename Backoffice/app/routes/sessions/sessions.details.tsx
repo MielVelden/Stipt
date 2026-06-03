@@ -75,8 +75,12 @@ export default function Page({ loaderData: session }: Route.ComponentProps) {
             </FieldContent>
           </Field>
           <Field>
-            <FieldLabel>Spreker</FieldLabel>
-            <FieldContent>{session.speaker}</FieldContent>
+            <FieldLabel>Sprekers</FieldLabel>
+            <FieldContent>
+              {session.speakers && session.speakers.length > 0
+                ? session.speakers.map((s) => s.name).join(", ")
+                : "-"}
+            </FieldContent>
           </Field>
           <Field>
             <FieldLabel>Type</FieldLabel>

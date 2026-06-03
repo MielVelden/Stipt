@@ -9,6 +9,7 @@ public interface ISessionRepository
     Task<IReadOnlyCollection<Session>> GetFilteredAsync(Guid eventId, SessionFilter filter, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<Session>> GetAgendaSessionsAsync(Guid eventId, Guid participantId, SessionFilter filter, CancellationToken cancellationToken);
     Task<Session?> GetByIdAsync(Guid eventId, Guid id, CancellationToken cancellationToken);
+    Task<Session?> GetTrackedWithSpeakersAsync(Guid eventId, Guid id, CancellationToken cancellationToken);
     Task<bool> HasOverlapAsync(
         Guid eventId,
         Guid roomId,

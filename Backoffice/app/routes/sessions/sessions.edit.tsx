@@ -15,8 +15,10 @@ import { toast } from "sonner"
 import FetchError from "~/components/fetch-error"
 import { useAppContext } from "~/contexts/app-context"
 import type { RoomRo } from "~/generated-types/room-ro"
+import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import type { SessionRo } from "~/generated-types/session-ro"
 import type { UpdateSessionDto } from "~/generated-types/update-session-dto"
+import type { EventRo } from "~/generated-types/event-ro"
 import {
   mapFormValuesToSessionPayload,
   mapSessionToEditFormValues,
@@ -44,16 +46,19 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   }
 
   try {
-    const sessionResponse = await apiClient.get<SessionRo>(
-      `/events/${eventId}/sessions/${params.id}`
-    )
-    const roomsResponse = await apiClient.get<RoomRo[]>(
-      `/events/${eventId}/rooms`
-    )
+    const [sessionResponse, roomsResponse, speakersResponse, eventResponse] =
+      await Promise.all([
+      apiClient.get<SessionRo>(`/events/${eventId}/sessions/${params.id}`),
+      apiClient.get<RoomRo[]>(`/events/${eventId}/rooms`),
+      apiClient.get<SpeakerRo[]>(`/events/${eventId}/speakers`),
+      apiClient.get<EventRo>(`/events/${eventId}`),
+      ])
 
     return {
       session: sessionResponse.data,
       rooms: roomsResponse.data,
+      event: eventResponse.data,
+      speakers: speakersResponse.data,
     }
   } catch (error) {
     throw new Response("Kon data niet laden", { status: 500 })
@@ -61,12 +66,15 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
 }
 
 export default function Page({
-  loaderData: { session, rooms },
+  loaderData: { session, rooms, speakers, event },
 }: Route.ComponentProps) {
   const navigate = useNavigate()
   const { eventId } = useParams()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { eventBaseUrl } = useAppContext()
+
+  const eventStartDate = event.startDate.substring(0, 10)
+  const eventEndDate = event.endDate.substring(0, 10)
 
   const defaultValues = mapSessionToEditFormValues(session)
 
@@ -118,8 +126,11 @@ export default function Page({
           mode="edit"
           formId="form-session-edit"
           rooms={rooms}
+          speakers={speakers}
           defaultValues={defaultValues}
           cancelTo={`${eventBaseUrl}/sessies/${session.id}`}
+          eventStartDate={eventStartDate}
+          eventEndDate={eventEndDate}
           onSubmit={onSubmit}
           leadingAction={
             <Button

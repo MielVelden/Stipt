@@ -19,6 +19,16 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .AsNoTracking()
             .Include(x => x.Room)
             .Include(x => x.Enrollments)
+            .Include(x => x.Speakers)
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
+    }
+
+    public Task<Session?> GetTrackedWithSpeakersAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
+    {
+        return dbContext.Sessions
+            .Include(x => x.Room)
+            .Include(x => x.Enrollments)
+            .Include(x => x.Speakers)
             .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == id, cancellationToken);
     }
 
@@ -28,6 +38,7 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .AsNoTracking()
             .Include(x => x.Room)
             .Include(x => x.Enrollments)
+            .Include(x => x.Speakers)
             .Where(x => x.EventId == eventId);
 
         if (filter.Labels is { Count: > 0 })
@@ -53,6 +64,7 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .AsNoTracking()
             .Include(x => x.Room)
             .Include(x => x.Enrollments.Where(e => e.ParticipantId == participantId))
+            .Include(x => x.Speakers)
             .Where(s => s.EventId == eventId)
             .Where(s => s.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled)
             );
