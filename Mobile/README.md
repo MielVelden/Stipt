@@ -45,7 +45,7 @@ Mobile/
 │       ├── index.tsx             # Evenementen overzicht
 │       ├── schedule.tsx          # Mijn agenda
 │       ├── qr.tsx                # QR scanner
-│       ├── profile.tsx          # Instellingen
+│       ├── index.tsx          # Instellingen
 │
 ├── features/                     # Feature-gebaseerde business logic
 │   ├── events/

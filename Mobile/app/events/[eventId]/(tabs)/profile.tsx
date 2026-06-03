@@ -1,4 +1,5 @@
-import { router, useGlobalSearchParams } from "expo-router"
+import { router } from "expo-router"
+
 import { Image, Pressable, View } from "react-native"
 
 import { Button } from "@/components/ui/button"
@@ -11,12 +12,8 @@ import { Pencil } from "lucide-react-native"
 import { UserProfileRo } from "@/generated-types/user-profile-ro"
 import { useEffect, useMemo, useState } from "react"
 
-export default function SettingsScreen() {
+export default function ProfileScreen() {
   const { logout } = useAuth()
-  const { eventId: rawEventId } = useGlobalSearchParams<{
-    eventId?: string | string[];
-  }>();
-  const eventId = Array.isArray(rawEventId) ? rawEventId[0] : rawEventId;
 
   const [profile, setProfile] = useState<UserProfileRo>({
     firstName: "",
@@ -56,8 +53,9 @@ export default function SettingsScreen() {
   }
 
   function handleProfileEdit() {
-    if (!eventId) return
-    router.push(`/events/${eventId}/profile`)
+    router.push({
+      pathname: "/profile",
+    })
   }
 
   return (
@@ -86,7 +84,6 @@ export default function SettingsScreen() {
 
         <Pressable
           onPress={handleProfileEdit}
-          disabled={!eventId}
           accessibilityRole="button"
           accessibilityLabel="Profiel bewerken"
         >
