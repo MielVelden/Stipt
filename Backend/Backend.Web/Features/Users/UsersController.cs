@@ -97,11 +97,17 @@ public sealed class UsersController(UsersService usersService, IImagesService im
 
         if (profile.ProfileImageId is { } imageId)
         {
-            var image = await imagesService.ReadAsync(imageId, ct);
-            if (image.UploadedByUserId is not null && image.UploadedByUserId.Value.ToString() != userId)
-                return Forbid();
-
-            await imagesService.DeleteAsync(imageId, ct);
+            try
+            {
+                var image = await imagesService.ReadAsync(imageId, ct);
+                if (image.UploadedByUserId is not null && image.UploadedByUserId.Value.ToString() != userId)
+                    return Forbid();
+                await imagesService.DeleteAsync(imageId, ct);
+            }
+            catch (BadHttpRequestException ex) when (ex.StatusCode == 404)
+            {
+                // Image already missing; continue clearing the user's profile image reference.
+            }
         }
 
         var (updatedProfile, result) = await usersService.ClearProfileImageAsync(userId, ct);
@@ -124,6 +130,6 @@ public sealed class UsersController(UsersService usersService, IImagesService im
     private string? GetUserId()
     {
         return User.FindFirstValue(JwtRegisteredClaimNames.Sub)
-            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+               ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
     }
 }
