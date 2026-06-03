@@ -24,7 +24,7 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-background px-6 py-12">
-      <Text variant="h1" className="text-2xl text-left mb-4">Instellingen</Text>
+      <Text variant="h1" className="text-2xl text-left mb-4">Profiel</Text>
 
       <Button variant="outline" className="w-full" onPress={handleProfileEdit}>
         <Text>Profiel bewerken</Text>

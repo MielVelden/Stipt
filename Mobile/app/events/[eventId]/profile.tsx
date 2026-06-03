@@ -10,22 +10,22 @@ import {
   getProfileAsync,
   updateProfileAsync,
   uploadProfilePhotoAsync,
-  type UserProfile,
 } from "@/features/profile/api"
 import { API_BASE_URL } from "@/constants/api"
-import {Icon} from "@/components/ui/icon";
-import {ChevronLeft} from "lucide-react-native";
+import { Icon } from "@/components/ui/icon";
+import { ChevronLeft } from "lucide-react-native";
+import { UserProfileRo } from "@/generated-types/user-profile-ro";
 
-const EMPTY_PROFILE: UserProfile = {
+const EMPTY_PROFILE: UserProfileRo = {
   firstName: "",
   lastName: "",
   email: "",
-  profileImageId: null,
+  profileImageId: undefined,
 }
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE)
-  const [savedProfile, setSavedProfile] = useState<UserProfile>(EMPTY_PROFILE)
+  const [profile, setProfile] = useState<UserProfileRo>(EMPTY_PROFILE)
+  const [savedProfile, setSavedProfile] = useState<UserProfileRo>(EMPTY_PROFILE)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [showSavedToast, setShowSavedToast] = useState(false)
@@ -141,7 +141,7 @@ export default function ProfileScreen() {
     }
   }
 
-  function updateField<Key extends keyof UserProfile>(key: Key, value: UserProfile[Key]) {
+  function updateField<Key extends keyof UserProfileRo>(key: Key, value: UserProfileRo[Key]) {
     setProfile((current) => ({ ...current, [key]: value }))
   }
 

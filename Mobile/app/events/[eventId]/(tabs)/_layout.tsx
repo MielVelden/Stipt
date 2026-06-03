@@ -2,9 +2,8 @@ import { Tabs } from "expo-router";
 import {
     CalendarIcon,
     QrCodeIcon,
-    SettingsIcon,
     SplitIcon,
-    TicketIcon,
+    UserIcon,
 } from "lucide-react-native";
 
 export default function TabsLayout() {
@@ -49,11 +48,11 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
-                name="settings"
+                name="profile"
                 options={{
-                    title: "Instellingen",
+                    title: "Profiel",
                     tabBarIcon: ({ color, size }) => (
-                        <SettingsIcon color={color} size={size} />
+                        <UserIcon color={color} size={size} />
                     ),
                 }}
             />
