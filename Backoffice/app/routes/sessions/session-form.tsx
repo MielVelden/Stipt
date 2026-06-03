@@ -1,5 +1,6 @@
-import { useState, useRef, type ReactNode } from "react"
+import { useState, useRef, useMemo, useEffect, type ReactNode } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { parse, isValid } from "date-fns"
 import { Controller, useForm } from "react-hook-form"
 import { Link } from "react-router"
 import { Loader2, XIcon, ImageIcon } from "lucide-react"
@@ -37,10 +38,12 @@ import { TimeField } from "~/components/ui/time-field"
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group"
 import { Label } from "~/components/ui/label"
 import type { RoomRo } from "~/generated-types/room-ro"
+import type { SpeakerRo } from "~/generated-types/speaker-ro"
 import { SessionType } from "~/generated-types/session-type"
+import { SpeakerMultiSelect } from "~/components/speaker-multi-select"
 import {
-  sessionCreateSchema,
-  sessionEditSchema,
+  makeSessionCreateSchema,
+  makeSessionEditSchema,
   type SessionCreateFormValues,
   type SessionEditFormValues,
   type SessionFormValues,
@@ -50,9 +53,12 @@ type CreateSessionFormProps = {
   mode: "create"
   formId: string
   rooms: RoomRo[]
+  speakers: SpeakerRo[]
   defaultValues: SessionCreateFormValues
   cancelTo: string
   submitLabel?: string
+  eventStartDate?: string
+  eventEndDate?: string
   onSubmit: (data: SessionCreateFormValues) => Promise<void>
 }
 
@@ -60,10 +66,13 @@ type EditSessionFormProps = {
   mode: "edit"
   formId: string
   rooms: RoomRo[]
+  speakers: SpeakerRo[]
   defaultValues: SessionEditFormValues
   cancelTo: string
   submitLabel?: string
   leadingAction?: ReactNode
+  eventStartDate?: string
+  eventEndDate?: string
   onSubmit: (data: SessionEditFormValues) => Promise<void>
 }
 
@@ -82,12 +91,43 @@ export function SessionForm(props: SessionFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const leadingAction = props.mode === "edit" ? props.leadingAction : undefined
 
+  const schema = useMemo(
+    () =>
+      props.mode === "create"
+        ? makeSessionCreateSchema(props.eventStartDate, props.eventEndDate)
+        : makeSessionEditSchema(props.eventStartDate, props.eventEndDate),
+    [props.mode, props.eventStartDate, props.eventEndDate]
+  )
+
+  const eventMinDate = useMemo(
+    () =>
+      props.eventStartDate
+        ? parse(props.eventStartDate, "yyyy-MM-dd", new Date())
+        : undefined,
+    [props.eventStartDate]
+  )
+  const eventMaxDate = useMemo(
+    () =>
+      props.eventEndDate
+        ? parse(props.eventEndDate, "yyyy-MM-dd", new Date())
+        : undefined,
+    [props.eventEndDate]
+  )
+  const eventDefaultMonth = useMemo(
+    () => (eventMinDate && isValid(eventMinDate) ? eventMinDate : undefined),
+    [eventMinDate]
+  )
+
   const form = useForm<SessionFormValues>({
-    resolver: zodResolver(
-      props.mode === "create" ? sessionCreateSchema : sessionEditSchema
-    ),
+    resolver: zodResolver(schema),
     defaultValues: props.defaultValues,
   })
+
+  useEffect(() => {
+    if (props.mode === "edit" && (props.eventStartDate || props.eventEndDate)) {
+      form.trigger(["startDate", "endDate"])
+    }
+  }, [])
 
   const currentLabels = form.watch("labels") ?? []
 
@@ -239,18 +279,22 @@ export function SessionForm(props: SessionFormProps) {
         </FieldGroup>
 
         <Controller
-          name="speaker"
+          name="speakerIds"
           control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="speaker">Spreker</FieldLabel>
-              <Input
-                {...field}
-                id="speaker"
-                placeholder="Naam van de spreker"
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>Sprekers</FieldLabel>
+              {props.speakers.length === 0 ? (
+                <FieldDescription className="text-xs">
+                  Geen sprekers beschikbaar. Voeg eerst sprekers toe via het Sprekers menu.
+                </FieldDescription>
+              ) : (
+                <SpeakerMultiSelect
+                  speakers={props.speakers}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             </Field>
           )}
         />
@@ -327,6 +371,9 @@ export function SessionForm(props: SessionFormProps) {
                   onBlur={field.onBlur}
                   disabled={field.disabled}
                   aria-invalid={fieldState.invalid}
+                  minDate={eventMinDate}
+                  maxDate={eventMaxDate}
+                  defaultMonth={eventDefaultMonth}
                 />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
@@ -365,6 +412,9 @@ export function SessionForm(props: SessionFormProps) {
                   onBlur={field.onBlur}
                   disabled={field.disabled}
                   aria-invalid={fieldState.invalid}
+                  minDate={eventMinDate}
+                  maxDate={eventMaxDate}
+                  defaultMonth={eventDefaultMonth}
                 />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>

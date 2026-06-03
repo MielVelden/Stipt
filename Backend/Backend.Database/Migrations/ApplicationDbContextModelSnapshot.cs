@@ -388,11 +388,6 @@ namespace Backend.Database.Migrations
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Speaker")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.Property<LocalDateTime>("StartDateTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -421,6 +416,51 @@ namespace Backend.Database.Migrations
                     b.HasIndex("StartDateTime");
 
                     b.ToTable("sessions", (string)null);
+                });
+
+            modelBuilder.Entity("Backend.Database.Entities.Speakers.Speaker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("Company")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("PhotoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("PhotoId");
+
+                    b.ToTable("speakers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -553,6 +593,21 @@ namespace Backend.Database.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("session_speakers", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SpeakerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("SessionId", "SpeakerId");
+
+                    b.HasIndex("SpeakerId");
+
+                    b.ToTable("session_speakers");
                 });
 
             modelBuilder.Entity("Backend.Database.Entities.Auth.RefreshToken", b =>
@@ -699,6 +754,24 @@ namespace Backend.Database.Migrations
                     b.Navigation("Room");
                 });
 
+            modelBuilder.Entity("Backend.Database.Entities.Speakers.Speaker", b =>
+                {
+                    b.HasOne("Backend.Database.Entities.Events.Event", "Event")
+                        .WithMany("Speakers")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Database.Entities.Images.Image", "Photo")
+                        .WithMany()
+                        .HasForeignKey("PhotoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Photo");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -750,11 +823,28 @@ namespace Backend.Database.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("session_speakers", b =>
+                {
+                    b.HasOne("Backend.Database.Entities.Sessions.Session", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Database.Entities.Speakers.Speaker", null)
+                        .WithMany()
+                        .HasForeignKey("SpeakerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Backend.Database.Entities.Events.Event", b =>
                 {
                     b.Navigation("Rooms");
 
                     b.Navigation("Sessions");
+
+                    b.Navigation("Speakers");
                 });
 
             modelBuilder.Entity("Backend.Database.Entities.Rooms.Room", b =>

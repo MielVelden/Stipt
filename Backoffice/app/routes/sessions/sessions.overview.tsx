@@ -117,8 +117,12 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
       },
     },
     {
-      accessorKey: "speaker",
-      header: "Spreker",
+      id: "speakers",
+      header: "Sprekers",
+      cell: ({ row }) => {
+        const names = row.original.speakers?.map((s) => s.name).join(", ")
+        return names || "-"
+      },
     },
     {
       accessorKey: "room.name",
@@ -193,7 +197,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
     return sessions.filter((session) => {
       return (
         session.title?.toLowerCase().includes(query) ||
-        session.speaker?.toLowerCase().includes(query)
+        session.speakers?.some((s) => s.name.toLowerCase().includes(query))
       )
     })
   }, [sessions, searchQuery])

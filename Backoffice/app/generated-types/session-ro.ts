@@ -4,6 +4,7 @@
  */
 
 import type { SessionType } from './session-type';
+import type { SessionSpeakerRo } from './session-speaker-ro';
 import type { SessionRoomRo } from './session-room-ro';
 import type { SessionEnrollmentStatus } from './session-enrollment-status';
 
@@ -12,7 +13,7 @@ export interface SessionRo {
   title: string;
   description: string | undefined;
   type: SessionType;
-  speaker: string;
+  speakers: SessionSpeakerRo[];
   roomId: string;
   room: SessionRoomRo;
   eventId: string;

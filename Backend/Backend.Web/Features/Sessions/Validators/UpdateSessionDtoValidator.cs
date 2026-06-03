@@ -17,10 +17,6 @@ public sealed class UpdateSessionDtoValidator : AbstractValidator<UpdateSessionD
         RuleFor(x => x.Type)
             .IsInEnum();
 
-        RuleFor(x => x.Speaker)
-            .NotEmpty()
-            .MaximumLength(200);
-
         RuleFor(x => x.RoomId)
             .NotEmpty()
             .WithMessage("RoomId is required.");

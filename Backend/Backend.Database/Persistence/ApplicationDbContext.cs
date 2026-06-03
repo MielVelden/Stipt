@@ -7,6 +7,7 @@ using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.Images;
+using Backend.Database.Entities.Speakers;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
     public DbSet<Image> Images => Set<Image>();
+    public DbSet<Speaker> Speakers => Set<Speaker>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
