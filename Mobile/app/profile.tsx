@@ -167,25 +167,29 @@ export default function ProfileScreen() {
 
       </View>
 
-      <View className="flex-row items-end mb-8">
-        <View className="h-24 w-24 rounded-full bg-muted items-center justify-center overflow-hidden">
+      <View className="justify-between mb-8">
+        <View className="h-32 w-32 rounded-lg bg-muted items-center justify-center overflow-hidden mx-auto">
           {profile.profileImageId ? (
             <Image
               source={{ uri: `${API_BASE_URL}/images/${profile.profileImageId}` }}
-              className="h-24 w-24"
+              className="h-32 w-32"
               resizeMode="cover"
             />
           ) : (
             <Text className="text-muted-foreground">Foto</Text>
           )}
         </View>
-        <View className="ml-3">
+        <View className="mt-4 flex-row gap-2 mx-auto">
           <Pressable onPress={handlePhotoUpload} disabled={isSaving}>
-            <Text className="text-primary">Foto wijzigen</Text>
+            <Button variant="outline">
+              <Text>Foto wijzigen</Text>
+            </Button>
           </Pressable>
           {profile.profileImageId && (
             <Pressable onPress={handlePhotoDelete} disabled={isSaving}>
-              <Text className="text-destructive">Foto verwijderen</Text>
+              <Button variant="outline">
+                <Text className="text-destructive">Foto verwijderen</Text>
+              </Button>
             </Pressable>
           )}
         </View>
