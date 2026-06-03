@@ -6,4 +6,6 @@ namespace Backend.Web.Features.EventParticipants.Dtos;
 public sealed record EventParticipantRo(
     Guid EventId,
     string Email,
-    DateTime CreatedAtUtc);
+    string Status,
+    DateTime CreatedAtUtc,
+    DateTime? AcceptedAtUtc = null);

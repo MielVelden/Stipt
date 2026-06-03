@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513133826_RefactorEventParticipants")]
+    partial class RefactorEventParticipants
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,9 +76,6 @@ namespace Backend.Database.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
-
-                    b.Property<Guid?>("ProfileImageId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -232,35 +232,6 @@ namespace Backend.Database.Migrations
                     b.ToTable("events", (string)null);
                 });
 
-            modelBuilder.Entity("Backend.Database.Entities.Images.Image", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<byte[]>("Data")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("FileName")
-                        .HasMaxLength(260)
-                        .HasColumnType("character varying(260)");
-
-                    b.Property<DateTime>("UploadedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UploadedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("images", (string)null);
-                });
-
             modelBuilder.Entity("Backend.Database.Entities.Notifications.UserNotification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -368,9 +339,6 @@ namespace Backend.Database.Migrations
                     b.Property<int?>("Capacity")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("CoverImageId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -391,6 +359,11 @@ namespace Backend.Database.Migrations
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Speaker")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<LocalDateTime>("StartDateTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -408,8 +381,6 @@ namespace Backend.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CoverImageId");
-
                     b.HasIndex("CreatedAtUtc");
 
                     b.HasIndex("EventId");
@@ -419,51 +390,6 @@ namespace Backend.Database.Migrations
                     b.HasIndex("StartDateTime");
 
                     b.ToTable("sessions", (string)null);
-                });
-
-            modelBuilder.Entity("Backend.Database.Entities.Speakers.Speaker", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Bio")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<string>("Company")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid?>("PhotoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAtUtc");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("PhotoId");
-
-                    b.ToTable("speakers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -598,21 +524,6 @@ namespace Backend.Database.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("session_speakers", b =>
-                {
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SpeakerId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("SessionId", "SpeakerId");
-
-                    b.HasIndex("SpeakerId");
-
-                    b.ToTable("session_speakers");
-                });
-
             modelBuilder.Entity("Backend.Database.Entities.Auth.RefreshToken", b =>
                 {
                     b.HasOne("Backend.Database.Entities.ApplicationUser", "User")
@@ -661,9 +572,10 @@ namespace Backend.Database.Migrations
                             b1.Property<Guid>("EventId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<Guid?>("LogoImageId")
-                                .HasColumnType("uuid")
-                                .HasColumnName("style_logo_image_id");
+                            b1.Property<string>("LogoImageUrl")
+                                .HasMaxLength(2000)
+                                .HasColumnType("character varying(2000)")
+                                .HasColumnName("style_logo_image_url");
 
                             b1.Property<string>("PrimaryBackgroundColor")
                                 .IsRequired()
@@ -679,19 +591,10 @@ namespace Backend.Database.Migrations
 
                             b1.HasKey("EventId");
 
-                            b1.HasIndex("LogoImageId");
-
                             b1.ToTable("events");
 
                             b1.WithOwner()
                                 .HasForeignKey("EventId");
-
-                            b1.HasOne("Backend.Database.Entities.Images.Image", "LogoImage")
-                                .WithMany()
-                                .HasForeignKey("LogoImageId")
-                                .OnDelete(DeleteBehavior.SetNull);
-
-                            b1.Navigation("LogoImage");
                         });
 
                     b.Navigation("Style")
@@ -733,11 +636,6 @@ namespace Backend.Database.Migrations
 
             modelBuilder.Entity("Backend.Database.Entities.Sessions.Session", b =>
                 {
-                    b.HasOne("Backend.Database.Entities.Images.Image", "CoverImage")
-                        .WithMany()
-                        .HasForeignKey("CoverImageId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Backend.Database.Entities.Events.Event", "Event")
                         .WithMany("Sessions")
                         .HasForeignKey("EventId")
@@ -750,29 +648,9 @@ namespace Backend.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("CoverImage");
-
                     b.Navigation("Event");
 
                     b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("Backend.Database.Entities.Speakers.Speaker", b =>
-                {
-                    b.HasOne("Backend.Database.Entities.Events.Event", "Event")
-                        .WithMany("Speakers")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Backend.Database.Entities.Images.Image", "Photo")
-                        .WithMany()
-                        .HasForeignKey("PhotoId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Event");
-
-                    b.Navigation("Photo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -826,28 +704,11 @@ namespace Backend.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("session_speakers", b =>
-                {
-                    b.HasOne("Backend.Database.Entities.Sessions.Session", null)
-                        .WithMany()
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Backend.Database.Entities.Speakers.Speaker", null)
-                        .WithMany()
-                        .HasForeignKey("SpeakerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Backend.Database.Entities.Events.Event", b =>
                 {
                     b.Navigation("Rooms");
 
                     b.Navigation("Sessions");
-
-                    b.Navigation("Speakers");
                 });
 
             modelBuilder.Entity("Backend.Database.Entities.Rooms.Room", b =>

@@ -102,10 +102,44 @@ export default function Page({
       header: "E-mailadres",
     },
     {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const val = row.getValue("status") as string
+        return (
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+              val === "Geaccepteerd"
+                ? "bg-green-100 text-green-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
+            {val}
+          </span>
+        )
+      },
+    },
+    {
       accessorKey: "createdAtUtc",
-      header: "Toegevoegd op",
+      header: "Uitgenodigd op",
       cell: ({ row }) => {
         const date = new Date(row.getValue("createdAtUtc") as string)
+        return Intl.DateTimeFormat("nl-NL", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(date)
+      },
+    },
+    {
+      accessorKey: "acceptedAtUtc",
+      header: "Geaccepteerd op",
+      cell: ({ row }) => {
+        const val = row.getValue("acceptedAtUtc") as string | undefined
+        if (!val) return "-"
+        const date = new Date(val)
         return Intl.DateTimeFormat("nl-NL", {
           day: "2-digit",
           month: "short",
