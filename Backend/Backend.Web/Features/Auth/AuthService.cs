@@ -41,6 +41,34 @@ public sealed class AuthService(
         return new LoginResponse(accessToken, refreshToken, userRo);
     }
 
+    public async Task<IdentityResult?> RegisterAsync(RegisterRequest request, CancellationToken ct)
+    {
+        var existingUser = await userManager.FindByEmailAsync(request.Email);
+        if (existingUser is not null)
+            return null;
+
+        var user = new ApplicationUser
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            FirstName = request.FirstName,
+            LastName = request.LastName
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+            return result;
+
+        var roleResult = await userManager.AddToRoleAsync(user, AppRoles.Attendee);
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return roleResult;
+        }
+
+        return IdentityResult.Success;
+    }
+
     public async Task LogoutAsync(string userId, string refreshToken, CancellationToken ct)
     {
         var token = await refreshTokenRepository.GetByTokenAsync(refreshToken, ct);
