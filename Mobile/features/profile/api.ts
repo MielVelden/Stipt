@@ -1,30 +1,24 @@
 import apiClient from "@/lib/api-client"
+import {UserProfileRo} from "@/generated-types/user-profile-ro";
 
-export type UserProfile = {
-  email: string
-  firstName: string
-  lastName: string
-  profileImageId?: string | null
-}
-
-export async function getProfileAsync(): Promise<UserProfile> {
-  const response = await apiClient.get<UserProfile>("/users/me")
+export async function getProfileAsync(): Promise<UserProfileRo> {
+  const response = await apiClient.get<UserProfileRo>("/users/me")
   return response.data
 }
 
-export async function updateProfileAsync(profile: UserProfile): Promise<UserProfile> {
-  const response = await apiClient.put<UserProfile>("/users/me", profile)
+export async function updateProfileAsync(profile: UserProfileRo): Promise<UserProfileRo> {
+  const response = await apiClient.put<UserProfileRo>("/users/me", profile)
   return response.data
 }
 
-export async function uploadProfilePhotoAsync(file: FormData): Promise<UserProfile> {
-  const response = await apiClient.post<UserProfile>("/users/me/photo", file, {
+export async function uploadProfilePhotoAsync(file: FormData): Promise<UserProfileRo> {
+  const response = await apiClient.post<UserProfileRo>("/users/me/photo", file, {
     headers: { "Content-Type": "multipart/form-data" },
   })
   return response.data
 }
 
-export async function deleteProfilePhotoAsync(): Promise<UserProfile> {
-  const response = await apiClient.delete<UserProfile>("/users/me/photo")
+export async function deleteProfilePhotoAsync(): Promise<UserProfileRo> {
+  const response = await apiClient.delete<UserProfileRo>("/users/me/photo")
   return response.data
 }
