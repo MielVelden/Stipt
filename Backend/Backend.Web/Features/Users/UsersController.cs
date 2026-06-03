@@ -64,7 +64,7 @@ public sealed class UsersController(UsersService usersService, IImagesService im
             return BadRequest("Enkel JPEG, PNG, en WebP afbeeldingen zijn toegestaan.");
 
         if (file.Length > MaxFileSizeBytes)
-            return BadRequest("Grootte van afbeelding mag niet goter zijn dan 5 MB.");
+            return BadRequest("Grootte van afbeelding mag niet groter zijn dan 5 MB.");
 
         var imageId = await imagesService.UploadForUserAsync(file, userId, ct);
         var (profile, result) = await usersService.UpdateProfileImageAsync(userId, imageId, ct);

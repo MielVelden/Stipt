@@ -23,7 +23,7 @@ public sealed class ImagesController(IImagesService imageStorageService) : Contr
             return BadRequest("Enkel JPEG, PNG, en WebP afbeeldingen zijn toegestaan.");
 
         if (file.Length > MaxFileSizeBytes)
-            return BadRequest("Grootte van afbeelding mag niet goter zijn dan 5 MB.");
+            return BadRequest("Grootte van afbeelding mag niet groter zijn dan 5 MB.");
 
         var imageId = await imageStorageService.UploadAsync(file, ct);
         return Ok(new UploadImageRo(imageId));
