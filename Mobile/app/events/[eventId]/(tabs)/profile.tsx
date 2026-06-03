@@ -53,9 +53,7 @@ export default function ProfileScreen() {
   }
 
   function handleProfileEdit() {
-    router.push({
-      pathname: "/profile",
-    })
+    router.push("/profile")
   }
 
   return (

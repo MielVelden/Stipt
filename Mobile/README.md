@@ -36,16 +36,16 @@ Standaard gebruikt de app `http://localhost:5283/api`.
 Mobile/
 ├── app/                          # Expo Router — file-based routes
 │   ├── _layout.tsx               # Root Stack layout (redirect naar login)
-│   ├── index.tsx                 # Entry point (redirect)
+│   ├── profile.tsx                 # Entry point (redirect)
 │   ├── (auth)/
 │   │   ├── _layout.tsx           # Auth Stack layout
 │   │   └── login.tsx             # Inlogscherm
 │   └── (tabs)/
 │       ├── _layout.tsx           # Tab navigator (4 tabs)
-│       ├── index.tsx             # Evenementen overzicht
+│       ├── profile.tsx             # Evenementen overzicht
 │       ├── schedule.tsx          # Mijn agenda
 │       ├── qr.tsx                # QR scanner
-│       ├── index.tsx          # Instellingen
+│       ├── profile.tsx          # Instellingen
 │
 ├── features/                     # Feature-gebaseerde business logic
 │   ├── events/

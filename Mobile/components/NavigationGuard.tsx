@@ -13,12 +13,14 @@ export function NavigationGuard({ children }: { children: ReactNode }) {
         if (isLoading) return;
 
         const inAuthGroup = segments[0] === "(auth)";
-        const inEventsGroup = segments[0] === "events";
 
         if (!isAuthenticated && !inAuthGroup) {
             router.replace("/(auth)/login");
             return;
-        } else if (isAuthenticated && !inEventsGroup) {
+        }
+
+        const isOnHomeScreen = !segments[0];
+        if (isAuthenticated && isOnHomeScreen) {
             router.replace("/events/");
             return;
         }
