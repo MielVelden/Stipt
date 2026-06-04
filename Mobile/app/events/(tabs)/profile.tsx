@@ -1,51 +1,23 @@
-import {router} from "expo-router"
-
-import {Image, Pressable, View} from "react-native"
-
-import {Button} from "@/components/ui/button"
-import {Text} from "@/components/ui/text"
-import {useAuth} from "@/lib/auth-context"
-import {getProfileAsync} from "@/features/profile/api"
-import {API_BASE_URL} from "@/constants/api"
-import {Icon} from "@/components/ui/icon"
-import {Pencil} from "lucide-react-native"
-import {UserProfileRo} from "@/generated-types/user-profile-ro"
-import {useEffect, useMemo, useState} from "react"
+import { router } from "expo-router"
+import { Image, Pressable, View } from "react-native"
+import { Button } from "@/components/ui/button"
+import { Text } from "@/components/ui/text"
+import { useAuth } from "@/lib/auth-context"
+import { API_BASE_URL } from "@/constants/api"
+import { Icon } from "@/components/ui/icon"
+import { Pencil } from "lucide-react-native"
+import { useMemo } from "react"
+import { useUserProfile } from "@/context/profile-context"
 
 export default function ProfileScreen() {
-    const {logout} = useAuth()
+    const { logout } = useAuth()
 
-    const [profile, setProfile] = useState<UserProfileRo>({
-        firstName: "",
-        lastName: "",
-        email: "",
-        profileImageId: undefined,
-    })
-    const [isLoading, setIsLoading] = useState(true)
+    const { profile, isLoading } = useUserProfile()
 
     const fullName = useMemo(() => {
         const name = `${profile.firstName} ${profile.lastName}`.trim()
         return name.length > 0 ? name : "Naam onbekend"
     }, [profile.firstName, profile.lastName])
-
-    useEffect(() => {
-        let isMounted = true
-
-        async function loadProfile() {
-            try {
-                const storedProfile = await getProfileAsync()
-                if (isMounted) setProfile(storedProfile)
-            } finally {
-                if (isMounted) setIsLoading(false)
-            }
-        }
-
-        loadProfile()
-
-        return () => {
-            isMounted = false
-        }
-    }, [])
 
     async function handleLogout() {
         await logout()
@@ -65,13 +37,12 @@ export default function ProfileScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Profiel bewerken"
             >
-                <View
-                    className="flex-row items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
+                <View className="flex-row items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
                     <View className="flex-row items-center">
                         <View className="h-12 w-12 rounded-full bg-muted items-center justify-center overflow-hidden">
                             {profile.profileImageId ? (
                                 <Image
-                                    source={{uri: `${API_BASE_URL}/images/${profile.profileImageId}`}}
+                                    source={{ uri: `${API_BASE_URL}/images/${profile.profileImageId}` }}
                                     className="h-12 w-12"
                                     resizeMode="cover"
                                 />
@@ -86,7 +57,7 @@ export default function ProfileScreen() {
                         </View>
                     </View>
 
-                    <Icon as={Pencil} size={20} className="text-foreground"/>
+                    <Icon as={Pencil} size={20} className="text-foreground" />
                 </View>
             </Pressable>
 
