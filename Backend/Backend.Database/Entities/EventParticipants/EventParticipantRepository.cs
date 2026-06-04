@@ -30,7 +30,7 @@ internal sealed class EventParticipantRepository(ApplicationDbContext dbContext)
         return dbContext.EventParticipants
             .Include(x => x.User)
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.EventId == eventId && x.User.Email != null && x.User.Email.Equals(email, StringComparison.CurrentCultureIgnoreCase), cancellationToken);
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.User.Email != null && x.User.Email.ToLower() == email.ToLower(), cancellationToken);
     }
 
     public Task<List<EventParticipant>> GetAllByEventIdAsync(Guid eventId, CancellationToken cancellationToken)
@@ -77,6 +77,6 @@ internal sealed class EventParticipantRepository(ApplicationDbContext dbContext)
     {
         return dbContext.EventParticipants
             .AsNoTracking()
-            .AnyAsync(x => x.EventId == eventId && x.User.Email != null && x.User.Email.Equals(email, StringComparison.CurrentCultureIgnoreCase), cancellationToken);
+            .AnyAsync(x => x.EventId == eventId && x.User.Email != null && x.User.Email.ToLower() == email.ToLower(), cancellationToken);
     }
 }
