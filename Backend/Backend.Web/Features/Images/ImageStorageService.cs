@@ -4,7 +4,17 @@ namespace Backend.Web.Features.Images;
 
 public sealed class ImageStorageService(IImageRepository imageRepository) : IImagesService
 {
-    public async Task<Guid> UploadAsync(IFormFile file, CancellationToken ct)
+    public Task<Guid> UploadAsync(IFormFile file, CancellationToken ct)
+    {
+        return UploadInternalAsync(file, null, ct);
+    }
+
+    public Task<Guid> UploadForUserAsync(IFormFile file, string userId, CancellationToken ct)
+    {
+        return UploadInternalAsync(file, userId, ct);
+    }
+
+    private async Task<Guid> UploadInternalAsync(IFormFile file, string? userId, CancellationToken ct)
     {
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms, ct);
@@ -15,7 +25,8 @@ public sealed class ImageStorageService(IImageRepository imageRepository) : IIma
             Data = ms.ToArray(),
             ContentType = file.ContentType,
             FileName = file.FileName,
-            UploadedAtUtc = DateTime.UtcNow
+            UploadedAtUtc = DateTime.UtcNow,
+            UploadedByUserId = Guid.TryParse(userId, out var parsedId) ? parsedId : null
         };
 
         await imageRepository.AddAsync(image, ct);

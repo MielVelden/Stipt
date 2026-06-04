@@ -19,7 +19,7 @@ import { useAppContext } from "~/contexts/app-context"
 import type { SessionRo } from "~/generated-types/session-ro"
 import { ArrowLeft } from "lucide-react"
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api"
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5283/api"
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const eventId = params.eventId
