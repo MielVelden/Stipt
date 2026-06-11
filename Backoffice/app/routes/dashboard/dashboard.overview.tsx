@@ -12,16 +12,17 @@ import type { Route } from "./+types/dashboard.overview"
 import type { SessionRo } from "~/generated-types/session-ro"
 import type { SessionEnrollmentUpdatedMessage } from "~/generated-types/session-enrollment-updated-message"
 
-type FilterMode = "alles" | "leeg" | "bijna-vol" | "vol"
+type FilterMode = "alles" | "beschikbaar" | "bijna-vol" | "vol"
+type ConnectionStatus = "connecting" | "connected" | "disconnected" | "reconnecting"
 
 function getOccupancyPct(s: SessionRo) {
   return s.effectiveCapacity > 0 ? s.enrolledCount / s.effectiveCapacity : 0
 }
 
-function getOccupancyCategory(s: SessionRo): "leeg" | "bijna-vol" | "vol" {
+function getOccupancyCategory(s: SessionRo): "beschikbaar" | "bijna-vol" | "vol" {
   if (s.enrolledCount >= s.effectiveCapacity) return "vol"
   if (getOccupancyPct(s) >= 0.95) return "bijna-vol"
-  return "leeg"
+  return "beschikbaar"
 }
 
 function OccupancyBar({ session }: { session: SessionRo }) {
@@ -54,7 +55,7 @@ function StatusBadge({ session }: { session: SessionRo }) {
     return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Vol</Badge>
   if (category === "bijna-vol")
     return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">Bijna vol</Badge>
-  return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Leeg</Badge>
+  return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Beschikbaar</Badge>
 }
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
@@ -74,6 +75,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
   const { eventId } = loaderData
   const [sessions, setSessions] = useState<SessionRo[]>(loaderData.sessions)
   const [filter, setFilter] = useState<FilterMode>("alles")
+  const [connStatus, setConnStatus] = useState<ConnectionStatus>("connecting")
 
   useEffect(() => {
     setSessions(loaderData.sessions)
@@ -82,9 +84,9 @@ export default function Page({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     const connection = createHubConnection("/hub/sessions")
 
-    connection.start().then(() => {
-      connection.invoke("JoinEventGroup", eventId).catch(console.error)
-    }).catch(console.error)
+    connection.onreconnecting(() => setConnStatus("reconnecting"))
+    connection.onreconnected(() => setConnStatus("connected"))
+    connection.onclose(() => setConnStatus("disconnected"))
 
     connection.on("SessionEnrollmentUpdatedMessage", (msg: SessionEnrollmentUpdatedMessage) => {
       setSessions(prev =>
@@ -102,6 +104,16 @@ export default function Page({ loaderData }: Route.ComponentProps) {
       )
     })
 
+    connection.start()
+      .then(() => {
+        setConnStatus("connected")
+        connection.invoke("JoinEventGroup", eventId).catch(console.error)
+      })
+      .catch((err) => {
+        console.error("SignalR connection failed:", err)
+        setConnStatus("disconnected")
+      })
+
     return () => {
       connection.stop().catch(console.error)
     }
@@ -118,10 +130,23 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 
   const filters: { label: string; value: FilterMode }[] = [
     { label: "Alles", value: "alles" },
-    { label: "Leeg", value: "leeg" },
+    { label: "Beschikbaar", value: "beschikbaar" },
     { label: "Bijna vol", value: "bijna-vol" },
     { label: "Vol", value: "vol" },
   ]
+
+  const statusDot: Record<ConnectionStatus, string> = {
+    connected: "bg-green-500",
+    connecting: "bg-yellow-400 animate-pulse",
+    reconnecting: "bg-yellow-400 animate-pulse",
+    disconnected: "bg-red-500",
+  }
+  const statusLabel: Record<ConnectionStatus, string> = {
+    connected: "Live",
+    connecting: "Verbinden…",
+    reconnecting: "Herverbinden…",
+    disconnected: "Verbroken",
+  }
 
   return (
     <>
@@ -138,9 +163,11 @@ export default function Page({ loaderData }: Route.ComponentProps) {
               {f.label}
             </Button>
           ))}
-          <span className="ml-auto text-sm text-muted-foreground">
-            {displayed.length} sessies
+          <span className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground">
+            <span className={`inline-block h-2 w-2 rounded-full ${statusDot[connStatus]}`} />
+            {statusLabel[connStatus]}
           </span>
+          <span className="text-sm text-muted-foreground">· {displayed.length} sessies</span>
         </div>
 
         <div className="overflow-hidden rounded-lg border">
