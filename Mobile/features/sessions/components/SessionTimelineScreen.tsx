@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { ActivityIndicator, Image, ScrollView, View, RefreshControl } from "react-native";
+import { ActivityIndicator, Image, ScrollView, View, RefreshControl, Pressable } from "react-native";
 import { API_BASE_URL } from "@/constants/api";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { MapPin, Calendar, Filter } from "lucide-react-native";
+import { MapPin, Calendar, Filter, List, LayoutGrid } from "lucide-react-native";
 import type { SessionFilterDto } from "@/features/sessions/types";
 import { getAvailableLabels } from "@/features/sessions/utils";
 import { formatDateTimeRange } from "@/lib/utils";
 import { SessionCard } from "@/features/sessions/components/SessionCard";
 import { SessionFilterModal } from "@/features/sessions/components/SessionFilterModal";
+import { SessionTimelineGrid } from "@/features/sessions/components/SessionTimelineGrid";
 import { getEventById } from "@/features/events/api";
 import { EventRo } from "@/generated-types/event-ro";
 import { useSessionHub } from "@/hooks/use-session-hub";
@@ -45,6 +46,7 @@ export function SessionTimelineScreen({
     const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
     const fetchTimelineData = useCallback(async () => {
         try {
@@ -258,22 +260,39 @@ export function SessionTimelineScreen({
                         {sectionTitle}
                     </Text>
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full flex-row gap-2"
-                        onPress={() => setIsFilterModalVisible(true)}
-                    >
-                        <Filter size={16} className="text-foreground" />
-                        <Text>Filters</Text>
-                        {activeFilterCount > 0 && (
-                            <View className="ml-2 bg-slate-900 rounded-full w-5 h-5 items-center justify-center">
-                                <Text className="text-white text-[10px] font-bold">
-                                    {activeFilterCount}
-                                </Text>
-                            </View>
-                        )}
-                    </Button>
+                    <View className="flex-row items-center gap-2">
+                        <View className="flex-row h-9 sm:h-8 items-center border border-border rounded-full overflow-hidden">
+                            <Pressable
+                                className={`h-full px-3 items-center justify-center ${viewMode === "list" ? "bg-slate-900" : "bg-transparent"}`}
+                                onPress={() => setViewMode("list")}
+                            >
+                                <List size={15} color={viewMode === "list" ? "#ffffff" : "#64748b"} />
+                            </Pressable>
+                            <Pressable
+                                className={`h-full px-3 items-center justify-center ${viewMode === "grid" ? "bg-slate-900" : "bg-transparent"}`}
+                                onPress={() => setViewMode("grid")}
+                            >
+                                <LayoutGrid size={15} color={viewMode === "grid" ? "#ffffff" : "#64748b"} />
+                            </Pressable>
+                        </View>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full flex-row gap-2"
+                            onPress={() => setIsFilterModalVisible(true)}
+                        >
+                            <Filter size={16} className="text-foreground" />
+                            <Text>Filters</Text>
+                            {activeFilterCount > 0 && (
+                                <View className="ml-2 bg-slate-900 rounded-full w-5 h-5 items-center justify-center">
+                                    <Text className="text-white text-[10px] font-bold">
+                                        {activeFilterCount}
+                                    </Text>
+                                </View>
+                            )}
+                        </Button>
+                    </View>
                 </View>
 
                 {sessions.length === 0 ? (
@@ -293,6 +312,18 @@ export function SessionTimelineScreen({
                             </Button>
                         )}
                     </View>
+                ) : viewMode === "grid" ? (
+                    <SessionTimelineGrid
+                        sessions={sessions}
+                        showEnrollmentStatus={showEnrollmentStatus}
+                        accentColor={event?.style?.primaryBackgroundColor}
+                        onSessionPress={(session) =>
+                            router.push({
+                                pathname: "/events/[eventId]/sessions/[id]",
+                                params: { id: session.id, eventId },
+                            })
+                        }
+                    />
                 ) : (
                     <View className="gap-y-3">
                         {sessions.map((session) => (
