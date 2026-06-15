@@ -54,6 +54,10 @@ export default [
           route(":id", "routes/speakers/speakers.details.tsx"),
           route(":id/bewerken", "routes/speakers/speakers.edit.tsx"),
         ]),
+
+        ...prefix("aanwezigheid", [
+          route("", "routes/attendance/attendance.overview.tsx"),
+        ]),
       ]),
     ])
   ),
