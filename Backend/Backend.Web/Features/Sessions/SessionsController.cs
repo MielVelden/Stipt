@@ -30,6 +30,14 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         return Ok(response);
     }
 
+    [HttpGet("attendance")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<ActionResult<IReadOnlyCollection<SessionAttendanceRo>>> GetAttendance(Guid eventId, CancellationToken ct)
+    {
+        var response = await sessionsService.GetSessionAttendanceOverviewAsync(eventId, ct);
+        return Ok(response);
+    }
+
     [HttpGet("personal-agenda")]
     [Authorize(Roles = AppRoles.Attendee)]
     public async Task<ActionResult<PersonalAgendaRo>> GetPersonalAgenda(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)

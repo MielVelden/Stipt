@@ -81,6 +81,17 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
     }
 
 
+    public async Task<IReadOnlyCollection<Session>> GetWithAttendanceAsync(Guid eventId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Sessions
+            .AsNoTracking()
+            .Include(x => x.Enrollments)
+            .Include(x => x.Attendances)
+            .Where(x => x.EventId == eventId)
+            .OrderBy(x => x.StartDateTime)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken)
     {
         dbContext.Sessions.Update(session);

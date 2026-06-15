@@ -151,6 +151,13 @@ public sealed class SessionsService(
         return await sessionRepository.DeleteAsync(eventId, id, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<SessionAttendanceRo>> GetSessionAttendanceOverviewAsync(Guid eventId, CancellationToken cancellationToken)
+    {
+        var sessions = await sessionRepository.GetWithAttendanceAsync(eventId, cancellationToken);
+
+        return sessions.Select(session => session.ToAttendanceRo()).ToList();
+    }
+
     public async Task<PersonalAgendaRo> GetPersonalAgendaAsync(
         Guid eventId,
         Guid participantId,
