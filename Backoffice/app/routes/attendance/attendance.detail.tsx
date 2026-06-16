@@ -21,7 +21,7 @@ import {
   InputGroupInput,
 } from "~/components/ui/input-group"
 import { DataTable } from "~/components/data-table"
-import { AttendancePieChart } from "~/components/attendance-pie-chart"
+import { PieChart } from "~/components/ui/pie-chart"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -339,10 +339,12 @@ export default function Page({ loaderData: data }: Route.ComponentProps) {
 
           <Card>
             <CardContent className="pt-4">
-              <AttendancePieChart
-                presentCount={presentCount}
-                absentCount={absentCount}
-                unknownCount={unknownCount}
+              <PieChart
+                data={[
+                  { name: "Aanwezig", value: presentCount, color: "#22c55e" },
+                  { name: "Afwezig", value: absentCount, color: "#ef4444" },
+                  { name: "Niet geregistreerd", value: unknownCount, color: "#d1d5db" },
+                ]}
               />
             </CardContent>
           </Card>
