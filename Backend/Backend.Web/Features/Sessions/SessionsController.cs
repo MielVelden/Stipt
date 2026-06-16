@@ -38,6 +38,30 @@ public class SessionsController(SessionsService sessionsService) : ControllerBas
         return Ok(response);
     }
 
+    [HttpGet("{sessionId:guid}/attendance")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<ActionResult<SessionAttendanceDetailRo>> GetAttendanceDetail(Guid eventId, Guid sessionId, CancellationToken ct)
+    {
+        var response = await sessionsService.GetSessionAttendanceDetailAsync(eventId, sessionId, ct);
+        return response is null ? NotFound() : Ok(response);
+    }
+
+    [HttpPut("{sessionId:guid}/attendance/{participantId:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<IActionResult> UpdateAttendance(Guid eventId, Guid sessionId, Guid participantId, [FromBody] UpdateAttendanceStatusDto request, CancellationToken ct)
+    {
+        await sessionsService.UpdateAttendanceAsync(eventId, sessionId, participantId, request.Status, ct);
+        return NoContent();
+    }
+
+    [HttpPost("{sessionId:guid}/attendance/mark-absent")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<IActionResult> MarkUnknownAsAbsent(Guid eventId, Guid sessionId, CancellationToken ct)
+    {
+        await sessionsService.MarkUnknownAsAbsentAsync(eventId, sessionId, ct);
+        return NoContent();
+    }
+
     [HttpGet("personal-agenda")]
     [Authorize(Roles = AppRoles.Attendee)]
     public async Task<ActionResult<PersonalAgendaRo>> GetPersonalAgenda(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
