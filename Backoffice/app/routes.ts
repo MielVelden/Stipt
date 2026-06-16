@@ -57,6 +57,7 @@ export default [
 
         ...prefix("aanwezigheid", [
           route("", "routes/attendance/attendance.overview.tsx"),
+          route(":sessionId", "routes/attendance/attendance.detail.tsx"),
         ]),
       ]),
     ])
