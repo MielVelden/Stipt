@@ -2,13 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { isRouteErrorResponse, Link, useRevalidator, useRouteError } from "react-router"
 import { ArrowLeft, Check, Clock, HelpCircle, MapPin, SearchIcon, X } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
-
 import { PageHeader } from "~/layouts/components/page-header"
 import { PageContainer } from "~/layouts/components/page-container"
 import { Card, CardContent } from "~/components/ui/card"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
-import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group"
+import { ToggleOptionGroup, type ToggleOption } from "~/components/ui/toggle-option-group"
 import {
   Select,
   SelectContent,
@@ -35,9 +34,7 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog"
 import FetchError from "~/components/fetch-error"
-
 import { toast } from "sonner"
-
 import apiClient from "~/lib/api-client"
 import { cn, formatTime, formatDate, getApiErrorDetail } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
@@ -80,49 +77,25 @@ const STATUS_CONFIG = {
   },
 } as const
 
-type ParticipantRow = ParticipantAttendanceRo & { effectiveStatus: SessionAttendanceStatus }
+const ATTENDANCE_OPTIONS: ToggleOption<SessionAttendanceStatus>[] = [
+  {
+    value: SessionAttendanceStatus.Unknown,
+    icon: <HelpCircle className="h-3.5 w-3.5" />,
+    activeClassName: "data-[state=on]:bg-gray-100 data-[state=on]:text-gray-600",
+  },
+  {
+    value: SessionAttendanceStatus.Present,
+    icon: <Check className="h-3.5 w-3.5" />,
+    activeClassName: "data-[state=on]:border-green-300 data-[state=on]:bg-green-100 data-[state=on]:text-green-700",
+  },
+  {
+    value: SessionAttendanceStatus.Absent,
+    icon: <X className="h-3.5 w-3.5" />,
+    activeClassName: "data-[state=on]:border-red-300 data-[state=on]:bg-red-100 data-[state=on]:text-red-700",
+  },
+]
 
-function AttendanceToggle({
-  status,
-  onChange,
-  disabled = false,
-}: {
-  status: SessionAttendanceStatus
-  onChange: (next: SessionAttendanceStatus) => void
-  disabled?: boolean
-}) {
-  return (
-    <ToggleGroup
-      type="single"
-      size="sm"
-      variant="outline"
-      value={status}
-      onValueChange={(val) => {
-        if (val) onChange(val as SessionAttendanceStatus)
-      }}
-      disabled={disabled}
-    >
-      <ToggleGroupItem
-        value={SessionAttendanceStatus.Unknown}
-        className="data-[state=on]:bg-gray-100 data-[state=on]:text-gray-600"
-      >
-        <HelpCircle className="h-3.5 w-3.5" />
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value={SessionAttendanceStatus.Present}
-        className="data-[state=on]:border-green-300 data-[state=on]:bg-green-100 data-[state=on]:text-green-700"
-      >
-        <Check className="h-3.5 w-3.5" />
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value={SessionAttendanceStatus.Absent}
-        className="data-[state=on]:border-red-300 data-[state=on]:bg-red-100 data-[state=on]:text-red-700"
-      >
-        <X className="h-3.5 w-3.5" />
-      </ToggleGroupItem>
-    </ToggleGroup>
-  )
-}
+type ParticipantRow = ParticipantAttendanceRo & { effectiveStatus: SessionAttendanceStatus }
 
 function StatusBadge({ status }: { status: SessionAttendanceStatus }) {
   const config = STATUS_CONFIG[status]
@@ -245,8 +218,9 @@ const handleMarkAllAbsent = useCallback(async (eventId: string, sessionId: strin
         const p = row.original
         return (
           <div className="flex items-center gap-3">
-            <AttendanceToggle
-              status={p.effectiveStatus}
+            <ToggleOptionGroup
+              options={ATTENDANCE_OPTIONS}
+              value={p.effectiveStatus}
               disabled={pending.has(p.participantId)}
               onChange={(next) =>
                 handleStatusChange(p.participantId, next, selectedEventId!, data.sessionId)
