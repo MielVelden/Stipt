@@ -36,8 +36,10 @@ import {
 } from "~/components/ui/alert-dialog"
 import FetchError from "~/components/fetch-error"
 
+import { toast } from "sonner"
+
 import apiClient from "~/lib/api-client"
-import { cn, formatTime, formatDate } from "~/lib/utils"
+import { cn, formatTime, formatDate, getApiErrorDetail } from "~/lib/utils"
 import { useAppContext } from "~/contexts/app-context"
 import type { Route } from "./+types/attendance.detail"
 import type { SessionAttendanceDetailRo } from "~/generated-types/session-attendance-detail-ro"
@@ -192,7 +194,8 @@ const handleMarkAllAbsent = useCallback(async (eventId: string, sessionId: strin
     try {
       await apiClient.post(`/events/${eventId}/sessions/${sessionId}/attendance/mark-absent`)
       revalidate()
-    } catch {
+    } catch (error) {
+      toast.error(getApiErrorDetail(error, "Markeren als afwezig mislukt."))
     }
   }, [revalidate])
 

@@ -34,6 +34,6 @@ internal sealed class SessionAttendanceConfiguration : IEntityTypeConfiguration<
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(x => x.SessionId);
+        builder.HasIndex(x => new { x.SessionId, x.ParticipantId }).IsUnique();
     }
 }

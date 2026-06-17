@@ -175,12 +175,13 @@ public sealed class SessionsService(
         var users = await userRepository.GetByIdsAsync(participantIds, cancellationToken);
 
         var userLookup = users.ToDictionary(u => u.Id);
+        var attendanceLookup = session.Attendances.ToDictionary(a => a.ParticipantId);
 
         var participants = enrolledParticipants
             .Select(enrollment =>
             {
                 userLookup.TryGetValue(enrollment.ParticipantId.ToString(), out var user);
-                var attendance = session.Attendances.FirstOrDefault(a => a.ParticipantId == enrollment.ParticipantId);
+                attendanceLookup.TryGetValue(enrollment.ParticipantId, out var attendance);
                 return new ParticipantAttendanceRo(
                     enrollment.ParticipantId,
                     user?.FirstName ?? string.Empty,

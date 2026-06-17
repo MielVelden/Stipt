@@ -67,9 +67,13 @@ public static class SessionMappings
 
     public static SessionAttendanceRo ToAttendanceRo(this Session session)
     {
-        var enrollmentCount = session.Enrollments.Count(x => x.Status == SessionEnrollmentStatus.Enrolled);
-        var presentCount = session.Attendances.Count(x => x.Status == SessionAttendanceStatus.Present);
-        var absentCount = session.Attendances.Count(x => x.Status == SessionAttendanceStatus.Absent);
+        var enrolledIds = session.Enrollments
+            .Where(x => x.Status == SessionEnrollmentStatus.Enrolled)
+            .Select(x => x.ParticipantId)
+            .ToHashSet();
+        var enrollmentCount = enrolledIds.Count;
+        var presentCount = session.Attendances.Count(x => enrolledIds.Contains(x.ParticipantId) && x.Status == SessionAttendanceStatus.Present);
+        var absentCount = session.Attendances.Count(x => enrolledIds.Contains(x.ParticipantId) && x.Status == SessionAttendanceStatus.Absent);
         var unknownCount = enrollmentCount - presentCount - absentCount;
 
         return new SessionAttendanceRo(
