@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { isRouteErrorResponse, Link, useRevalidator, useRouteError } from "react-router"
-import { ArrowLeft, Clock, MapPin, SearchIcon } from "lucide-react"
+import { ArrowLeft, Check, Clock, HelpCircle, MapPin, SearchIcon, X } from "lucide-react"
 import type { ColumnDef } from "@tanstack/react-table"
 
 import { PageHeader } from "~/layouts/components/page-header"
@@ -8,6 +8,7 @@ import { PageContainer } from "~/layouts/components/page-container"
 import { Card, CardContent } from "~/components/ui/card"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
+import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group"
 import {
   Select,
   SelectContent,
@@ -77,18 +78,6 @@ const STATUS_CONFIG = {
   },
 } as const
 
-const TOGGLE_COLORS: Record<SessionAttendanceStatus, string> = {
-  [SessionAttendanceStatus.Present]: "bg-green-500",
-  [SessionAttendanceStatus.Absent]: "bg-red-500",
-  [SessionAttendanceStatus.Unknown]: "bg-gray-300",
-}
-
-const STATUS_CYCLE: Record<SessionAttendanceStatus, SessionAttendanceStatus> = {
-  [SessionAttendanceStatus.Unknown]: SessionAttendanceStatus.Present,
-  [SessionAttendanceStatus.Present]: SessionAttendanceStatus.Absent,
-  [SessionAttendanceStatus.Absent]: SessionAttendanceStatus.Unknown,
-}
-
 type ParticipantRow = ParticipantAttendanceRo & { effectiveStatus: SessionAttendanceStatus }
 
 function AttendanceToggle({
@@ -100,45 +89,36 @@ function AttendanceToggle({
   onChange: (next: SessionAttendanceStatus) => void
   disabled?: boolean
 }) {
-  const [animating, setAnimating] = useState(false)
-
-  const displayStatus = animating ? SessionAttendanceStatus.Unknown : status
-  const isOn = displayStatus !== SessionAttendanceStatus.Unknown
-
-  const handleClick = () => {
-    const next = STATUS_CYCLE[status]
-    const bothOn =
-      status !== SessionAttendanceStatus.Unknown && next !== SessionAttendanceStatus.Unknown
-    if (bothOn) {
-      setAnimating(true)
-      setTimeout(() => {
-        setAnimating(false)
-        onChange(next)
-      }, 200)
-    } else {
-      onChange(next)
-    }
-  }
-
   return (
-    <button
-      type="button"
-      disabled={disabled || animating}
-      onClick={handleClick}
-      className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-        TOGGLE_COLORS[displayStatus]
-      )}
-      aria-checked={isOn}
-      role="switch"
+    <ToggleGroup
+      type="single"
+      size="sm"
+      variant="outline"
+      value={status}
+      onValueChange={(val) => {
+        if (val) onChange(val as SessionAttendanceStatus)
+      }}
+      disabled={disabled}
     >
-      <span
-        className={cn(
-          "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform duration-200",
-          isOn ? "translate-x-5" : "translate-x-0"
-        )}
-      />
-    </button>
+      <ToggleGroupItem
+        value={SessionAttendanceStatus.Unknown}
+        className="data-[state=on]:bg-gray-100 data-[state=on]:text-gray-600"
+      >
+        <HelpCircle className="h-3.5 w-3.5" />
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value={SessionAttendanceStatus.Present}
+        className="data-[state=on]:border-green-300 data-[state=on]:bg-green-100 data-[state=on]:text-green-700"
+      >
+        <Check className="h-3.5 w-3.5" />
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value={SessionAttendanceStatus.Absent}
+        className="data-[state=on]:border-red-300 data-[state=on]:bg-red-100 data-[state=on]:text-red-700"
+      >
+        <X className="h-3.5 w-3.5" />
+      </ToggleGroupItem>
+    </ToggleGroup>
   )
 }
 
@@ -208,14 +188,7 @@ export default function Page({ loaderData: data }: Route.ComponentProps) {
     []
   )
 
-  const handleReset = useCallback(
-    (participantId: string, eventId: string, sessionId: string) => {
-      handleStatusChange(participantId, SessionAttendanceStatus.Unknown, eventId, sessionId)
-    },
-    [handleStatusChange]
-  )
-
-  const handleMarkAllAbsent = useCallback(async (eventId: string, sessionId: string) => {
+const handleMarkAllAbsent = useCallback(async (eventId: string, sessionId: string) => {
     try {
       await apiClient.post(`/events/${eventId}/sessions/${sessionId}/attendance/mark-absent`)
       revalidate()
@@ -276,22 +249,11 @@ export default function Page({ loaderData: data }: Route.ComponentProps) {
                 handleStatusChange(p.participantId, next, selectedEventId!, data.sessionId)
               }
             />
-            <button
-              type="button"
-              className="text-sm text-muted-foreground underline hover:text-foreground disabled:opacity-50"
-              disabled={
-                pending.has(p.participantId) ||
-                p.effectiveStatus === SessionAttendanceStatus.Unknown
-              }
-              onClick={() => handleReset(p.participantId, selectedEventId!, data.sessionId)}
-            >
-              Reset
-            </button>
           </div>
         )
       },
     },
-  ], [pending, handleStatusChange, handleReset, selectedEventId, data.sessionId])
+  ], [pending, handleStatusChange, selectedEventId, data.sessionId])
 
   return (
     <>
@@ -371,7 +333,7 @@ export default function Page({ loaderData: data }: Route.ComponentProps) {
               <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="item-aligned">
                 <SelectItem value="all">Toon alle</SelectItem>
                 <SelectItem value={SessionAttendanceStatus.Present}>Aanwezig</SelectItem>
                 <SelectItem value={SessionAttendanceStatus.Absent}>Afwezig</SelectItem>

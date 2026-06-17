@@ -73,6 +73,14 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
     {
       accessorKey: "sessionTitle",
       header: "Titel",
+      cell: ({ row }) => (
+        <Link
+          to={`${eventBaseUrl}/aanwezigheid/${row.original.sessionId}`}
+          className="hover:underline"
+        >
+          {row.getValue("sessionTitle")}
+        </Link>
+      ),
     },
     {
       accessorKey: "enrollmentCount",
@@ -176,24 +184,24 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
             <SelectTrigger className="w-52">
               <SelectValue placeholder="Sorteren op..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="item-aligned">
               <SelectItem value="enrollment-desc">
-                Ingeschreven (hoog → laag)
+                Ingeschreven (hoogste eerst)
               </SelectItem>
               <SelectItem value="enrollment-asc">
-                Ingeschreven (laag → hoog)
+                Ingeschreven (laagste eerst)
               </SelectItem>
               <SelectItem value="present-desc">
-                Aanwezig % (hoog → laag)
+                Aanwezig % (hoogste eerst)
               </SelectItem>
               <SelectItem value="present-asc">
-                Aanwezig % (laag → hoog)
+                Aanwezig % (laagste eerst)
               </SelectItem>
               <SelectItem value="absent-desc">
-                Afwezig % (hoog → laag)
+                Afwezig % (hoogste eerst)
               </SelectItem>
               <SelectItem value="absent-asc">
-                Afwezig % (laag → hoog)
+                Afwezig % (laagste eerst)
               </SelectItem>
             </SelectContent>
           </Select>
