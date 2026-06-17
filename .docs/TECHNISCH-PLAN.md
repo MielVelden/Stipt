@@ -70,12 +70,9 @@ Controller  →  Service  →  Repository  →  EF Core  →  PostgreSQL
    (HTTP)     (business)    (data access)
 ```
 
-- **Controller** — vertaalt HTTP naar aanroepen, handelt autorisatie af en geeft DTO's terug. Bevat geen
-  business-logica.
-- **Service** — bevat de business-regels (bijv. controle op overlappende sessies of volle capaciteit) en orkestreert
-  repositories.
-- **Repository** — kapselt alle databasetoegang in achter een interface (`ISessionRepository`, `IEventRepository`, …),
-  zodat services testbaar zijn en niet afhankelijk van EF Core.
+- **Controller** — HTTP entry, handelt autorisatie af en geeft DTO's terug. Bevat geen business-logica.
+- **Service** — bevat de business-logica.
+- **Repository** — kapselt alle databasetoegang in achter een interface (`I..Repository`).
 
 Deze scheiding maakt elke laag los testbaar en houdt de afhankelijkheden in één richting (controller kent service,
 service kent repository, maar niet andersom).
@@ -99,10 +96,9 @@ structuur over de hele stack herkenbaar is.
 - **Migrations** — het versiebeheer van het databaseschema (auto-generated).
 
 Datum/tijd-velden gebruiken **NodaTime** (`LocalDateTime`, `LocalDate`) in plaats van `DateTime`. Dat voorkomt
-tijdzone-ambiguïteit bij sessieroosters: een sessie om 10:00 is lokaal 10:00, ongeacht de tijdzone van de server of de
-client.
+tijdzone-ambiguïteit: een sessie om 10:00 is lokaal 10:00, ongeacht de tijdzone van de server of de client.
 
-### 3.4 Cross-cutting concerns
+### 3.4 Middleware
 
 Een aantal zaken zijn centraal geregeld in `Backend.Web/Configuration`, zodat features ze niet zelf hoeven te
 implementeren:
@@ -111,7 +107,7 @@ implementeren:
 - **Foutafhandeling** — een `GlobalExceptionHandler` zet exceptions om naar gestandaardiseerde `ProblemDetails`
   -responses.
 - **Serialisatie** — JSON in camelCase, enums als strings, NodaTime-aware.
-- **CORS** — alleen de geconfigureerde origins (zoals de backoffice op `http://localhost:5173`) mogen de API benaderen.
+- **CORS** — alleen de geconfigureerde origins mogen de API benaderen.
 
 ## 4. Authenticatie & autorisatie
 
@@ -156,12 +152,12 @@ De backoffice is een **React 19**-applicatie met **React Router 7** als framewor
 
 ```
 Backoffice/app/
-├── routes/         # pagina's per feature (events, sessions, rooms, speakers, participants, dashboard)
-├── components/     # gedeelde componenten, incl. ui/ (shadcn/ui)
-├── layouts/        # dashboard-layout, sidebar, navigatie
-├── contexts/       # React context (o.a. geselecteerd evenement)
-├── lib/            # api-client (axios), signalr-client, auth, validatie, form-helpers
-└── generated-types/ # door TypeGen gegenereerde API-types
+├── routes/
+├── components/       # incl. ui/ (shadcn/ui)
+├── layouts/          
+├── contexts/
+├── lib/
+└── generated-types/  # door TypeGen gegenereerde API-types
 ```
 
 De UI is gebouwd met **shadcn/ui** componenten op Tailwind CSS. Formulieren gebruiken React Hook Form met Zod-validatie;
