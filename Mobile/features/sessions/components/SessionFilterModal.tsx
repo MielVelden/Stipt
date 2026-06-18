@@ -122,7 +122,7 @@ export function SessionFilterModal({
                             </>
                         )}
 
-                        {availableLabels.length > 0 && (
+                        {availableLabels.length > 0 ? (
                             <>
                                 <Text className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
                                     Onderwerpen
@@ -153,6 +153,10 @@ export function SessionFilterModal({
                                     })}
                                 </View>
                             </>
+                        ) : !showAvailabilityFilter && (
+                            <Text className="text-slate-500 italic">
+                                Er zijn geen filters beschikbaar
+                            </Text>
                         )}
                     </ScrollView>
 
@@ -165,11 +169,13 @@ export function SessionFilterModal({
                             </Button>
                         )}
 
-                        <Button variant="default" onPress={handleApply}>
-                            <Text className="font-semibold text-white">
-                                Toepassen
-                            </Text>
-                        </Button>
+                        {(showAvailabilityFilter || availableLabels.length > 0) && (
+                            <Button variant="default" onPress={handleApply}>
+                                <Text className="font-semibold text-white">
+                                    Toepassen
+                                </Text>
+                            </Button>
+                        )}
                     </View>
                 </View>
             </View>

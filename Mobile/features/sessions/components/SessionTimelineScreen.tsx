@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { ActivityIndicator, Image, ScrollView, View, RefreshControl, Pressable } from "react-native";
 import { API_BASE_URL } from "@/constants/api";
 import { useRouter } from "expo-router";
@@ -49,8 +49,10 @@ export function SessionTimelineScreen({
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+    const fetchGenRef = useRef(0);
 
     const fetchTimelineData = useCallback(async () => {
+        const currentGen = ++fetchGenRef.current;
         try {
             setError(null);
 
@@ -63,6 +65,8 @@ export function SessionTimelineScreen({
                 loadSessions(eventId, filter),
                 getEventById(eventId),
             ]);
+
+            if (fetchGenRef.current !== currentGen) return;
 
             setSessions(sessionData);
             setEvent(eventData);
