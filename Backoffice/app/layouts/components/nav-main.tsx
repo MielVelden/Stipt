@@ -12,11 +12,6 @@ import { useAppContext } from "~/contexts/app-context"
 
 const eventBasedItems = [
   {
-    title: "Dashboard",
-    url: "/",
-    icon: <LayoutDashboardIcon />,
-  },
-  {
     title: "Sessies",
     url: `/sessies`,
     icon: <SplitIcon />,

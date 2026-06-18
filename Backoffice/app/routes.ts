@@ -26,7 +26,7 @@ export default [
 
       // Event specific routes
       ...prefix("event/:eventId", [
-        route("", "routes/dashboard/dashboard.overview.tsx"),
+        route("", "routes/sessions/redirect-to-sessions.tsx"),
 
         ...prefix("sessies", [
           route("", "routes/sessions/sessions.overview.tsx"),
