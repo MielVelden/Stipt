@@ -184,7 +184,7 @@ export default function Page({ loaderData: sessions }: Route.ComponentProps) {
             <SelectTrigger className="w-52">
               <SelectValue placeholder="Sorteren op..." />
             </SelectTrigger>
-            <SelectContent position="item-aligned">
+            <SelectContent position="popper">
               <SelectItem value="enrollment-desc">
                 Ingeschreven (hoogste eerst)
               </SelectItem>
