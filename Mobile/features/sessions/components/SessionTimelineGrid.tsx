@@ -3,7 +3,6 @@ import { DimensionValue, TouchableOpacity, View, ViewStyle } from "react-native"
 import { Text } from "@/components/ui/text";
 import { formatTime } from "@/lib/utils";
 import { SessionRo } from "@/generated-types/session-ro";
-import { SessionEnrollmentStatus } from "@/generated-types/session-enrollment-status";
 import { Calendar, CalendarTouchableOpacityProps, ICalendarEventBase } from "react-native-big-calendar";
 import { parseISO } from "date-fns";
 
@@ -16,30 +15,19 @@ interface CalendarSession extends ICalendarEventBase {
 
 interface SessionTimelineGridProps {
     sessions: SessionRo[];
-    showEnrollmentStatus?: boolean;
     onSessionPress: (session: SessionRo) => void;
     accentColor?: string;
 }
 
-function getStatusBg(session: SessionRo, showEnrollmentStatus: boolean): string {
-    if (!showEnrollmentStatus)
-        return "#f8fafc";
-    if (session.myEnrollmentStatus === SessionEnrollmentStatus.Enrolled)
-        return "#f0fdf4";
-    if (session.myEnrollmentStatus === SessionEnrollmentStatus.Waitlisted)
-        return "#fffbeb";
-    if (!session.hasAvailableSpots)
-        return "#fef2f2";
-    return "#f8fafc";
-}
-
 export function SessionTimelineGrid({
     sessions,
-    showEnrollmentStatus = true,
     onSessionPress,
     accentColor = DEFAULT_ACCENT,
 }: SessionTimelineGridProps) {
-    const { events, date, minHour, maxHour, calendarHeight } = useMemo(() => {
+    const result = useMemo(() => {
+        if (sessions.length === 0) 
+            return null;
+
         const parsed = sessions.map((s) => ({
             session: s,
             start: parseISO(s.startDateTime),
@@ -75,7 +63,10 @@ export function SessionTimelineGrid({
         };
     }, [sessions]);
 
-    if (sessions.length === 0) return null;
+    if (!result) 
+        return null;
+
+    const { events, date, minHour, maxHour, calendarHeight } = result;
 
     const renderEvent = (
         event: CalendarSession,
@@ -99,7 +90,7 @@ export function SessionTimelineGrid({
                 style={[
                     touchableOpacityProps.style,
                     {
-                        backgroundColor: getStatusBg(event.session, showEnrollmentStatus),
+                        backgroundColor: "#ffffff",
                         borderRadius: 6,
                         overflow: "hidden",
                         borderWidth: 0,

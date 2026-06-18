@@ -26,6 +26,7 @@ interface SessionTimelineScreenProps {
     ) => Promise<SessionRo[]>;
     showAvailabilityFilter?: boolean;
     showEnrollmentStatus?: boolean;
+    allowGridView?: boolean;
     emptyStateText?: string;
 }
 
@@ -35,6 +36,7 @@ export function SessionTimelineScreen({
     loadSessions,
     showAvailabilityFilter = true,
     showEnrollmentStatus = true,
+    allowGridView = true,
     emptyStateText = "Geen sessies gevonden voor deze filters.",
 }: SessionTimelineScreenProps) {
     const router = useRouter();
@@ -127,6 +129,11 @@ export function SessionTimelineScreen({
             setAvailableOnly(false);
         }
     }, [showAvailabilityFilter]);
+
+    useEffect(() => {
+        if (!allowGridView)
+            setViewMode("list");
+    }, [allowGridView]);
 
     useEffect(() => {
         let isMounted = true;
@@ -261,20 +268,22 @@ export function SessionTimelineScreen({
                     </Text>
 
                     <View className="flex-row items-center gap-2">
-                        <View className="flex-row h-9 sm:h-8 items-center border border-border rounded-full overflow-hidden">
-                            <Pressable
-                                className={`h-full px-3 items-center justify-center ${viewMode === "list" ? "bg-slate-900" : "bg-transparent"}`}
-                                onPress={() => setViewMode("list")}
-                            >
-                                <List size={15} color={viewMode === "list" ? "#ffffff" : "#64748b"} />
-                            </Pressable>
-                            <Pressable
-                                className={`h-full px-3 items-center justify-center ${viewMode === "grid" ? "bg-slate-900" : "bg-transparent"}`}
-                                onPress={() => setViewMode("grid")}
-                            >
-                                <LayoutGrid size={15} color={viewMode === "grid" ? "#ffffff" : "#64748b"} />
-                            </Pressable>
-                        </View>
+                        {allowGridView && (
+                            <View className="flex-row h-9 sm:h-8 items-center border border-border rounded-full overflow-hidden">
+                                <Pressable
+                                    className={`h-full px-3 items-center justify-center ${viewMode === "list" ? "bg-slate-900" : "bg-transparent"}`}
+                                    onPress={() => setViewMode("list")}
+                                >
+                                    <List size={15} color={viewMode === "list" ? "#ffffff" : "#64748b"} />
+                                </Pressable>
+                                <Pressable
+                                    className={`h-full px-3 items-center justify-center ${viewMode === "grid" ? "bg-slate-900" : "bg-transparent"}`}
+                                    onPress={() => setViewMode("grid")}
+                                >
+                                    <LayoutGrid size={15} color={viewMode === "grid" ? "#ffffff" : "#64748b"} />
+                                </Pressable>
+                            </View>
+                        )}
 
                         <Button
                             variant="outline"
@@ -315,7 +324,6 @@ export function SessionTimelineScreen({
                 ) : viewMode === "grid" ? (
                     <SessionTimelineGrid
                         sessions={sessions}
-                        showEnrollmentStatus={showEnrollmentStatus}
                         accentColor={event?.style?.primaryBackgroundColor}
                         onSessionPress={(session) =>
                             router.push({
