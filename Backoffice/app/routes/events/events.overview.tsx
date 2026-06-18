@@ -126,10 +126,7 @@ export default function Page({ loaderData: events }: Route.ComponentProps) {
       accessorKey: fieldsEvent("name"),
       header: "Naam",
       cell: ({ row }) => (
-        <Link
-          to={`/app/evenementen/${row.original.id}`}
-          className="hover:underline"
-        >
+        <Link to={`/app/event/${row.original.id}`} className="hover:underline">
           {row.getValue("name")}
         </Link>
       ),
