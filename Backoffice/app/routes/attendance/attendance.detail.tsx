@@ -310,7 +310,7 @@ const handleMarkAllAbsent = useCallback(async (eventId: string, sessionId: strin
               <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent position="item-aligned">
+              <SelectContent position="popper">
                 <SelectItem value="all">Toon alle</SelectItem>
                 <SelectItem value={SessionAttendanceStatus.Present}>Aanwezig</SelectItem>
                 <SelectItem value={SessionAttendanceStatus.Absent}>Afwezig</SelectItem>
