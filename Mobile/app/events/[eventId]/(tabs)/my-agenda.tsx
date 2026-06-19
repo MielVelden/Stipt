@@ -28,6 +28,7 @@ export default function MyAgendaScreen() {
             loadSessions={getPersonalAgenda}
             showAvailabilityFilter={false}
             showEnrollmentStatus={false}
+            allowGridView={false}
             emptyStateText="Je hebt je nog niet ingeschreven voor sessies"
         />
     );
