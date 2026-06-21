@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260615230203_AddSessionAttendance")]
+    partial class AddSessionAttendance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -444,8 +447,7 @@ namespace Backend.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SessionId", "ParticipantId")
-                        .IsUnique();
+                    b.HasIndex("SessionId");
 
                     b.ToTable("session_attendances", (string)null);
                 });

@@ -1,6 +1,7 @@
+using Backend.Database.Entities.SessionEnrollments;
+using Backend.Database.Entities.SessionsAttendances;
 using Backend.Database.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Backend.Database.Entities.SessionEnrollments;
 using NodaTime;
 
 namespace Backend.Database.Entities.Sessions;
@@ -80,6 +81,80 @@ internal sealed class SessionRepository(ApplicationDbContext dbContext) : ISessi
             .ToListAsync(cancellationToken);
     }
 
+
+    public async Task<IReadOnlyCollection<Session>> GetWithAttendanceAsync(Guid eventId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Sessions
+            .AsNoTracking()
+            .Include(x => x.Enrollments)
+            .Include(x => x.Attendances)
+            .Where(x => x.EventId == eventId)
+            .OrderBy(x => x.StartDateTime)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<Session?> GetWithAttendanceDetailAsync(Guid eventId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        return dbContext.Sessions
+            .AsNoTracking()
+            .Include(x => x.Room)
+            .Include(x => x.Enrollments)
+            .Include(x => x.Attendances)
+            .FirstOrDefaultAsync(x => x.EventId == eventId && x.Id == sessionId, cancellationToken);
+    }
+
+    public async Task UpsertAttendanceAsync(Guid sessionId, Guid participantId, SessionAttendanceStatus status, CancellationToken cancellationToken)
+    {
+        var existing = await dbContext.SessionAttendances
+            .FirstOrDefaultAsync(a => a.SessionId == sessionId && a.ParticipantId == participantId, cancellationToken);
+
+        if (existing is null)
+        {
+            await dbContext.SessionAttendances.AddAsync(new SessionAttendance
+            {
+                Id = Guid.NewGuid(),
+                SessionId = sessionId,
+                ParticipantId = participantId,
+                Status = status,
+                CreatedAtUtc = DateTime.UtcNow
+            }, cancellationToken);
+        }
+        else
+        {
+            existing.Status = status;
+            existing.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task MarkUnknownAsAbsentAsync(Guid sessionId, IReadOnlyList<Guid> enrolledParticipantIds, CancellationToken cancellationToken)
+    {
+        var existingRecords = await dbContext.SessionAttendances
+            .Where(a => a.SessionId == sessionId && enrolledParticipantIds.Contains(a.ParticipantId))
+            .ToListAsync(cancellationToken);
+
+        foreach (var record in existingRecords.Where(r => r.Status == SessionAttendanceStatus.Unknown))
+        {
+            record.Status = SessionAttendanceStatus.Absent;
+            record.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        var existingIds = existingRecords.Select(r => r.ParticipantId).ToHashSet();
+        var newAbsent = enrolledParticipantIds
+            .Where(id => !existingIds.Contains(id))
+            .Select(id => new SessionAttendance
+            {
+                Id = Guid.NewGuid(),
+                SessionId = sessionId,
+                ParticipantId = id,
+                Status = SessionAttendanceStatus.Absent,
+                CreatedAtUtc = DateTime.UtcNow
+            });
+
+        await dbContext.SessionAttendances.AddRangeAsync(newAbsent, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
 
     public async Task<bool> UpdateAsync(Session session, CancellationToken cancellationToken)
     {

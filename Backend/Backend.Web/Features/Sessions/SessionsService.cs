@@ -1,13 +1,15 @@
+using Backend.Database.Entities;
 using Backend.Database.Entities.Events;
 using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.SessionsAttendances;
 using Backend.Database.Entities.Speakers;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions.Dtos;
 using Backend.Web.Features.Sessions.Exceptions;
-using NodaTime;
 using Microsoft.AspNetCore.SignalR;
+using NodaTime;
 
 namespace Backend.Web.Features.Sessions;
 
@@ -17,6 +19,7 @@ public sealed class SessionsService(
     IRoomRepository roomRepository,
     IEventRepository eventRepository,
     ISpeakerRepository speakerRepository,
+    IUserRepository userRepository,
     INotificationService notificationService,
     IHubContext<SessionsHub> hubContext)
 {
@@ -149,6 +152,88 @@ public sealed class SessionsService(
     public async Task<bool> DeleteAsync(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
         return await sessionRepository.DeleteAsync(eventId, id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<SessionAttendanceRo>> GetSessionAttendanceOverviewAsync(Guid eventId, CancellationToken cancellationToken)
+    {
+        var sessions = await sessionRepository.GetWithAttendanceAsync(eventId, cancellationToken);
+
+        return sessions.Select(session => session.ToAttendanceRo()).ToList();
+    }
+
+    public async Task<SessionAttendanceDetailRo?> GetSessionAttendanceDetailAsync(Guid eventId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        var session = await sessionRepository.GetWithAttendanceDetailAsync(eventId, sessionId, cancellationToken);
+        if (session is null)
+            return null;
+
+        var enrolledParticipants = session.Enrollments
+            .Where(e => e.Status == SessionEnrollmentStatus.Enrolled)
+            .ToList();
+
+        var participantIds = enrolledParticipants.Select(e => e.ParticipantId.ToString()).ToList();
+        var users = await userRepository.GetByIdsAsync(participantIds, cancellationToken);
+
+        var userLookup = users.ToDictionary(u => u.Id);
+        var attendanceLookup = session.Attendances.ToDictionary(a => a.ParticipantId);
+
+        var participants = enrolledParticipants
+            .Select(enrollment =>
+            {
+                userLookup.TryGetValue(enrollment.ParticipantId.ToString(), out var user);
+                attendanceLookup.TryGetValue(enrollment.ParticipantId, out var attendance);
+                return new ParticipantAttendanceRo(
+                    enrollment.ParticipantId,
+                    user?.FirstName ?? string.Empty,
+                    user?.LastName ?? string.Empty,
+                    user?.Email ?? string.Empty,
+                    attendance?.Status ?? SessionAttendanceStatus.Unknown);
+            })
+            .ToList()
+            .AsReadOnly();
+
+        var presentCount = participants.Count(p => p.Status == SessionAttendanceStatus.Present);
+        var absentCount = participants.Count(p => p.Status == SessionAttendanceStatus.Absent);
+        var unknownCount = participants.Count(p => p.Status == SessionAttendanceStatus.Unknown);
+
+        return new SessionAttendanceDetailRo(
+            session.Id,
+            session.Title,
+            session.Type,
+            session.Room.Name,
+            session.StartDateTime,
+            session.EndDateTime,
+            session.Labels.AsReadOnly(),
+            participants.Count,
+            presentCount,
+            absentCount,
+            unknownCount,
+            participants);
+    }
+
+    public async Task UpdateAttendanceAsync(Guid eventId, Guid sessionId, Guid participantId, SessionAttendanceStatus status, CancellationToken cancellationToken)
+    {
+        var session = await sessionRepository.GetWithAttendanceDetailAsync(eventId, sessionId, cancellationToken)
+            ?? throw new BadHttpRequestException("De sessie bestaat niet.", StatusCodes.Status404NotFound);
+
+        var isEnrolled = session.Enrollments.Any(e => e.ParticipantId == participantId && e.Status == SessionEnrollmentStatus.Enrolled);
+        if (!isEnrolled)
+            throw new BadHttpRequestException("De deelnemer is niet ingeschreven voor deze sessie.", StatusCodes.Status400BadRequest);
+
+        await sessionRepository.UpsertAttendanceAsync(sessionId, participantId, status, cancellationToken);
+    }
+
+    public async Task MarkUnknownAsAbsentAsync(Guid eventId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        var session = await sessionRepository.GetWithAttendanceDetailAsync(eventId, sessionId, cancellationToken)
+            ?? throw new BadHttpRequestException("De sessie bestaat niet.", StatusCodes.Status404NotFound);
+
+        var enrolledIds = session.Enrollments
+            .Where(e => e.Status == SessionEnrollmentStatus.Enrolled)
+            .Select(e => e.ParticipantId)
+            .ToList();
+
+        await sessionRepository.MarkUnknownAsAbsentAsync(sessionId, enrolledIds, cancellationToken);
     }
 
     public async Task<PersonalAgendaRo> GetPersonalAgendaAsync(

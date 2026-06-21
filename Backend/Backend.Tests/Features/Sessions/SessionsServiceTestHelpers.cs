@@ -3,6 +3,7 @@ using Backend.Database.Entities.Rooms;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Database.Entities.Sessions;
 using Backend.Database.Entities.Speakers;
+using Backend.Database.Entities;
 using Backend.Web.Features.Notifications;
 using Backend.Web.Features.Sessions;
 using NodaTime;
@@ -24,6 +25,7 @@ internal static class SessionsServiceTestHelpers
             Substitute.For<IRoomRepository>(),
             Substitute.For<IEventRepository>(),
             Substitute.For<ISpeakerRepository>(),
+            Substitute.For<IUserRepository>(),
             notificationService ?? Substitute.For<INotificationService>(),
             Substitute.For<IHubContext<SessionsHub>>());
     }

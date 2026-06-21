@@ -1,4 +1,5 @@
 using Backend.Database.Entities.Sessions;
+using Backend.Database.Entities.SessionsAttendances;
 using Backend.Database.Entities.SessionEnrollments;
 using Backend.Web.Features.Sessions.Dtos;
 
@@ -62,6 +63,26 @@ public static class SessionMappings
             myWaitlistPosition,
             session.CoverImageId
         );
+    }
+
+    public static SessionAttendanceRo ToAttendanceRo(this Session session)
+    {
+        var enrolledIds = session.Enrollments
+            .Where(x => x.Status == SessionEnrollmentStatus.Enrolled)
+            .Select(x => x.ParticipantId)
+            .ToHashSet();
+        var enrollmentCount = enrolledIds.Count;
+        var presentCount = session.Attendances.Count(x => enrolledIds.Contains(x.ParticipantId) && x.Status == SessionAttendanceStatus.Present);
+        var absentCount = session.Attendances.Count(x => enrolledIds.Contains(x.ParticipantId) && x.Status == SessionAttendanceStatus.Absent);
+        var unknownCount = enrollmentCount - presentCount - absentCount;
+
+        return new SessionAttendanceRo(
+            session.Id,
+            session.Title,
+            enrollmentCount,
+            presentCount,
+            absentCount,
+            unknownCount);
     }
 
     public static ConflictingSessionRo ToConflictingSessionRo(this Session session)
