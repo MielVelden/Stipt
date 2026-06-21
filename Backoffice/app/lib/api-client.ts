@@ -1,4 +1,5 @@
 import axios from "axios"
+import { clearAuth, getToken, refreshAccessToken } from "~/lib/auth"
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5283/api"
 
@@ -11,7 +12,7 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("auth_token")
+    const token = getToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -22,12 +23,31 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401 && window.location.pathname !== "/login") {
-      localStorage.removeItem("auth_token")
-      localStorage.removeItem("auth_user")
+  async (error) => {
+    const originalRequest = error.config as typeof error.config & { _retry?: boolean }
+
+    if (originalRequest.url?.includes("/auth/")) {
+      return Promise.reject(error)
+    }
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      try {
+        const newToken = await refreshAccessToken()
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+        return apiClient(originalRequest)
+      } catch {
+        clearAuth()
+        window.location.href = "/login"
+        return Promise.reject(error)
+      }
+    }
+
+    if (error.response?.status === 401 && originalRequest._retry) {
+      clearAuth()
       window.location.href = "/login"
     }
+
     return Promise.reject(error)
   }
 )
