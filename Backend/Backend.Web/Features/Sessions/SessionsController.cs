@@ -1,0 +1,141 @@
+using System.Security.Claims;
+using Backend.Web.Configuration;
+using Backend.Web.Features.Sessions.Dtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Backend.Web.Features.Sessions;
+
+[ApiController]
+[Route("api/events/{eventId:guid}/sessions")]
+[Authorize]
+[ServiceFilter(typeof(EventParticipantAuthorizationFilter))]
+public class SessionsController(SessionsService sessionsService) : ControllerBase
+{
+    [HttpPost]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<CreatedAtActionResult> CreateSession(Guid eventId, CreateSessionDto request, CancellationToken ct)
+    {
+        var response = await sessionsService.CreateAsync(eventId, request, ct);
+        return CreatedAtAction(nameof(GetSessionById), new { eventId, id = response.Id }, response);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyCollection<SessionRo>>> GetAllSessions(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
+    {
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
+
+        var response = await sessionsService.GetAllFilteredAsync(eventId, filter, userId, ct);
+        return Ok(response);
+    }
+
+    [HttpGet("attendance")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<ActionResult<IReadOnlyCollection<SessionAttendanceRo>>> GetAttendance(Guid eventId, CancellationToken ct)
+    {
+        var response = await sessionsService.GetSessionAttendanceOverviewAsync(eventId, ct);
+        return Ok(response);
+    }
+
+    [HttpGet("{sessionId:guid}/attendance")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<ActionResult<SessionAttendanceDetailRo>> GetAttendanceDetail(Guid eventId, Guid sessionId, CancellationToken ct)
+    {
+        var response = await sessionsService.GetSessionAttendanceDetailAsync(eventId, sessionId, ct);
+        return response is null ? NotFound() : Ok(response);
+    }
+
+    [HttpPut("{sessionId:guid}/attendance/{participantId:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<IActionResult> UpdateAttendance(Guid eventId, Guid sessionId, Guid participantId, [FromBody] UpdateAttendanceStatusDto request, CancellationToken ct)
+    {
+        await sessionsService.UpdateAttendanceAsync(eventId, sessionId, participantId, request.Status, ct);
+        return NoContent();
+    }
+
+    [HttpPost("{sessionId:guid}/attendance/mark-absent")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<IActionResult> MarkUnknownAsAbsent(Guid eventId, Guid sessionId, CancellationToken ct)
+    {
+        await sessionsService.MarkUnknownAsAbsentAsync(eventId, sessionId, ct);
+        return NoContent();
+    }
+
+    [HttpGet("personal-agenda")]
+    [Authorize(Roles = AppRoles.Attendee)]
+    public async Task<ActionResult<PersonalAgendaRo>> GetPersonalAgenda(Guid eventId, [FromQuery] SessionFilterDto filter, CancellationToken ct)
+    {
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdRaw is null)
+            return Unauthorized();
+
+        var response = await sessionsService.GetPersonalAgendaAsync(eventId, Guid.Parse(userIdRaw), filter, ct);
+        return Ok(response);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<SessionRo>> GetSessionById(Guid eventId, Guid id, CancellationToken ct)
+    {
+        var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Guid? userId = userIdRaw is null ? null : Guid.Parse(userIdRaw);
+
+        var response = await sessionsService.GetByIdAsync(eventId, id, userId, ct);
+        return response is null ? NotFound() : Ok(response);
+    }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<ActionResult<SessionRo>> UpdateSession(Guid eventId, Guid id, UpdateSessionDto request, CancellationToken ct)
+    {
+        var response = await sessionsService.UpdateAsync(eventId, id, request, ct);
+        return response is null ? NotFound() : Ok(response);
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.Manager)]
+    public async Task<IActionResult> DeleteSession(Guid eventId, Guid id, CancellationToken ct)
+    {
+        var deleted = await sessionsService.DeleteAsync(eventId, id, ct);
+        return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpPost("{id:guid}/enrollments")]
+    [Authorize(Roles = AppRoles.Attendee)]
+    public async Task<ActionResult<SessionRo>> EnrollInSession(Guid eventId, Guid id, CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+
+        var response = await sessionsService.EnrollAsync(eventId, id, Guid.Parse(userId), ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{id:guid}/enrollments/replace/{sessionIdToUnenroll:guid}")]
+    [Authorize(Roles = AppRoles.Attendee)]
+    public async Task<ActionResult<SessionRo>> ReplaceSessionEnrollment(
+        Guid eventId,
+        Guid id,
+        Guid sessionIdToUnenroll,
+        CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+
+        var response = await sessionsService.ReplaceEnrollmentAsync(eventId, id, Guid.Parse(userId), sessionIdToUnenroll, ct);
+        return Ok(response);
+    }
+
+    [HttpDelete("{id:guid}/enrollments/me")]
+    [Authorize(Roles = AppRoles.Attendee)]
+    public async Task<IActionResult> UnenrollFromSession(Guid eventId, Guid id, CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Unauthorized();
+        var deleted = await sessionsService.UnenrollAsync(eventId, id, Guid.Parse(userId), ct);
+        return deleted ? NoContent() : NotFound();
+    }
+}
