@@ -1,5 +1,7 @@
 # iO Event Connect
 
+- Installatiehandleiding [docs](./.docs/INSTALLATIE.md)
+- Technisch Plan [docs](./.docs/TECHNISCH-PLAN.md)
 - Backend [docs](./Backend/README.md)
 - Backoffice [docs](./Backoffice/README.md)
 - Mobile [docs](./Mobile/README.md)
